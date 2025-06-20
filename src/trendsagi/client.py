@@ -20,7 +20,7 @@ class TrendsAGIClient:
         self.base_url = base_url.rstrip('/')
         self._session = requests.Session()
         self._session.headers.update({
-            "Authorization": f"Bearer {api_key}",
+            "X-API-Key": api_key,
             "Content-Type": "application/json",
             "Accept": "application/json"
         })
