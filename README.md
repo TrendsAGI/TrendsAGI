@@ -225,35 +225,21 @@ except APIError as e:
 
 ## Rate Limits & Plans
 
-Rate limits are applied per endpoint and vary by subscription plan. The system uses endpoint-specific limits to provide optimal service for different use cases.
+Rate limits vary by subscription plan and endpoint type. The system uses endpoint-specific limits optimized for different use cases.
 
-### Signal Plan
-- **API Access**: Not available
-- **Web Dashboard**: Limited access to trends and basic features
-
-### Advantage Plan
-- **Default Rate Limit**: 300 requests/hour
-- **Trends List**: 750 requests/hour  
-- **AI Insights**: 200 requests/hour
-- **Authentication**: 75 login attempts/hour
-- **Analytics**: 300 requests/hour
-- **Dashboard**: 360 requests/hour
-- **Other endpoints**: Various limits optimized per feature
-
-### Scale Plan  
-- **Default Rate Limit**: 1,500 requests/hour
-- **Trends List**: 1,500 requests/hour
-- **AI Insights**: 750 requests/hour
-- **Authentication**: 150 login attempts/hour
-- **Analytics**: 1,500 requests/hour
-- **Dashboard**: 720 requests/hour
-- **Intelligence Features**: 1,000 requests/hour
-- **API Key Management**: 100 requests/hour
-
-### Enterprise Plan
-- **Rate Limits**: Unlimited for most endpoints
-- **Custom Configuration**: Available upon request
-- **Dedicated Support**: 24/7 priority assistance
+| Endpoint Category | Signal | Advantage | Scale | Enterprise |
+|-------------------|--------|-----------|-------|------------|
+| **API Access** | ❌ Not Available | ✅ Available | ✅ Available | ✅ Available |
+| **General API Calls** | - | 300/hour | 1,500/hour | Unlimited |
+| **Trends List** | - | 750/hour | 1,500/hour | Unlimited |
+| **AI Insights Search** | - | 200/hour | 750/hour | Unlimited |
+| **Analytics** | - | 300/hour | 1,500/hour | Unlimited |
+| **Dashboard** | 180/hour | 360/hour | 720/hour | Unlimited |
+| **Login/Auth** | 30/hour | 75/hour | 150/hour | Unlimited |
+| **Intelligence Features** | - | 300/hour | 1,000/hour | Unlimited |
+| **Financial Data** | - | 120/hour | 600/hour | Unlimited |
+| **User Management** | 300/hour | 600/hour | 1,000/hour | Unlimited |
+| **Live Streaming** | ❌ | ❌ | ✅ Available | ✅ Available |
 
 ### Rate Limit Headers
 
@@ -261,17 +247,6 @@ All API responses include rate limit information:
 - `X-RateLimit-Limit`: Your current limit for this endpoint
 - `X-RateLimit-Remaining`: Requests remaining in current window
 - `X-RateLimit-Reset`: Unix timestamp when the limit resets
-
-### Endpoint-Specific Limits
-
-Different endpoints have tailored rate limits based on their computational requirements:
-
-- **High-frequency endpoints** (trends, dashboard): Higher limits
-- **Resource-intensive endpoints** (deep analysis, AI insights): Lower limits  
-- **Authentication endpoints**: Anti-abuse limits
-- **Management endpoints**: Moderate limits for configuration changes
-
-For a complete list of endpoint-specific rate limits, contact support or check your plan details in the dashboard.
 
 ## API Documentation
 
