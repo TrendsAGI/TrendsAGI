@@ -50,19 +50,26 @@ except APIError as e:
 ### Trends & Analytics
 
 ```python
-# Get detailed trend information
-trend_details = client.get_trend_details(trend_id=123)
-print(f"Category: {trend_details.category}")
+# Find trends about AI and get detailed information
+ai_trends = client.get_trends(search="artificial intelligence", limit=3)
 
-# Get historical analytics
-analytics = client.get_trend_analytics(trend_id=123, period="30d")
-for point in analytics.data:
-    print(f"{point.date}: {point.volume} posts")
-
-# Get AI insights for a trend
-insights = client.get_ai_insights(trend_id=123)
-print(f"Sentiment: {insights.sentiment_category}")
-print(f"Key Themes: {insights.key_themes}")
+if ai_trends.trends:
+    trend = ai_trends.trends[0]  # Get the top AI trend
+    print(f"Working with trend: {trend.name}")
+    
+    # Get detailed trend information
+    trend_details = client.get_trend_details(trend_id=trend.id)
+    print(f"Category: {trend_details.category}")
+    print(f"Sample tweets: {len(trend_details.tweets)}")
+    
+    # Get historical analytics for this trend
+    analytics = client.get_trend_analytics(trend_id=trend.id, period="7d")
+    print(f"Analytics over {len(analytics.data)} data points")
+    
+    # Get AI insights for this trend
+    insights = client.get_ai_insights(trend_id=trend.id)
+    print(f"Sentiment: {insights.sentiment_category}")
+    print(f"Key Themes: {insights.key_themes}")
 ```
 
 ### Intelligence Suite
