@@ -225,19 +225,53 @@ except APIError as e:
 
 ## Rate Limits & Plans
 
-Rate limits vary by subscription plan:
+Rate limits are applied per endpoint and vary by subscription plan. The system uses endpoint-specific limits to provide optimal service for different use cases.
 
-| Plan | Default Limit | Trends List | AI Insights |
-|------|---------------|-------------|-------------|
-| Signal | No API Access | No API Access | No API Access |
-| Advantage | 300/hour | 750/hour | 200/hour |
-| Scale | 1500/hour | 1500/hour | 750/hour |
-| Enterprise | Unlimited | Unlimited | Unlimited |
+### Signal Plan
+- **API Access**: Not available
+- **Web Dashboard**: Limited access to trends and basic features
 
-Rate limit headers are included in responses:
-- `X-RateLimit-Limit`: Your limit
-- `X-RateLimit-Remaining`: Requests remaining  
-- `X-RateLimit-Reset`: Reset timestamp
+### Advantage Plan
+- **Default Rate Limit**: 300 requests/hour
+- **Trends List**: 750 requests/hour  
+- **AI Insights**: 200 requests/hour
+- **Authentication**: 75 login attempts/hour
+- **Analytics**: 300 requests/hour
+- **Dashboard**: 360 requests/hour
+- **Other endpoints**: Various limits optimized per feature
+
+### Scale Plan  
+- **Default Rate Limit**: 1,500 requests/hour
+- **Trends List**: 1,500 requests/hour
+- **AI Insights**: 750 requests/hour
+- **Authentication**: 150 login attempts/hour
+- **Analytics**: 1,500 requests/hour
+- **Dashboard**: 720 requests/hour
+- **Intelligence Features**: 1,000 requests/hour
+- **API Key Management**: 100 requests/hour
+
+### Enterprise Plan
+- **Rate Limits**: Unlimited for most endpoints
+- **Custom Configuration**: Available upon request
+- **Dedicated Support**: 24/7 priority assistance
+
+### Rate Limit Headers
+
+All API responses include rate limit information:
+- `X-RateLimit-Limit`: Your current limit for this endpoint
+- `X-RateLimit-Remaining`: Requests remaining in current window
+- `X-RateLimit-Reset`: Unix timestamp when the limit resets
+
+### Endpoint-Specific Limits
+
+Different endpoints have tailored rate limits based on their computational requirements:
+
+- **High-frequency endpoints** (trends, dashboard): Higher limits
+- **Resource-intensive endpoints** (deep analysis, AI insights): Lower limits  
+- **Authentication endpoints**: Anti-abuse limits
+- **Management endpoints**: Moderate limits for configuration changes
+
+For a complete list of endpoint-specific rate limits, contact support or check your plan details in the dashboard.
 
 ## API Documentation
 
@@ -249,10 +283,41 @@ For complete API reference, including all endpoints, parameters, and response sc
 
 Different features are available based on your subscription:
 
-- **All Plans**: Basic trends, user management, recommendations
-- **Advantage+**: AI insights, deep analysis, market intelligence
-- **Scale+**: Crisis monitoring, live streaming, extended history
-- **Enterprise**: Unlimited access, custom integrations
+### Signal Plan
+- Basic trends access via web dashboard
+- Limited history (7 days)
+- 5 topic interests
+- Basic reporting (10K row limit)
+- CSV exports only
+
+### Advantage Plan
+- Full API access (10K calls/day)
+- 30-day history
+- 25 topic interests  
+- Advanced insights and search
+- Priority support
+- Unlimited reporting rows
+- 100 deep analysis queries/day
+
+### Scale Plan
+- Enhanced API access (25K calls/day)
+- 90-day history
+- 100 topic interests
+- Crisis monitoring
+- Live streaming access
+- Cloud exports
+- Slack notifications
+- Video generation
+- 1,000 deep analysis queries/day
+
+### Enterprise Plan
+- Unlimited API access
+- Unlimited history
+- Unlimited topic interests
+- Custom integrations
+- Dedicated support & SLA
+- All premium features
+- Unlimited deep analysis
 
 ## Support
 
