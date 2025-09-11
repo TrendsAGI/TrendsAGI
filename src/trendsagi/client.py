@@ -1,5 +1,9 @@
+# File: trendsagi-client/trendsagi/client.py
+
 import requests
-from typing import Optional, List, Dict, Any
+import asyncio
+import websockets
+from typing import Optional, List, Dict, Any, AsyncGenerator
 
 from . import models
 from . import exceptions
@@ -65,7 +69,9 @@ class TrendsAGIClient:
         limit: int = 20,
         offset: int = 0,
         period: str = '24h',
-        category: Optional[str] = None
+        category: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None
     ) -> models.TrendListResponse:
         """
         Retrieve a list of currently trending topics.
@@ -85,10 +91,24 @@ class TrendsAGIClient:
         """
         Retrieve historical data points for a specific trend.
         """
-        params = {"period": period, "start_date": start_date, "end_date": end_date}
+        params = {"period": period, "startDate": start_date, "endDate": end_date}
         params = {k: v for k, v in params.items() if v is not None}
         response_data = self._request('GET', f'/api/trends/{trend_id}/analytics', params=params)
         return models.TrendAnalytics.model_validate(response_data)
+
+    def get_trend_autocomplete(self, query: str) -> models.AutocompleteResponse:
+        """
+        Get trend name suggestions for typeahead search.
+        """
+        response_data = self._request('GET', '/api/trends/autocomplete', params={"query": query})
+        return models.AutocompleteResponse.model_validate(response_data)
+
+    def get_trend_categories(self) -> models.ActiveCategoriesResponse:
+        """
+        Get a list of all categories that have at least one associated trend.
+        """
+        response_data = self._request('GET', '/api/trends/categories')
+        return models.ActiveCategoriesResponse.model_validate(response_data)
 
     def search_insights(
         self,
@@ -116,12 +136,28 @@ class TrendsAGIClient:
         response_data = self._request('GET', '/api/insights/search', params=params)
         return models.InsightSearchResponse.model_validate(response_data)
         
-    def get_ai_insights(self, trend_id: int, force_refresh: bool = False) -> Optional[models.AIInsight]:
+    def get_ai_insights(self, trend_id: int) -> Optional[models.AIInsight]:
         """
-        Get or generate AI-powered insights for a specific trend.
+        Get cached AI-powered insights for a specific trend.
+        Returns None if no insight is available.
         """
-        response_data = self._request('GET', f'/api/trends/{trend_id}/ai-insights', params={"force_refresh": force_refresh})
+        response_data = self._request('GET', f'/api/trends/{trend_id}/ai-insights')
         return models.AIInsight.model_validate(response_data) if response_data else None
+
+    def generate_ai_insights(self, trend_id: int) -> models.InsightTaskResponse:
+        """
+        Queue a job to generate new AI-powered insights for a trend.
+        Returns a task response object containing the task_id to poll.
+        """
+        response_data = self._request('POST', f'/api/trends/{trend_id}/ai-insights/generate')
+        return models.InsightTaskResponse.model_validate(response_data)
+
+    def get_insight_generation_status(self, task_id: str) -> models.InsightTaskStatusResponse:
+        """
+        Check the status of an AI insight generation task.
+        """
+        response_data = self._request('GET', f'/api/trends/ai-insights/status/{task_id}')
+        return models.InsightTaskStatusResponse.model_validate(response_data)
 
     # --- Custom Reports Methods ---
 
@@ -199,6 +235,24 @@ class TrendsAGIClient:
     def delete_tracked_x_user(self, entity_id: int) -> None:
         """Stop tracking an X User."""
         self._request('DELETE', f'/api/intelligence/market/x-users/{entity_id}')
+    
+    def refresh_x_user_analysis(self, entity_id: int, force_refresh: bool = False) -> models.MarketEntityRefreshResponse:
+        """
+        Forces a new AI-powered analysis of a tracked X User's recent activity.
+        This is useful for getting the most up-to-date summary on demand.
+
+        :param entity_id: The ID of the X User entity to refresh.
+        :param force_refresh: Bypasses the cache to generate a new summary. 
+                              Using true may consume a daily credit.
+        :return: An object containing the updated entity and usage information.
+        """
+        payload = {"force_refresh": force_refresh}
+        response_data = self._request(
+            'POST', 
+            f'/api/intelligence/market/x-users/{entity_id}/refresh-analysis', 
+            json=payload
+        )
+        return models.MarketEntityRefreshResponse.model_validate(response_data)
 
     def get_crisis_events(
         self,
@@ -231,13 +285,15 @@ class TrendsAGIClient:
         response_data = self._request('POST', f'/api/intelligence/crisis-events/{event_id}/action', json={"action": action})
         return models.CrisisEvent.model_validate(response_data)
 
-    def perform_deep_analysis(self, query: str, force_refresh: bool = False) -> models.DeepAnalysis:
-        """
-        Perform deep AI analysis on a topic.
-        """
-        response_data = self._request('POST', '/api/intelligence/deep-analysis', json={"query": query, "force_refresh": force_refresh})
-        return models.DeepAnalysis.model_validate(response_data)
+    # --- DELETED: Deep Analysis methods removed from the client ---
         
+    def get_financial_data(self) -> models.FinancialDataResponse:
+        """
+        Retrieves a consolidated report of the latest financial data.
+        """
+        response_data = self._request('GET', '/api/intelligence/financial-data')
+        return models.FinancialDataResponse.model_validate(response_data)
+
     # --- User & Account Management Methods (Non-sensitive) ---
 
     def get_topic_interests(self) -> List[models.TopicInterest]:
@@ -272,8 +328,13 @@ class TrendsAGIClient:
 
     def save_export_settings(
         self,
-        destination: str, config: Dict[str, Any], schedule: str = "none",
-        schedule_time: Optional[str] = None, is_active: bool = False, config_id: Optional[int] = None
+        destination: str,
+        selected_fields: List[str],
+        config: Dict[str, Any],
+        schedule: str = "none",
+        schedule_time: Optional[str] = None,
+        is_active: bool = False,
+        config_id: Optional[int] = None
     ) -> models.ExportConfiguration:
         """
         Create or update an export configuration.
@@ -281,6 +342,7 @@ class TrendsAGIClient:
         payload = {
             "id": config_id, "destination": destination, "config": config,
             "schedule": schedule, "schedule_time": schedule_time, "is_active": is_active,
+            "selected_fields": selected_fields
         }
         payload = {k: v for k, v in payload.items() if v is not None}
         response_data = self._request('POST', '/api/user/export/settings', json=payload)
@@ -300,10 +362,10 @@ class TrendsAGIClient:
         response_data = self._request('POST', f'/api/user/export/configurations/{config_id}/run-now')
         return models.ExportExecutionLog.model_validate(response_data)
         
-    def get_dashboard_stats(self) -> models.DashboardStats:
-        """Get key statistics for the user's dashboard."""
-        response_data = self._request('GET', '/api/user/dashboard/stats')
-        return models.DashboardStats.model_validate(response_data)
+    def get_dashboard_overview(self) -> models.DashboardOverview:
+        """Get key statistics, top trends, and recent alerts for the dashboard."""
+        response_data = self._request('GET', '/api/dashboard/overview')
+        return models.DashboardOverview.model_validate(response_data)
 
     def get_recent_notifications(self, limit: int = 10) -> models.NotificationListResponse:
         """Get recent notifications for the user."""
@@ -316,6 +378,28 @@ class TrendsAGIClient:
         return self._request('POST', '/api/user/notifications/mark-read', json=payload)
 
     # --- Public Information & Status Methods ---
+    
+    def get_session_info(self) -> models.SessionInfoResponse:
+        """
+        Get session-specific info like country, derived from request headers.
+        Useful for determining display currency on the frontend.
+        """
+        response_data = self._request('GET', '/api/user/session-info')
+        return models.SessionInfoResponse.model_validate(response_data)
+    
+    def get_public_homepage_financial_data(self) -> models.HomepageFinancialDataResponse:
+        """
+        Retrieves a curated list of recent financial events for public display.
+        This endpoint is unauthenticated on the backend.
+        """
+        # Note: This method temporarily removes the API key for this specific public call.
+        original_key = self._session.headers.pop("X-API-Key", None)
+        try:
+            response_data = self._request('GET', '/api/v1/public/homepage-financial-data')
+            return models.HomepageFinancialDataResponse.model_validate(response_data)
+        finally:
+            if original_key:
+                self._session.headers["X-API-Key"] = original_key
     
     def get_available_plans(self) -> List[models.SubscriptionPlan]:
         """Retrieve a list of all publicly available subscription plans."""
@@ -335,3 +419,56 @@ class TrendsAGIClient:
         """
         response_data = self._request('GET', '/api/status-history')
         return models.StatusHistoryResponse.model_validate(response_data)
+
+    # --- WebSocket Methods ---
+
+    async def _connect_websocket(self, endpoint: str) -> AsyncGenerator[str, None]:
+        """Internal helper for WebSocket connections."""
+        ws_url = self.base_url.replace('http', 'ws', 1)
+        full_url = f"{ws_url}{endpoint}"
+        
+        # Get API key from session headers
+        api_key = self._session.headers.get("X-API-Key")
+        if not api_key:
+            raise exceptions.AuthenticationError("No API key found in session headers")
+        
+        # Add API key as query parameter (most common WebSocket auth method)
+        separator = "&" if "?" in full_url else "?"
+        auth_url = f"{full_url}{separator}token={api_key}"
+        
+        try:
+            async with websockets.connect(auth_url) as websocket:
+                while True:
+                    try:
+                        message = await websocket.recv()
+                        yield message
+                    except websockets.ConnectionClosed:
+                        break
+        except Exception as e:
+            raise exceptions.TrendsAGIError(f"WebSocket connection to {endpoint} failed: {e}")
+
+    async def trends_stream(self, trend_names: Optional[List[str]] = None) -> AsyncGenerator[str, None]:
+        """
+        Connects to the live trends WebSocket and yields incoming messages.
+        
+        Usage:
+        async for message in client.trends_stream(trend_names=["AI", "#SaaS"]):
+            print(message)
+        """
+        endpoint = "/ws/trends-live"
+        if trend_names:
+            endpoint += f"?trends={','.join(trend_names)}"
+        
+        async for message in self._connect_websocket(endpoint):
+            yield message
+    
+    async def finance_stream(self) -> AsyncGenerator[str, None]:
+        """
+        Connects to the live financial data WebSocket and yields incoming messages.
+        
+        Usage:
+        async for message in client.finance_stream():
+            print(message)
+        """
+        async for message in self._connect_websocket("/ws/finance-live"):
+            yield message

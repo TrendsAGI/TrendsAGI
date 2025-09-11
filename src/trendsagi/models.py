@@ -1,6 +1,6 @@
 # File: trendsagi-client/trendsagi/models.py
 
-from pydantic import BaseModel, Field, HttpUrl, EmailStr
+from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Any, Dict
 from datetime import datetime, date
 
@@ -9,7 +9,7 @@ class OrmBaseModel(BaseModel):
     class Config:
         from_attributes = True
 
-class PaginationMeta(OrmBaseModel):
+class PaginationMeta(BaseModel):
     total: int
     limit: int
     offset: int
@@ -18,6 +18,27 @@ class PaginationMeta(OrmBaseModel):
     order: Optional[str] = None
     search: Optional[str] = None
     category: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+
+# --- Task Queue Models ---
+class InsightTaskResponse(OrmBaseModel):
+    task_id: str
+    status: str
+    message: str
+
+class InsightTaskStatusResponse(OrmBaseModel):
+    task_id: str
+    status: str
+    result: Optional[Any] = None
+    error: Optional[str] = None
+
+# --- Autocomplete and Categories Models ---
+class AutocompleteResponse(OrmBaseModel):
+    suggestions: List[str]
+
+class ActiveCategoriesResponse(OrmBaseModel):
+    categories: List[str]
 
 # --- Trends & Insights Models ---
 class TrendItem(OrmBaseModel):
@@ -30,6 +51,9 @@ class TrendItem(OrmBaseModel):
     growth: Optional[float] = None
     previous_volume: Optional[int] = None
     absolute_change: Optional[int] = None
+    average_velocity: Optional[float] = Field(None, description="Average velocity (posts/hour) over recent snapshots.")
+    trend_stability: Optional[float] = Field(None, description="Standard deviation of volume over recent snapshots. Lower is more stable.")
+    overall_trend: Optional[str] = Field(None, description="Qualitative assessment of the trend's direction (growing, declining, stable).")
 
 class TrendListResponse(OrmBaseModel):
     trends: List[TrendItem]
@@ -54,14 +78,16 @@ class TrendDetail(TrendItem):
 class TrendDataPoint(OrmBaseModel):
     date: datetime
     volume: Optional[int] = None
-    growth_rate: Optional[float] = None
+    velocity_per_hour: Optional[float] = None
+    acceleration: Optional[float] = None
+    is_forecast: Optional[bool] = False
 
 class TrendAnalytics(OrmBaseModel):
     trend_id: int
     name: str
     period: str
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: Optional[str] = None
+    end_date: str
     data: List[TrendDataPoint]
 
 class TrendSearchResultItem(OrmBaseModel):
@@ -95,7 +121,6 @@ class AIInsight(OrmBaseModel):
     key_themes: List[str]
     content_brief: Optional[AIInsightContentBrief]
     ad_platform_targeting: Optional[AIInsightAdTargeting]
-    potential_risks_or_controversies: List[str]
     overall_topic_category_llm: Optional[str]
     generated_at: datetime
     llm_model_used: str
@@ -107,6 +132,8 @@ class ReportMeta(OrmBaseModel):
     time_period: str
     start_date: Optional[str] = None
     end_date: Optional[str] = None
+    usage_count: Optional[int] = None
+    usage_limit: Optional[int] = None
 
 class CustomReport(OrmBaseModel):
     columns: List[str]
@@ -120,7 +147,7 @@ class Recommendation(OrmBaseModel):
     type: str
     title: str
     details: str
-    source_trend_id: Optional[str] = None
+    source_trend_id: Optional[int] = None
     source_trend_name: Optional[str] = None
     priority: str
     status: str
@@ -132,6 +159,13 @@ class RecommendationListResponse(OrmBaseModel):
     recommendations: List[Recommendation]
     meta: PaginationMeta
 
+class RecentPostAnalysis(OrmBaseModel):
+    summary: Optional[str] = None
+    key_takeaways: List[str] = Field(default_factory=list)
+    sentiment: Optional[str] = None
+    post_url: Optional[HttpUrl] = None
+    error: Optional[str] = None
+
 class MarketEntity(OrmBaseModel):
     id: int
     user_id: int
@@ -142,17 +176,22 @@ class MarketEntity(OrmBaseModel):
     notes: Optional[str] = None
     followers_count: Optional[int] = None
     overall_sentiment: Optional[str] = None
-    top_keywords: Optional[List[str]] = Field(default_factory=list, alias="top_keywords_json")
-    recent_topics: Optional[List[str]] = Field(default_factory=list, alias="recent_topics_json")
-    last_analyzed_at: Optional[datetime] = Field(None, alias="last_analyzed")
+    last_post_analyzed_at: Optional[datetime] = None
+    recent_post_analysis_json: Optional[RecentPostAnalysis] = None
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        populate_by_name = True
-
 class MarketEntityListResponse(OrmBaseModel):
     items: List[MarketEntity]
+    usage_info: 'UsageInfo'
+
+class UsageInfo(OrmBaseModel):
+    count: int
+    limit: int
+
+class MarketEntityRefreshResponse(OrmBaseModel):
+    entity: MarketEntity
+    usage_info: UsageInfo
 
 class CrisisEvent(OrmBaseModel):
     id: int
@@ -162,46 +201,95 @@ class CrisisEvent(OrmBaseModel):
     severity: str
     status: str
     detected_at: datetime
-    source_keywords: Optional[List[str]] = Field(None, alias="source_keywords_json")
+    source_keywords: Optional[List[str]] = None
     impacted_entity: Optional[str] = None
-    trend_snapshot_link: Optional[HttpUrl] = None
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        populate_by_name = True
 
 class CrisisEventListResponse(OrmBaseModel):
     events: List[CrisisEvent]
     meta: PaginationMeta
 
-class DeepAnalysisSentiment(OrmBaseModel):
-    overall_sentiment_category: str
-    positive_nuances: List[str]
-    negative_nuances: List[str]
-    neutral_aspects: List[str]
+# --- DELETED: Deep Analysis models removed from the client ---
 
-class DeepAnalysisActionableInsights(OrmBaseModel):
-    marketing_pr: List[str]
-    product_development: List[str]
-    crm_strategy: List[str]
-    
-class DeepAnalysisRelatedTrend(OrmBaseModel):
+# --- Financial Data Models ---
+class FinancialNews(OrmBaseModel):
+    id: int
+    title: str
+    summary: str
+    source_timestamp: Optional[str] = None
+    sentiment: Optional[str] = None
+    company: Optional[str] = None
+    created_at: datetime
+
+class FinancialPressRelease(OrmBaseModel):
+    id: int
+    company: str
+    title: str
+    summary: str
+    source_timestamp: Optional[str] = None
+    sentiment: Optional[str] = None
+    created_at: datetime
+
+class EarningsReport(OrmBaseModel):
+    id: int
+    company: str
+    period: str
+    revenue: Optional[str] = None
+    earnings_per_share: Optional[str] = None
+    guidance_update: Optional[str] = None
+    source_timestamp: Optional[str] = None
+    sentiment: Optional[str] = None
+    created_at: datetime
+
+class IPONews(OrmBaseModel):
+    id: int
+    company: str
+    symbol: Optional[str] = None
+    status: Optional[str] = None
+    filing_date: Optional[str] = None
+    expected_trade_date: Optional[str] = None
+    created_at: datetime
+
+class MarketSentiment(OrmBaseModel):
+    id: int
+    sentiment: str
+    drivers: Optional[List[str]] = None
+    source_timestamp: Optional[str] = None
+    created_at: datetime
+
+class FinancialDataResponse(OrmBaseModel):
+    market_sentiment: Optional[MarketSentiment] = None
+    earnings_reports: List[EarningsReport] = Field(default_factory=list)
+    financial_news: List[FinancialNews] = Field(default_factory=list)
+    financial_press_releases: List[FinancialPressRelease] = Field(default_factory=list)
+    ipo_filings_news: List[IPONews] = Field(default_factory=list)
+
+class CombinedReleaseResponse(OrmBaseModel):
     id: str
-    name: str
+    title: str
+    published_at: str
+    source: str
+    source_id: Optional[str] = None
 
-class DeepAnalysis(OrmBaseModel):
-    query_analyzed: str
-    generated_at: datetime
-    llm_model_used: str
-    overall_summary: str
-    key_findings: List[str]
-    sentiment_analysis: DeepAnalysisSentiment
-    causal_factors: List[str]
-    emerging_sub_topics: List[str]
-    future_outlook_and_predictions: List[str]
-    actionable_insights_for_roles: DeepAnalysisActionableInsights
-    related_trends: List[DeepAnalysisRelatedTrend]
+class HomepageEarningsReportResponse(OrmBaseModel):
+    id: int
+    company: str
+    source_timestamp: Optional[datetime] = None
+    report_time_of_day: str
+    period: str
+
+class HomepageIPONewsResponse(OrmBaseModel):
+    id: int
+    company: str
+    symbol: str
+    status: str
+    expected_trade_date: str
+
+class HomepageFinancialDataResponse(OrmBaseModel):
+    earnings_reports: List[HomepageEarningsReportResponse]
+    releases: List[CombinedReleaseResponse]
+    ipo_filings_news: List[HomepageIPONewsResponse]
 
 # --- User & Account Management Models ---
 class TopicInterest(OrmBaseModel):
@@ -220,6 +308,8 @@ class ExportConfiguration(OrmBaseModel):
     schedule: str
     schedule_time: Optional[str] = None
     is_active: bool
+    selected_fields: List[str] = Field(default_factory=list)
+    file_name_template: Optional[str] = None
 
 class ExportExecutionLog(OrmBaseModel):
     id: int
@@ -251,31 +341,38 @@ class Notification(OrmBaseModel):
     read_at: Optional[datetime] = None
     data: Optional[Dict[str, Any]] = None
 
+class DashboardOverview(OrmBaseModel):
+    stats: DashboardStats
+    top_trends: List[TrendItem]
+    recent_alerts: List[Notification]
+
 class NotificationListResponse(OrmBaseModel):
     notifications: List[Notification]
     unread_count: int
 
 # --- Public Information & Status Models ---
+class SessionInfoResponse(OrmBaseModel):
+    country: str
+
 class SubscriptionPlan(OrmBaseModel):
     id: int
     name: str
     description: Optional[str] = None
-    price_monthly: Optional[float] = None
-    price_yearly: Optional[float] = None
+    price_monthly: Optional[Dict[str, float]] = None
+    price_yearly: Optional[Dict[str, float]] = None
     is_custom: bool
     features: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
 class ComponentStatus(OrmBaseModel):
     name: str
     status: str
-    description: str
+    description: Optional[str] = None
 
 class StatusPage(OrmBaseModel):
     overall_status: str
     last_updated: datetime
     components: List[ComponentStatus]
 
-# NEW: Model for API Status History
 class StatusHistoryResponse(OrmBaseModel):
     uptime_percentages: Dict[str, float]
     daily_statuses: Dict[str, Dict[str, str]]

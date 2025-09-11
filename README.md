@@ -4,305 +4,255 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
 
-The official Python client for the [TrendsAGI API](https://trendsagi.com), providing a simple and convenient way to access real-time trend data, AI-powered insights, and the full intelligence suite.
-
-This library is fully typed with Pydantic models for all API responses, giving you excellent editor support (like autocompletion and type checking) and data validation out of the box.
-
-## Table of Contents
-
-- [Features](#features)
-- [Installation](#installation)
-- [Getting Started](#getting-started)
-  - [Authentication](#authentication)
-  - [Quickstart Example](#quickstart-example)
-- [Usage Examples](#usage-examples)
-  - [Get AI-Powered Insights for a Trend](#get-ai-powered-insights-for-a-trend)
-  - [Perform a Deep Analysis on a Topic](#perform-a-deep-analysis-on-a-topic)
-  - [Track an X (Twitter) User](#track-an-x-twitter-user)
-  - [Monitor for Crisis Events](#monitor-for-crisis-events)
-- [Handling Errors and Exceptions](#handling-errors-and-exceptions)
-- [Full API Documentation](#full-api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
+The official Python client for the [TrendsAGI API](https://trendsagi.com), providing access to real-time trend data, AI-powered insights, market intelligence, and live streaming capabilities.
 
 ## Features
 
-- Access real-time and historical trend data
-- Leverage powerful AI-driven insights, sentiment analysis, and content briefs for any trend
-- Perform deep, causal analysis on any topic or query
-- Utilize the Intelligence Suite for actionable recommendations, crisis monitoring, and market tracking
-- Manage topic interests, alerts, and data export configurations
-- Simple, intuitive methods mirroring the API structure
-- Robust error handling with custom exceptions
-- Data validation and rich type-hinting powered by Pydantic
+- **Trends & Insights**: Real-time trend data with analytics (volume, velocity, stability)
+- **AI-Powered Analysis**: Deep insights, sentiment analysis, and content recommendations
+- **Intelligence Suite**: Market tracking, crisis monitoring, custom reports, and recommendations
+- **Live Streaming**: WebSocket connections for real-time financial and trend data
+- **User Management**: Topic interests, notifications, and alert configuration
+- **Full Type Support**: Complete Pydantic models with IDE autocompletion
 
 ## Installation
-
-Install the library directly from PyPI:
 
 ```bash
 pip install trendsagi
 ```
 
-## Getting Started
-
-### Authentication
-
-First, you'll need a TrendsAGI account and an API key. You can sign up and generate a key from your dashboard.
-
-We strongly recommend storing your API key as an environment variable to avoid committing it to version control.
-
-```bash
-export TRENDSAGI_API_KEY="your_api_key_here"
-```
-
-### Quickstart Example
-
-This example demonstrates how to initialize the client and fetch the latest trending topics.
+## Quick Start
 
 ```python
 import os
-import trendsagi
-from trendsagi import exceptions
+from trendsagi import TrendsAGIClient, APIError
 
-# It's recommended to load your API key from an environment variable
-API_KEY = os.environ.get("TRENDSAGI_API_KEY")
-
-if not API_KEY:
-    raise ValueError("Please set the TRENDSAGI_API_KEY environment variable.")
-
-# Initialize the client
-client = trendsagi.TrendsAGIClient(api_key=API_KEY)
+# Load API key from environment variable (recommended)
+client = TrendsAGIClient(api_key=os.getenv("TRENDSAGI_API_KEY"))
 
 try:
-    # Get the top 5 trending topics from the last 24 hours
-    print("Fetching top 5 trending topics...")
-    response = client.get_trends(limit=5, period='24h')
-
-    print(f"\nFound {response.meta.total} total trends. Displaying the top {len(response.trends)}:")
-    for trend in response.trends:
-        print(f"- ID: {trend.id}, Name: '{trend.name}', Volume: {trend.volume}")
-
-except exceptions.AuthenticationError:
-    print("Authentication failed. Please check your API key.")
-except exceptions.APIError as e:
-    print(f"An API error occurred: Status {e.status_code}, Details: {e.error_detail}")
-except exceptions.TrendsAGIError as e:
-    print(f"A client-side error occurred: {e}")
-```
-
-## Usage Examples
-
-### Get AI-Powered Insights for a Trend
-
-Retrieve AI-generated insights for a specific trend, such as key themes, target audiences, and content ideas.
-
-```python
-# Assuming 'client' is an initialized TrendsAGIClient
-# and you have a trend_id from a call to get_trends()
-TREND_ID = 12345 
-
-try:
-    print(f"\nGetting AI insights for trend ID {TREND_ID}...")
-    ai_insight = client.get_ai_insights(trend_id=TREND_ID)
+    # Get trending topics with new analytics
+    trends = client.get_trends(limit=5, period='24h')
     
-    if ai_insight:
-        print(f"  Sentiment: {ai_insight.sentiment_category}")
-        print("  Key Themes:")
-        for theme in ai_insight.key_themes[:3]:  # show first 3
-            print(f"    - {theme}")
-        print("  Suggested Content Angle:")
-        print(f"    - {ai_insight.content_brief.key_angles_for_content[0]}")
+    for trend in trends.trends:
+        print(f"Trend: {trend.name}")
+        print(f"  Volume: {trend.volume}")
+        print(f"  Overall Trend: {trend.overall_trend}")
+        print(f"  Avg Velocity: {trend.average_velocity:.2f} posts/hr")
+        print(f"  Stability: {trend.trend_stability:.2f}")
         
-except exceptions.NotFoundError:
-    print(f"Trend with ID {TREND_ID} not found.")
-except exceptions.APIError as e:
-    print(f"An API error occurred: {e}")
+except APIError as e:
+    print(f"API Error ({e.status_code}): {e.error_detail}")
 ```
 
-### Perform a Deep Analysis on a Topic
+## Core Functionality
+
+### Trends & Analytics
 
 ```python
-# Assuming 'client' is an initialized TrendsAGIClient
-try:
-    print("\nPerforming deep analysis on 'artificial intelligence'...")
-    analysis = client.perform_deep_analysis(
-        query="artificial intelligence",
-        analysis_type="comprehensive"
-    )
+# Get detailed trend information
+trend_details = client.get_trend_details(trend_id=123)
+print(f"Category: {trend_details.category}")
+
+# Get historical analytics
+analytics = client.get_trend_analytics(trend_id=123, period="30d")
+for point in analytics.data:
+    print(f"{point.date}: {point.volume} posts")
+
+# Get AI insights for a trend
+insights = client.get_ai_insights(trend_id=123)
+print(f"Sentiment: {insights.sentiment_category}")
+print(f"Key Themes: {insights.key_themes}")
+```
+
+### Intelligence Suite
+
+```python
+# Search trends by AI-generated insights
+results = client.search_insights(
+    key_theme_contains="sustainability",
+    sentiment_category="positive"
+)
+
+# Generate custom reports
+report = client.generate_custom_report({
+    "dimensions": ["trend_category"],
+    "metrics": ["sum_volume"],
+    "time_period": "7d"
+})
+
+# Get actionable recommendations
+recommendations = client.get_recommendations(priority="high")
+for rec in recommendations.recommendations:
+    print(f"- {rec.title}")
+
+# Track X (Twitter) users
+user = client.create_tracked_x_user(
+    handle="elonmusk",
+    name="Elon Musk",
+    notes="Tech industry leader"
+)
+
+# Refresh user analysis
+analysis = client.refresh_x_user_analysis(
+    entity_id=user.id, 
+    force_refresh=True
+)
+print(f"Latest analysis: {analysis.entity.recent_post_analysis.summary}")
+```
+
+### Deep Analysis & Crisis Monitoring
+
+```python
+# Perform deep AI analysis on any topic
+analysis = client.perform_deep_analysis(
+    query="What are the primary concerns about AI in healthcare for 2025?"
+)
+print(analysis.executive_summary_and_key_findings.summary)
+
+# Monitor crisis events
+events = client.get_crisis_events(status="active")
+for event in events.events:
+    print(f"[{event.severity.upper()}] {event.title}")
+```
+
+### Financial Intelligence
+
+```python
+# Get consolidated financial data
+financial_data = client.get_financial_data()
+
+# Market sentiment
+if financial_data.market_sentiment:
+    print(f"Market: {financial_data.market_sentiment.sentiment_label}")
+
+# Recent earnings reports
+for report in financial_data.earnings_reports:
+    print(f"{report.company_name}: EPS {report.eps_actual} vs {report.eps_estimate}")
+
+# IPO filings
+for ipo in financial_data.ipo_filings_news:
+    print(f"{ipo.company_name} IPO expected: {ipo.expected_date}")
+```
+
+### User Management
+
+```python
+# Create topic interest with alerts
+interest = client.create_topic_interest(
+    keyword="artificial intelligence",
+    alert_condition_type="volume_threshold",
+    volume_threshold_value=5000,
+    send_email_alerts=True
+)
+
+# Get recent notifications
+notifications = client.get_recent_notifications(limit=10)
+print(f"Unread: {notifications.unread_count}")
+
+# Mark notifications as read
+client.mark_notifications_read(ids=[100, 101])
+```
+
+### Live Streaming (WebSockets)
+
+```python
+import asyncio
+import websockets
+import json
+
+# Real-time financial data stream
+async def stream_financial_data():
+    uri = f"wss://api.trendsagi.com/ws/finance-live?token={API_KEY}"
     
-    print(f"Analysis completed. Key findings:")
-    print(f"- Market sentiment: {analysis.market_sentiment}")
-    print(f"- Growth trajectory: {analysis.growth_projection}")
-    print(f"- Key influencers: {', '.join(analysis.top_influencers[:3])}")
+    async with websockets.connect(uri) as websocket:
+        print("Connected to financial live stream")
+        while True:
+            message = await websocket.recv()
+            data = json.loads(message)
+            
+            if data["type"] == "new_earnings_report":
+                print(f"New earnings: {data['payload']['company']}")
+
+# Real-time trend data stream
+async def stream_trend_data():
+    # Subscribe to specific trends
+    trends = "AI,Crypto,Web3"
+    uri = f"wss://api.trendsagi.com/ws/trends-live?token={API_KEY}&trends={trends}"
     
-except exceptions.APIError as e:
-    print(f"An API error occurred: {e}")
+    async with websockets.connect(uri) as websocket:
+        print("Connected to trends live stream")
+        while True:
+            message = await websocket.recv()
+            trend_data = json.loads(message)
+            print(f"{trend_data['trend_name']}: {trend_data['volume']} posts")
+
+# Run the streams
+asyncio.run(stream_financial_data())
 ```
 
-### Track an X (Twitter) User
+## Error Handling
 
-Add a user to your tracked market entities in the Intelligence Suite.
-
-```python
-# Assuming 'client' is an initialized TrendsAGIClient
-try:
-    print("\nAdding a new X user to track...")
-    new_entity = client.create_tracked_x_user(
-        handle="OpenAI",
-        name="OpenAI",
-        notes="Key player in the AI industry."
-    )
-    print(f"Successfully started tracking '{new_entity.name}' (ID: {new_entity.id})")
-
-except exceptions.ConflictError:
-    print("This user is already being tracked.")
-except exceptions.APIError as e:
-    print(f"An API error occurred: {e}")
-```
-
-### Monitor for Crisis Events
-
-Retrieve any active crisis events detected by the system.
+The client provides specific exceptions for different error types:
 
 ```python
-# Assuming 'client' is an initialized TrendsAGIClient
-try:
-    print("\nChecking for active crisis events...")
-    crisis_response = client.get_crisis_events(status='active', limit=5)
+from trendsagi.exceptions import (
+    TrendsAGIError,          # Base exception
+    AuthenticationError,     # 401 errors
+    NotFoundError,          # 404 errors
+    RateLimitError,         # 429 errors
+    APIError               # General API errors
+)
 
-    if not crisis_response.events:
-        print("No active crisis events found.")
-    else:
-        for event in crisis_response.events:
-            print(f"- [SEVERITY: {event.severity}] {event.title}")
-            print(f"  Summary: {event.summary}\n")
-
-except exceptions.APIError as e:
-    print(f"An API error occurred: {e}")
-```
-
-## Handling Errors and Exceptions
-
-The library raises specific exceptions for different types of errors, all inheriting from `trendsagi.exceptions.TrendsAGIError`. This allows for granular error handling.
-
-- **`TrendsAGIError`**: The base exception for all library-specific errors
-- **`AuthenticationError`**: Raised on 401 errors for an invalid or missing API key
-- **`APIError`**: The base class for all non-2xx API responses
-- **`NotFoundError`**: Raised on 404 errors when a resource is not found
-- **`ConflictError`**: Raised on 409 errors, e.g., when trying to create a resource that already exists
-- **`RateLimitError`**: Raised on 429 errors when you have exceeded your API rate limit
-
-Example error handling:
-
-```python
 try:
     response = client.get_trends()
-except exceptions.AuthenticationError:
-    print("Invalid API key. Please check your credentials.")
-except exceptions.RateLimitError as e:
-    print(f"Rate limit exceeded. Retry after: {e.retry_after} seconds")
-except exceptions.NotFoundError:
-    print("The requested resource was not found.")
-except exceptions.APIError as e:
-    print(f"API error: {e.status_code} - {e.error_detail}")
-except exceptions.TrendsAGIError as e:
-    print(f"Client error: {e}")
+except AuthenticationError:
+    print("Invalid API key")
+except RateLimitError as e:
+    print(f"Rate limit hit. Retry after: {e.retry_after}s")
+except NotFoundError:
+    print("Resource not found")
+except APIError as e:
+    print(f"API error {e.status_code}: {e.error_detail}")
 ```
 
-## Advanced Usage
+## Rate Limits & Plans
 
-### Working with Pagination
+Rate limits vary by subscription plan:
 
-```python
-# Get all trends with pagination
-all_trends = []
-page = 1
-while True:
-    response = client.get_trends(page=page, limit=100)
-    all_trends.extend(response.trends)
-    
-    if page >= response.meta.total_pages:
-        break
-    page += 1
+| Plan | Default Limit | Trends List | AI Insights |
+|------|---------------|-------------|-------------|
+| Signal | No API Access | No API Access | No API Access |
+| Advantage | 300/hour | 750/hour | 200/hour |
+| Scale | 1500/hour | 1500/hour | 750/hour |
+| Enterprise | Unlimited | Unlimited | Unlimited |
 
-print(f"Retrieved {len(all_trends)} total trends")
-```
+Rate limit headers are included in responses:
+- `X-RateLimit-Limit`: Your limit
+- `X-RateLimit-Remaining`: Requests remaining  
+- `X-RateLimit-Reset`: Reset timestamp
 
-### Setting Up Alerts
+## API Documentation
 
-```python
-# Create a new trend alert
-alert = client.create_alert(
-    name="AI Technology Alert",
-    keywords=["artificial intelligence", "machine learning", "AI"],
-    threshold_volume=1000,
-    notification_method="email"
-)
-print(f"Created alert: {alert.name} (ID: {alert.id})")
-```
+For complete API reference, including all endpoints, parameters, and response schemas:
 
-### Export Data
+**[View Full API Documentation →](https://trendsagi.com/api-docs)**
 
-```python
-# Export trend data to CSV
-export_job = client.export_trends(
-    format="csv",
-    date_range="last_7_days",
-    filters={"category": "technology"}
-)
-print(f"Export job started: {export_job.job_id}")
+## Plan Features by Tier
 
-# Check export status
-status = client.get_export_status(export_job.job_id)
-if status.is_complete:
-    print(f"Export ready for download: {status.download_url}")
-```
+Different features are available based on your subscription:
 
-## Full API Documentation
-
-This library is a client for the TrendsAGI REST API. For complete details on all available API endpoints, parameters, data models, rate limits, and best practices, please refer to our official [API Documentation](https://trendsagi.com/api-docs).
-
-## Contributing
-
-Contributions are welcome! If you find a bug or have a feature request, please open an issue on our GitHub Issues page. If you'd like to contribute code, please fork the repository and open a pull request.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/trendsagi/TrendsAGI.git
-cd TrendsAGI
-
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-
-# Run linting
-flake8 trendsagi/
-mypy trendsagi/
-```
+- **All Plans**: Basic trends, user management, recommendations
+- **Advantage+**: AI insights, deep analysis, market intelligence
+- **Scale+**: Crisis monitoring, live streaming, extended history
+- **Enterprise**: Unlimited access, custom integrations
 
 ## Support
 
-
-- **API Reference**: [https://trendsagi.com/api-docs](https://trendsagi.com/api-docs)
-- **Support Email**: contact@trendsagi.com
-- **GitHub Issues**: [https://github.com/TrendsAGI/TrendsAGI/issues](https://github.com/TrendsAGI/TrendsAGI/issues)
-
+- **API Documentation**: [trendsagi.com/api-docs](https://trendsagi.com/api-docs)
+- **Support**: contact@trendsagi.com
+- **Issues**: [GitHub Issues](https://github.com/TrendsAGI/TrendsAGI/issues)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**Built with ❤️ by the TrendsAGI Team**
+MIT License - see [LICENSE](LICENSE) file for details.
