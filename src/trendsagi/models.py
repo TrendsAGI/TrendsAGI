@@ -1,3 +1,4 @@
+
 # File: trendsagi-client/trendsagi/models.py
 
 from pydantic import BaseModel, Field, HttpUrl
@@ -258,12 +259,25 @@ class MarketSentiment(OrmBaseModel):
     source_timestamp: Optional[str] = None
     created_at: datetime
 
+class ForexFactoryEvent(OrmBaseModel):
+    id: int
+    event_date: date
+    event_time: str
+    currency: str
+    impact: Optional[str] = None
+    event_name: str
+    actual: Optional[str] = None
+    forecast: Optional[str] = None
+    previous: Optional[str] = None
+    updated_at: datetime
+
 class FinancialDataResponse(OrmBaseModel):
     market_sentiment: Optional[MarketSentiment] = None
     earnings_reports: List[EarningsReport] = Field(default_factory=list)
     financial_news: List[FinancialNews] = Field(default_factory=list)
     financial_press_releases: List[FinancialPressRelease] = Field(default_factory=list)
     ipo_filings_news: List[IPONews] = Field(default_factory=list)
+    forex_factory_events: List[ForexFactoryEvent] = Field(default_factory=list) 
 
 class CombinedReleaseResponse(OrmBaseModel):
     id: str

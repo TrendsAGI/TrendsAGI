@@ -140,6 +140,16 @@ for report in financial_data.earnings_reports:
 # IPO filings
 for ipo in financial_data.ipo_filings_news:
     print(f"{ipo.company_name} IPO expected: {ipo.expected_date}")
+
+print("\n--- Economic Calendar ---")
+if financial_data.forex_factory_events:
+    for event in financial_data.forex_factory_events[:5]: 
+        print(
+            f"- {event.event_date} ({event.currency}): "
+            f"{event.event_name} (Impact: {event.impact})"
+        )
+else:
+    print("No upcoming economic events found.")
 ```
 
 ### User Management
@@ -170,16 +180,22 @@ import json
 
 # Real-time financial data stream
 async def stream_financial_data():
-    uri = f"wss://api.trendsagi.com/ws/finance-live?token={API_KEY}"
-    
-    async with websockets.connect(uri) as websocket:
-        print("Connected to financial live stream")
-        while True:
-            message = await websocket.recv()
-            data = json.loads(message)
-            
-            if data["type"] == "new_earnings_report":
-                print(f"New earnings: {data['payload']['company']}")
+    print("\nConnecting to financial live stream...")
+    async for message in client.finance_stream():
+        data = json.loads(message)
+        
+        event_type = data.get("type", "unknown")
+        payload = data.get("payload", {})
+        
+        if "earnings_report" in event_type:
+            print(f"  [EARNINGS] {payload.get('company')}: {payload.get('period')}")
+        elif "forex_event" in event_type:
+            print(
+                f"  [CALENDAR] {payload.get('currency')} - "
+                f"{payload.get('event_name')} (Impact: {payload.get('impact')})"
+            )
+        else:
+            print(f"  [{event_type.upper()}] Received event.")
 
 # Real-time trend data stream
 async def stream_trend_data():
