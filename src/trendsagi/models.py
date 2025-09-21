@@ -1,4 +1,3 @@
-
 # File: trendsagi-client/trendsagi/models.py
 
 from pydantic import BaseModel, Field, HttpUrl
@@ -211,8 +210,6 @@ class CrisisEventListResponse(OrmBaseModel):
     events: List[CrisisEvent]
     meta: PaginationMeta
 
-# --- DELETED: Deep Analysis models removed from the client ---
-
 # --- Financial Data Models ---
 class FinancialNews(OrmBaseModel):
     id: int
@@ -259,10 +256,10 @@ class MarketSentiment(OrmBaseModel):
     source_timestamp: Optional[str] = None
     created_at: datetime
 
+
 class ForexFactoryEvent(OrmBaseModel):
     id: int
-    event_date: date
-    event_time: str
+    event_at: datetime  
     currency: str
     impact: Optional[str] = None
     event_name: str
@@ -270,6 +267,7 @@ class ForexFactoryEvent(OrmBaseModel):
     forecast: Optional[str] = None
     previous: Optional[str] = None
     updated_at: datetime
+# --- MODIFICATION END ---
 
 class FinancialDataResponse(OrmBaseModel):
     market_sentiment: Optional[MarketSentiment] = None

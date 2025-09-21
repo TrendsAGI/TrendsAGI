@@ -144,8 +144,9 @@ for ipo in financial_data.ipo_filings_news:
 print("\n--- Economic Calendar ---")
 if financial_data.forex_factory_events:
     for event in financial_data.forex_factory_events[:5]: 
+        event_time_str = event.event_at.strftime('%Y-%m-%d %H:%M UTC')
         print(
-            f"- {event.event_date} ({event.currency}): "
+            f"- {event_time_str} ({event.currency}): "
             f"{event.event_name} (Impact: {event.impact})"
         )
 else:
@@ -174,9 +175,6 @@ client.mark_notifications_read(ids=[100, 101])
 ### Live Streaming (WebSockets)
 
 ```python
-import asyncio
-import websockets
-import json
 
 # Real-time financial data stream
 async def stream_financial_data():
@@ -191,9 +189,11 @@ async def stream_financial_data():
             print(f"  [EARNINGS] {payload.get('company')}: {payload.get('period')}")
         elif "forex_event" in event_type:
             print(
-                f"  [CALENDAR] {payload.get('currency')} - "
+                f"  [CALENDAR] {payload.get('event_at')} "
+                f"({payload.get('currency')}) - "
                 f"{payload.get('event_name')} (Impact: {payload.get('impact')})"
             )
+        # --- MODIFICATION END ---
         else:
             print(f"  [{event_type.upper()}] Received event.")
 
