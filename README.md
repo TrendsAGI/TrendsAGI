@@ -125,6 +125,21 @@ for event in events.events:
 
 ### Financial Intelligence
 
+Get consolidated financial data, with event times automatically localized to your timezone. The timezone parameter accepts any standard IANA timezone name. If the parameter is omitted, all times will be returned in UTC.
+
+Common Timezone Examples:
+London: "Europe/London"
+Berlin: "Europe/Berlin"
+Paris: "Europe/Paris"
+New York: "America/New_York"
+Tokyo: "Asia/Tokyo"
+Hong Kong: "Asia/Hong_Kong"
+Singapore: "Asia/Singapore"
+Sydney: "Australia/Sydney"
+UTC: "UTC"
+
+Complete list available here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+
 ```python
 # Get financial data with times converted to German time (Europe/Berlin) - Example
 financial_data = client.get_financial_data(timezone="Europe/Berlin")
