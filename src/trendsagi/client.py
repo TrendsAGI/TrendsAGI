@@ -285,14 +285,21 @@ class TrendsAGIClient:
         response_data = self._request('POST', f'/api/intelligence/crisis-events/{event_id}/action', json={"action": action})
         return models.CrisisEvent.model_validate(response_data)
 
-    # --- DELETED: Deep Analysis methods removed from the client ---
-        
-    def get_financial_data(self) -> models.FinancialDataResponse:
+    # --- START OF CORRECTED METHOD ---
+    def get_financial_data(self, timezone: Optional[str] = None) -> models.FinancialDataResponse:
         """
         Retrieves a consolidated report of the latest financial data.
+        
+        :param timezone: Optional. An IANA timezone name (e.g., 'Europe/London') to convert event times to.
+                         Defaults to UTC if not provided.
         """
-        response_data = self._request('GET', '/api/intelligence/financial-data')
+        params = {}
+        if timezone:
+            params['timezone'] = timezone
+            
+        response_data = self._request('GET', '/api/intelligence/financial-data', params=params)
         return models.FinancialDataResponse.model_validate(response_data)
+ 
 
     # --- User & Account Management Methods (Non-sensitive) ---
 

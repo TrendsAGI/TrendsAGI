@@ -126,27 +126,27 @@ for event in events.events:
 ### Financial Intelligence
 
 ```python
-# Get consolidated financial data
-financial_data = client.get_financial_data()
+# Get financial data with times converted to German time (Europe/Berlin) - Example
+financial_data = client.get_financial_data(timezone="Europe/Berlin")
 
 # Market sentiment
 if financial_data.market_sentiment:
-    print(f"Market: {financial_data.market_sentiment.sentiment_label}")
+    print(f"Market: {financial_data.market_sentiment.sentiment}")
 
 # Recent earnings reports
 for report in financial_data.earnings_reports:
-    print(f"{report.company_name}: EPS {report.eps_actual} vs {report.eps_estimate}")
+    print(f"{report.company}: EPS {report.earnings_per_share}")
 
 # IPO filings
 for ipo in financial_data.ipo_filings_news:
-    print(f"{ipo.company_name} IPO expected: {ipo.expected_date}")
+    print(f"{ipo.company} IPO expected: {ipo.expected_trade_date}")
 
-print("\n--- Economic Calendar ---")
+# The event times will now be localized to the requested timezone.
+print("\n--- Economic Calendar (Times for Europe/Berlin) ---")
 if financial_data.forex_factory_events:
     for event in financial_data.forex_factory_events[:5]: 
-        event_time_str = event.event_at.strftime('%Y-%m-%d %H:%M UTC')
         print(
-            f"- {event_time_str} ({event.currency}): "
+            f"- {event.event_date} {event.event_time} ({event.currency}): "
             f"{event.event_name} (Impact: {event.impact})"
         )
 else:

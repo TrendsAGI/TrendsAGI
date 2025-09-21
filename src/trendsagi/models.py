@@ -267,7 +267,13 @@ class ForexFactoryEvent(OrmBaseModel):
     forecast: Optional[str] = None
     previous: Optional[str] = None
     updated_at: datetime
-# --- MODIFICATION END ---
+    @property
+    def event_date(self) -> str:
+        return self.event_at.strftime('%Y-%m-%d')
+
+    @property
+    def event_time(self) -> str:
+        return self.event_at.strftime('%H:%M:%S %Z') 
 
 class FinancialDataResponse(OrmBaseModel):
     market_sentiment: Optional[MarketSentiment] = None
