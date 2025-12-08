@@ -200,60 +200,6 @@ class TrendsAGIClient:
         response_data = self._request('POST', f'/api/intelligence/recommendations/{recommendation_id}/action', json=payload)
         return models.Recommendation.model_validate(response_data)
 
-    def get_tracked_x_users(self, q: Optional[str] = None, min_followers: Optional[int] = None, sort_by: str = 'name_asc') -> models.MarketEntityListResponse:
-        """
-        Get a list of tracked X Users.
-        """
-        params = {"q": q, "min_followers": min_followers, "sort_by": sort_by}
-        params = {k: v for k, v in params.items() if v is not None}
-        response_data = self._request('GET', '/api/intelligence/market/x-users', params=params)
-        return models.MarketEntityListResponse.model_validate(response_data)
-
-    def get_tracked_x_user(self, entity_id: int) -> models.MarketEntity:
-        """
-        Retrieve a single tracked X User by their unique entity ID.
-        """
-        response_data = self._request('GET', f'/api/intelligence/market/x-users/{entity_id}')
-        return models.MarketEntity.model_validate(response_data)
-
-    def create_tracked_x_user(self, handle: str, name: Optional[str] = None, description: Optional[str] = None, notes: Optional[str] = None) -> models.MarketEntity:
-        """
-        Add a new X User to track.
-        """
-        payload = {"handle": handle, "name": name, "description": description, "notes": notes}
-        payload = {k: v for k, v in payload.items() if v is not None}
-        response_data = self._request('POST', '/api/intelligence/market/x-users', json=payload)
-        return models.MarketEntity.model_validate(response_data)
-        
-    def update_tracked_x_user(self, entity_id: int, updates: Dict[str, Any]) -> models.MarketEntity:
-        """
-        Update details of a tracked X User.
-        """
-        response_data = self._request('PUT', f'/api/intelligence/market/x-users/{entity_id}', json=updates)
-        return models.MarketEntity.model_validate(response_data)
-
-    def delete_tracked_x_user(self, entity_id: int) -> None:
-        """Stop tracking an X User."""
-        self._request('DELETE', f'/api/intelligence/market/x-users/{entity_id}')
-    
-    def refresh_x_user_analysis(self, entity_id: int, force_refresh: bool = False) -> models.MarketEntityRefreshResponse:
-        """
-        Forces a new AI-powered analysis of a tracked X User's recent activity.
-        This is useful for getting the most up-to-date summary on demand.
-
-        :param entity_id: The ID of the X User entity to refresh.
-        :param force_refresh: Bypasses the cache to generate a new summary. 
-                              Using true may consume a daily credit.
-        :return: An object containing the updated entity and usage information.
-        """
-        payload = {"force_refresh": force_refresh}
-        response_data = self._request(
-            'POST', 
-            f'/api/intelligence/market/x-users/{entity_id}/refresh-analysis', 
-            json=payload
-        )
-        return models.MarketEntityRefreshResponse.model_validate(response_data)
-
     def get_crisis_events(
         self,
         limit: int = 10, offset: int = 0, status: str = 'active', keyword: Optional[str] = None,

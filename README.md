@@ -10,7 +10,6 @@ The official Python client for [TrendsAGI](https://trendsagi.com). Designed to p
 
 - **Agentic Context**: Inject real-time trend and financial data into your agent's context window.
 - **Active Research**: Trigger AI-powered deep dives and insight generation on-demand.
-- **Monitoring & Alerts**: Track specific X (Twitter) users and receive crisis alerts.
 - **Actionable Intelligence**: Retrieve and act on high-priority recommendations.
 - **Live Streaming**: WebSocket support for real-time financial and trend events.
 - **Type-Safe**: Complete Pydantic models for robust agent integration.
@@ -84,19 +83,7 @@ else:
     print(f"Audience: {insights.content_brief.target_audience_segments}")
 ```
 
-### 3. Monitoring (X/Twitter)
-Track key opinion leaders or entities relevant to your agent's goal.
-
-```python
-# Add a user to the monitoring list
-user = client.create_tracked_x_user(handle="elonmusk", notes="Monitor for tech announcements")
-
-# Force a refresh of the analysis (consuming a credit) if critical
-fresh_analysis = client.refresh_x_user_analysis(entity_id=user.id, force_refresh=True)
-print(f"Latest breakdown: {fresh_analysis.entity.recent_post_analysis.summary}")
-```
-
-### 4. Action & Recommendations
+### 3. Action & Recommendations
 The system generates high-level strategy recommendations that your agent can process and execute.
 
 ```python
