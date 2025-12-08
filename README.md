@@ -141,15 +141,16 @@ except exceptions.AuthenticationError:
     print("Check your API Key")
 ```
 
-## Rate Limits
+## Base Rate Limits
 
 Responses include `X-RateLimit-*` headers.
+Not including usage based limits.
 
 | Plan | API Access | Daily Calls (Approx) | Live Streaming |
 |------|------------|----------------------|----------------|
-| **Signal** | ❌ No | - | ❌ |
+| **Signal** | ✅ Yes | 100 | ❌ |
 | **Advantage** | ✅ Yes | ~10k | ❌ |
-| **Scale** | ✅ Yes | ~25k | ✅ Available |
+| **Scale** | ✅ Yes | ~100k | ✅ Available |
 | **Enterprise** | ✅ Yes | Unlimited | ✅ Available |
 
 ## Support & Resources
