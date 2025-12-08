@@ -4,16 +4,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
 
-The official Python client for the [TrendsAGI API](https://trendsagi.com), providing access to real-time trend data, AI-powered insights, market intelligence, and live streaming capabilities.
+The official Python client for [TrendsAGI](https://trendsagi.com). Designed to power AI agents with real-time market intelligence, trend contexts, and actionable insights.
 
 ## Features
 
-- **Trends & Insights**: Real-time trend data with analytics (volume, velocity, stability)
-- **AI-Powered Analysis**: Deep insights, sentiment analysis, and content recommendations
-- **Intelligence Suite**: Market tracking, crisis monitoring, custom reports, and recommendations
-- **Live Streaming**: WebSocket connections for real-time financial and trend data
-- **User Management**: Topic interests, notifications, and alert configuration
-- **Full Type Support**: Complete Pydantic models with IDE autocompletion
+- **Agentic Context**: Inject real-time trend and financial data into your agent's context window.
+- **Active Research**: Trigger AI-powered deep dives and insight generation on-demand.
+- **Monitoring & Alerts**: Track specific X (Twitter) users and receive crisis alerts.
+- **Actionable Intelligence**: Retrieve and act on high-priority recommendations.
+- **Live Streaming**: WebSocket support for real-time financial and trend events.
+- **Type-Safe**: Complete Pydantic models for robust agent integration.
 
 ## Installation
 
@@ -21,316 +21,156 @@ The official Python client for the [TrendsAGI API](https://trendsagi.com), provi
 pip install trendsagi
 ```
 
-## Quick Start
+## Quick Start: Agent Context Check
+
+Give your agent immediate awareness of the current market landscape.
 
 ```python
 import os
 from trendsagi import TrendsAGIClient, APIError
 
-# Load API key from environment variable (recommended)
+# Load API key
 client = TrendsAGIClient(api_key=os.getenv("TRENDSAGI_API_KEY"))
 
 try:
-    # Get trending topics with new analytics
+    # 1. Get Top Trends Context
     trends = client.get_trends(limit=5, period='24h')
-    
+    print("--- Current Top Trends ---")
     for trend in trends.trends:
-        print(f"Trend: {trend.name}")
-        print(f"  Volume: {trend.volume}")
-        print(f"  Overall Trend: {trend.overall_trend}")
-        print(f"  Avg Velocity: {trend.average_velocity:.2f} posts/hr")
-        print(f"  Stability: {trend.trend_stability:.2f}")
-        
+        print(f"{trend.name}: Vol={trend.volume}, Velocity={trend.average_velocity:.1f}/hr")
+
+    # 2. Get Financial Context (Localized)
+    finance = client.get_financial_data(timezone="America/New_York")
+    print(f"\n--- Market Sentiment: {finance.market_sentiment.sentiment} ---")
+    
 except APIError as e:
-    print(f"API Error ({e.status_code}): {e.error_detail}")
+    print(f"Error: {e.error_detail}")
 ```
 
-## Core Functionality
+## Agentic Workflows
 
-### Trends & Analytics
+TrendsAGI is built to support the **Context -> Research -> Action** loop for autonomous agents.
+
+### 1. Context & Discovery
+Equip your agent to "see" what is happening right now.
 
 ```python
-# Find trends about AI and get detailed information
+# Search for specific topic contexts
 ai_trends = client.get_trends(search="artificial intelligence", limit=3)
 
+# Get detailed analytics for a specific trend to understand stability
 if ai_trends.trends:
-    trend = ai_trends.trends[0]  # Get the top AI trend
-    print(f"Working with trend: {trend.name}")
-    
-    # Get detailed trend information
-    trend_details = client.get_trend_details(trend_id=trend.id)
-    print(f"Category: {trend_details.category}")
-    print(f"Sample tweets: {len(trend_details.tweets)}")
-    
-    # Get historical analytics for this trend
-    analytics = client.get_trend_analytics(trend_id=trend.id, period="7d")
-    print(f"Analytics over {len(analytics.data)} data points")
-    
-    # Get AI insights for this trend
-    insights = client.get_ai_insights(trend_id=trend.id)
-    print(f"Sentiment: {insights.sentiment_category}")
-    print(f"Key Themes: {insights.key_themes}")
+    trend_id = ai_trends.trends[0].id
+    analytics = client.get_trend_analytics(trend_id=trend_id, period="7d")
+    print(f"Analaryzing trend stability: {len(analytics.data)} data points")
 ```
 
-### Intelligence Suite
+### 2. Deep Research
+Agents can request deeper analysis when they spot something interesting.
 
 ```python
-# Search trends by AI-generated insights
-results = client.search_insights(
-    key_theme_contains="sustainability",
-    sentiment_category="positive"
-)
+# Check if insights already exist
+insights = client.get_ai_insights(trend_id=trend_id)
 
-# Generate custom reports
-report = client.generate_custom_report({
-    "dimensions": ["trend_category"],
-    "metrics": ["sum_volume"],
-    "time_period": "7d"
-})
-
-# Get actionable recommendations
-recommendations = client.get_recommendations(priority="high")
-for rec in recommendations.recommendations:
-    print(f"- {rec.title}")
-
-# Track X (Twitter) users
-user = client.create_tracked_x_user(
-    handle="elonmusk",
-    name="Elon Musk",
-    notes="Tech industry leader"
-)
-
-# Refresh user analysis
-analysis = client.refresh_x_user_analysis(
-    entity_id=user.id, 
-    force_refresh=True
-)
-print(f"Latest analysis: {analysis.entity.recent_post_analysis.summary}")
-```
-
-### Deep Analysis & Crisis Monitoring
-
-```python
-# Perform deep AI analysis on any topic
-analysis = client.perform_deep_analysis(
-    query="What are the primary concerns about AI in healthcare for 2025?"
-)
-print(analysis.executive_summary_and_key_findings.summary)
-
-# Monitor crisis events
-events = client.get_crisis_events(status="active")
-for event in events.events:
-    print(f"[{event.severity.upper()}] {event.title}")
-```
-
-### Financial Intelligence
-
-Get consolidated financial data, with event times automatically localized to your timezone. The timezone parameter accepts any standard IANA timezone name. If the parameter is omitted, all times will be returned in UTC.
-
-Common Timezone Examples:
-London: "Europe/London"
-Berlin: "Europe/Berlin"
-Paris: "Europe/Paris"
-New York: "America/New_York"
-Tokyo: "Asia/Tokyo"
-Hong Kong: "Asia/Hong_Kong"
-Singapore: "Asia/Singapore"
-Sydney: "Australia/Sydney"
-UTC: "UTC"
-
-Complete list available here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-
-```python
-# Get financial data with times converted to German time (Europe/Berlin) - Example
-financial_data = client.get_financial_data(timezone="Europe/Berlin")
-
-# Market sentiment
-if financial_data.market_sentiment:
-    print(f"Market: {financial_data.market_sentiment.sentiment}")
-
-# Recent earnings reports
-for report in financial_data.earnings_reports:
-    print(f"{report.company}: EPS {report.earnings_per_share}")
-
-# IPO filings
-for ipo in financial_data.ipo_filings_news:
-    print(f"{ipo.company} IPO expected: {ipo.expected_trade_date}")
-
-# The event times will now be localized to the requested timezone.
-print("\n--- Economic Calendar (Times for Europe/Berlin) ---")
-if financial_data.forex_factory_events:
-    for event in financial_data.forex_factory_events[:5]: 
-        print(
-            f"- {event.event_date} {event.event_time} ({event.currency}): "
-            f"{event.event_name} (Impact: {event.impact})"
-        )
+if not insights:
+    # Trigger an asynchronous research task
+    task = client.generate_ai_insights(trend_id=trend_id)
+    print(f"Research task started: {task.task_id}")
+    
+    # In a real agent loop, you would poll this status or use a callback
+    # status = client.get_insight_generation_status(task.task_id)
 else:
-    print("No upcoming economic events found.")
+    print(f"Key Themes: {insights.key_themes}")
+    print(f"Audience: {insights.content_brief.target_audience_segments}")
 ```
 
-### User Management
+### 3. Monitoring (X/Twitter)
+Track key opinion leaders or entities relevant to your agent's goal.
 
 ```python
-# Create topic interest with alerts
-interest = client.create_topic_interest(
-    keyword="artificial intelligence",
-    alert_condition_type="volume_threshold",
-    volume_threshold_value=5000,
-    send_email_alerts=True
-)
+# Add a user to the monitoring list
+user = client.create_tracked_x_user(handle="elonmusk", notes="Monitor for tech announcements")
 
-# Get recent notifications
-notifications = client.get_recent_notifications(limit=10)
-print(f"Unread: {notifications.unread_count}")
-
-# Mark notifications as read
-client.mark_notifications_read(ids=[100, 101])
+# Force a refresh of the analysis (consuming a credit) if critical
+fresh_analysis = client.refresh_x_user_analysis(entity_id=user.id, force_refresh=True)
+print(f"Latest breakdown: {fresh_analysis.entity.recent_post_analysis.summary}")
 ```
 
-### Live Streaming (WebSockets)
+### 4. Action & Recommendations
+The system generates high-level strategy recommendations that your agent can process and execute.
 
 ```python
+# Get high-priority actions
+recs = client.get_recommendations(priority="high", status="new")
 
-# Real-time financial data stream
-async def stream_financial_data():
-    print("\nConnecting to financial live stream...")
-    async for message in client.finance_stream():
-        data = json.loads(message)
-        
-        event_type = data.get("type", "unknown")
-        payload = data.get("payload", {})
-        
-        if "earnings_report" in event_type:
-            print(f"  [EARNINGS] {payload.get('company')}: {payload.get('period')}")
-        elif "forex_event" in event_type:
-            print(
-                f"  [CALENDAR] {payload.get('event_at')} "
-                f"({payload.get('currency')}) - "
-                f"{payload.get('event_name')} (Impact: {payload.get('impact')})"
-            )
-        # --- MODIFICATION END ---
-        else:
-            print(f"  [{event_type.upper()}] Received event.")
-
-# Real-time trend data stream
-async def stream_trend_data():
-    # Subscribe to specific trends
-    trends = "AI,Crypto,Web3"
-    uri = f"wss://api.trendsagi.com/ws/trends-live?token={API_KEY}&trends={trends}"
+for rec in recs.recommendations:
+    print(f"Action: {rec.title} (Type: {rec.type})")
     
-    async with websockets.connect(uri) as websocket:
-        print("Connected to trends live stream")
-        while True:
-            message = await websocket.recv()
-            trend_data = json.loads(message)
-            print(f"{trend_data['trend_name']}: {trend_data['volume']} posts")
+    # Agent decides to execute the action...
+    # ... execution logic here ...
+    
+    # Report back to the system
+    client.perform_recommendation_action(
+        recommendation_id=rec.id, 
+        action="completed", 
+        feedback="Agent generated content based on this recommendation."
+    )
+```
 
-# Run the streams
-asyncio.run(stream_financial_data())
+## Real-Time Streaming
+
+For agents that need to react instantly to market moves.
+
+```python
+import asyncio
+
+async def watch_market():
+    # Connect to the financial data stream
+    print("Listening for market events...")
+    async for message in client.finance_stream():
+        # 'message' is a JSON string
+        print(f"Event: {message}")
+
+async def watch_trends():
+    # Track specific topics
+    print("Tracking AI trends...")
+    async for message in client.trends_stream(trend_names=["AI", "LLMs"]):
+        print(f"Trend Update: {message}")
+
+# Run within your async event loop
+# asyncio.run(watch_market())
 ```
 
 ## Error Handling
 
-The client provides specific exceptions for different error types:
-
 ```python
-from trendsagi.exceptions import (
-    TrendsAGIError,          # Base exception
-    AuthenticationError,     # 401 errors
-    NotFoundError,          # 404 errors
-    RateLimitError,         # 429 errors
-    APIError               # General API errors
-)
+from trendsagi import exceptions
 
 try:
-    response = client.get_trends()
-except AuthenticationError:
-    print("Invalid API key")
-except RateLimitError as e:
-    print(f"Rate limit hit. Retry after: {e.retry_after}s")
-except NotFoundError:
-    print("Resource not found")
-except APIError as e:
-    print(f"API error {e.status_code}: {e.error_detail}")
+    client.get_trends()
+except exceptions.RateLimitError as e:
+    print(f"Slow down! Retry in {e.retry_after}s") # Handle backoff
+except exceptions.AuthenticationError:
+    print("Check your API Key")
 ```
 
-## Rate Limits & Plans
+## Rate Limits
 
-Rate limits vary by subscription plan and endpoint type. The system uses endpoint-specific limits optimized for different use cases.
+Responses include `X-RateLimit-*` headers.
 
-| Endpoint Category | Signal | Advantage | Scale | Enterprise |
-|-------------------|--------|-----------|-------|------------|
-| **API Access** | ❌ Not Available | ✅ Available | ✅ Available | ✅ Available |
-| **General API Calls** | - | 300/hour | 1,500/hour | Unlimited |
-| **Trends List** | - | 750/hour | 1,500/hour | Unlimited |
-| **AI Insights Search** | - | 200/hour | 750/hour | Unlimited |
-| **Analytics** | - | 300/hour | 1,500/hour | Unlimited |
-| **Dashboard** | 180/hour | 360/hour | 720/hour | Unlimited |
-| **Login/Auth** | 30/hour | 75/hour | 150/hour | Unlimited |
-| **Intelligence Features** | - | 300/hour | 1,000/hour | Unlimited |
-| **Financial Data** | - | 120/hour | 600/hour | Unlimited |
-| **User Management** | 300/hour | 600/hour | 1,000/hour | Unlimited |
-| **Live Streaming** | ❌ | ❌ | ✅ Available | ✅ Available |
+| Plan | API Access | Daily Calls (Approx) | Live Streaming |
+|------|------------|----------------------|----------------|
+| **Signal** | ❌ No | - | ❌ |
+| **Advantage** | ✅ Yes | ~10k | ❌ |
+| **Scale** | ✅ Yes | ~25k | ✅ Available |
+| **Enterprise** | ✅ Yes | Unlimited | ✅ Available |
 
-### Rate Limit Headers
+## Support & Resources
 
-All API responses include rate limit information:
-- `X-RateLimit-Limit`: Your current limit for this endpoint
-- `X-RateLimit-Remaining`: Requests remaining in current window
-- `X-RateLimit-Reset`: Unix timestamp when the limit resets
-
-## API Documentation
-
-For complete API reference, including all endpoints, parameters, and response schemas:
-
-**[View Full API Documentation →](https://trendsagi.com/api-docs)**
-
-## Plan Features by Tier
-
-Different features are available based on your subscription:
-
-### Signal Plan
-- Basic trends access via web dashboard
-- Limited history (7 days)
-- 5 topic interests
-- Basic reporting (10K row limit)
-- CSV exports only
-
-### Advantage Plan
-- Full API access (10K calls/day)
-- 30-day history
-- 25 topic interests  
-- Advanced insights and search
-- Priority support
-- Unlimited reporting rows
-- 100 deep analysis queries/day
-
-### Scale Plan
-- Enhanced API access (25K calls/day)
-- 90-day history
-- 100 topic interests
-- Crisis monitoring
-- Live streaming access
-- Cloud exports
-- Slack notifications
-- Video generation
-- 1,000 deep analysis queries/day
-
-### Enterprise Plan
-- Unlimited API access
-- Unlimited history
-- Unlimited topic interests
-- Custom integrations
-- Dedicated support & SLA
-- All premium features
-- Unlimited deep analysis
-
-## Support
-
-- **API Documentation**: [trendsagi.com/api-docs](https://trendsagi.com/api-docs)
-- **Support**: contact@trendsagi.com
+- **Full API Docs**: [trendsagi.com/api-docs](https://trendsagi.com/api-docs)
 - **Issues**: [GitHub Issues](https://github.com/TrendsAGI/TrendsAGI/issues)
+- **Contact**: contact@trendsagi.com
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.

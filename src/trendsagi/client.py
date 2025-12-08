@@ -285,7 +285,6 @@ class TrendsAGIClient:
         response_data = self._request('POST', f'/api/intelligence/crisis-events/{event_id}/action', json={"action": action})
         return models.CrisisEvent.model_validate(response_data)
 
-    # --- START OF CORRECTED METHOD ---
     def get_financial_data(self, timezone: Optional[str] = None) -> models.FinancialDataResponse:
         """
         Retrieves a consolidated report of the latest financial data.
