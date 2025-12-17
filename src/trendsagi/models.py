@@ -1,3 +1,5 @@
+# File: trendsagi-client/trendsagi/models.py
+
 from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Any, Dict
 from datetime import datetime, date
@@ -56,26 +58,7 @@ class TrendItem(OrmBaseModel):
 
 class TrendListResponse(OrmBaseModel):
     trends: List[TrendItem]
-    meta: PaginationMeta
-    
-class PostAuthor(OrmBaseModel):
-    """Author of a post."""
-    id: int
-    user_id: int
-    screen_name: str
-    name: Optional[str] = None
-
-class Post(OrmBaseModel):
-    """A single post associated with a trend."""
-    id: int
-    post_id: int
-    text: str
-    created_at: datetime
-    author: Optional[PostAuthor] = None
-
-class TrendDetail(TrendItem):
-    """Detailed trend info including associated posts."""
-    posts: List[Post] = Field(default_factory=list) 
+    meta: PaginationMeta 
 
 class TrendDataPoint(OrmBaseModel):
     date: datetime

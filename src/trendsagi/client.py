@@ -1,3 +1,5 @@
+# File: trendsagi-client/trendsagi/client.py
+
 import re
 import requests
 import asyncio
@@ -91,13 +93,6 @@ class TrendsAGIClient:
         params = {k: v for k, v in locals().items() if v is not None and k != 'self'}
         response_data = self._request('GET', '/api/trends', params=params)
         return models.TrendListResponse.model_validate(response_data)
-        
-    def get_trend_details(self, trend_id: int) -> models.TrendDetail:
-        """
-        Retrieve detailed information for a single trend, including associated posts.
-        """
-        response_data = self._request('GET', f'/api/trends/{trend_id}')
-        return models.TrendDetail.model_validate(response_data)
 
     def get_trend_analytics(self, trend_id: int, period: str = '7d', start_date: Optional[str] = None, end_date: Optional[str] = None) -> models.TrendAnalytics:
         """
