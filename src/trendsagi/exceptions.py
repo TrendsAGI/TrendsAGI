@@ -1,5 +1,5 @@
 class TrendsAGIError(Exception):
-    \"\"\"Base exception for the TrendsAGI SDK. All API errors inherit from this class.\"\"\"
+    """Base exception for the TrendsAGI SDK. All API errors inherit from this class."""
     pass
 
 class AuthenticationError(TrendsAGIError):
