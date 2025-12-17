@@ -1,5 +1,3 @@
-# File: trendsagi-client/trendsagi/models.py
-
 from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Any, Dict
 from datetime import datetime, date
@@ -59,18 +57,6 @@ class TrendListResponse(OrmBaseModel):
     trends: List[TrendItem]
     meta: PaginationMeta
     
-class TweetUser(OrmBaseModel):
-    id: int
-    user_id: int
-    screen_name: str
-    name: Optional[str] = None
-
-class Tweet(OrmBaseModel):
-    id: int
-    tweet_id: int
-    text: str
-    created_at: datetime
-    user: Optional[TweetUser] = None
 
 class TrendDetail(TrendItem):
     tweets: List[Tweet] = Field(default_factory=list)
@@ -159,39 +145,11 @@ class RecommendationListResponse(OrmBaseModel):
     recommendations: List[Recommendation]
     meta: PaginationMeta
 
-class RecentPostAnalysis(OrmBaseModel):
-    summary: Optional[str] = None
-    key_takeaways: List[str] = Field(default_factory=list)
-    sentiment: Optional[str] = None
-    post_url: Optional[HttpUrl] = None
-    error: Optional[str] = None
-
-class MarketEntity(OrmBaseModel):
-    id: int
-    user_id: int
-    name: Optional[str] = None
-    handle: str
-    website: Optional[HttpUrl] = None
-    description: Optional[str] = None
-    notes: Optional[str] = None
-    followers_count: Optional[int] = None
-    overall_sentiment: Optional[str] = None
-    last_post_analyzed_at: Optional[datetime] = None
-    recent_post_analysis_json: Optional[RecentPostAnalysis] = None
-    created_at: datetime
-    updated_at: datetime
-    
-class MarketEntityListResponse(OrmBaseModel):
-    items: List[MarketEntity]
-    usage_info: 'UsageInfo'
+# --- Intelligence Models ---
 
 class UsageInfo(OrmBaseModel):
     count: int
     limit: int
-
-class MarketEntityRefreshResponse(OrmBaseModel):
-    entity: MarketEntity
-    usage_info: UsageInfo
 
 class CrisisEvent(OrmBaseModel):
     id: int

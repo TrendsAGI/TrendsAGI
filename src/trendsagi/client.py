@@ -1,5 +1,6 @@
 # File: trendsagi-client/trendsagi/client.py
 
+import re
 import requests
 import asyncio
 import websockets
@@ -8,9 +9,24 @@ from typing import Optional, List, Dict, Any, AsyncGenerator
 from . import models
 from . import exceptions
 
+
+def _strip_html(text: str) -> str:
+    """Remove HTML tags from error responses to return clean, parseable messages."""
+    if not text:
+        return text
+    # Remove HTML tags
+    clean = re.sub(r'<[^>]+>', '', text)
+    # Normalize whitespace
+    clean = ' '.join(clean.split())
+    return clean.strip() if clean else text
+
 class TrendsAGIClient:
     """
-    The main client for interacting with the TrendsAGI API.
+    Python SDK for the TrendsAGI Real-Time Context Layer.
+    
+    Provides AI agents with structured access to live trend data, financial intelligence,
+    and actionable insights via REST and WebSocket APIs. Designed for seamless integration
+    into agent workflows and autonomous systems.
     
     :param api_key: Your TrendsAGI API key, generated from your profile page.
     :param base_url: The base URL of the TrendsAGI API. Defaults to the production URL.
@@ -43,7 +59,8 @@ class TrendsAGIClient:
             try:
                 error_detail = response.json().get('detail', response.text)
             except requests.exceptions.JSONDecodeError:
-                error_detail = response.text
+                # Strip HTML from error responses for cleaner agent consumption
+                error_detail = _strip_html(response.text)
                 
             if response.status_code == 401:
                 raise exceptions.AuthenticationError(error_detail)

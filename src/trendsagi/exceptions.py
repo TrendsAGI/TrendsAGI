@@ -1,7 +1,7 @@
 # File: trendsagi-client/trendsagi/exceptions.py
 
 class TrendsAGIError(Exception):
-    """Base exception for the TrendsAGI client library."""
+    \"\"\"Base exception for the TrendsAGI SDK. All API errors inherit from this class.\"\"\"
     pass
 
 class AuthenticationError(TrendsAGIError):
