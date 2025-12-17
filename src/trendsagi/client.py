@@ -12,9 +12,7 @@ def _strip_html(text: str) -> str:
     """Remove HTML tags from error responses to return clean, parseable messages."""
     if not text:
         return text
-    # Remove HTML tags
     clean = re.sub(r'<[^>]+>', '', text)
-    # Normalize whitespace
     clean = ' '.join(clean.split())
     return clean.strip() if clean else text
 
@@ -57,7 +55,6 @@ class TrendsAGIClient:
             try:
                 error_detail = response.json().get('detail', response.text)
             except requests.exceptions.JSONDecodeError:
-                # Strip HTML from error responses for cleaner agent consumption
                 error_detail = _strip_html(response.text)
                 
             if response.status_code == 401:
@@ -97,7 +94,7 @@ class TrendsAGIClient:
         
     def get_trend_details(self, trend_id: int) -> models.TrendDetail:
         """
-        Retrieve detailed information for a single trend, including associated tweets.
+        Retrieve detailed information for a single trend, including associated posts.
         """
         response_data = self._request('GET', f'/api/trends/{trend_id}')
         return models.TrendDetail.model_validate(response_data)
@@ -261,7 +258,7 @@ class TrendsAGIClient:
         return models.FinancialDataResponse.model_validate(response_data)
  
 
-    # --- User & Account Management Methods (Non-sensitive) ---
+    # --- User & Account Management Methods ---
 
     def get_topic_interests(self) -> List[models.TopicInterest]:
         """Retrieve the list of topic interests tracked by the user."""
@@ -359,7 +356,6 @@ class TrendsAGIClient:
         Retrieves a curated list of recent financial events for public display.
         This endpoint is unauthenticated on the backend.
         """
-        # Note: This method temporarily removes the API key for this specific public call.
         original_key = self._session.headers.pop("X-API-Key", None)
         try:
             response_data = self._request('GET', '/api/v1/public/homepage-financial-data')
@@ -399,7 +395,6 @@ class TrendsAGIClient:
         if not api_key:
             raise exceptions.AuthenticationError("No API key found in session headers")
         
-        # Add API key as query parameter (most common WebSocket auth method)
         separator = "&" if "?" in full_url else "?"
         auth_url = f"{full_url}{separator}token={api_key}"
         
