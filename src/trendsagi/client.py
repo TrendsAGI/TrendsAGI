@@ -1,5 +1,3 @@
-# File: trendsagi-client/trendsagi/client.py
-
 import re
 import requests
 import asyncio

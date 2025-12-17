@@ -57,7 +57,6 @@ class TrendListResponse(OrmBaseModel):
     trends: List[TrendItem]
     meta: PaginationMeta
     
-
 class TrendDetail(TrendItem):
     tweets: List[Tweet] = Field(default_factory=list)
 
