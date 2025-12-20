@@ -65,25 +65,47 @@ if ai_trends.trends:
 ```
 
 ### 2. Deep Research
-Agents can request deeper analysis when they spot something interesting.
+Access AI-powered insights for deeper analysis on specific trends.
 
 ```python
-# Check if insights already exist
+# Retrieve cached AI-powered insights
 insights = client.get_ai_insights(trend_id=trend_id)
 
-if not insights:
-    # Trigger an asynchronous research task
-    task = client.generate_ai_insights(trend_id=trend_id)
-    print(f"Research task started: {task.task_id}")
-    
-    # In a real agent loop, you would poll this status or use a callback
-    # status = client.get_insight_generation_status(task.task_id)
-else:
+if insights:
     print(f"Key Themes: {insights.key_themes}")
-    print(f"Audience: {insights.content_brief.target_audience_segments}")
+    print(f"Sentiment: {insights.sentiment_summary}")
+    print(f"Target Audience: {insights.content_brief.target_audience_segments}")
+else:
+    print("No insights available for this trend yet. Insights must be generated via the dashboard.")
 ```
 
-### 3. Action & Recommendations
+### 3. Context Intelligence Suite
+Manage complex context for your agents by organizing specifications, plans, and reference materials.
+
+```python
+# 1. Create a Context Project
+project = client.create_context_project(
+    name="Agent Alpha: Strategy", 
+    description="Product specs and tech stack for the new agent loop."
+)
+
+# 2. Add Context Items (Text or Files)
+client.create_context_item(
+    project_id=project.id,
+    item_type="product_spec",
+    name="Feature Roadmap",
+    content="Implement a multi-step orchestration loop with grounding."
+)
+
+# 3. Query Context for Agent Prompts
+# This retrieves full content for all relevant items in a project
+context_items = client.query_context(project_id=project.id, search="Roadmap")
+
+for item in context_items:
+    print(f"\n--- {item.name} ---\n{item.content}")
+```
+
+### 4. Action & Recommendations
 The system generates high-level strategy recommendations that your agent can process and execute.
 
 ```python
@@ -92,9 +114,6 @@ recs = client.get_recommendations(priority="high", status="new")
 
 for rec in recs.recommendations:
     print(f"Action: {rec.title} (Type: {rec.type})")
-    
-    # Agent decides to execute the action...
-    # ... execution logic here ...
     
     # Report back to the system
     client.perform_recommendation_action(

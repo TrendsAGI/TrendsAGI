@@ -22,17 +22,6 @@ class PaginationMeta(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
 
-# --- Task Queue Models ---
-class InsightTaskResponse(OrmBaseModel):
-    task_id: str
-    status: str
-    message: str
-
-class InsightTaskStatusResponse(OrmBaseModel):
-    task_id: str
-    status: str
-    result: Optional[Any] = None
-    error: Optional[str] = None
 
 # --- Autocomplete and Categories Models ---
 class AutocompleteResponse(OrmBaseModel):
@@ -351,3 +340,51 @@ class StatusPage(OrmBaseModel):
 class StatusHistoryResponse(OrmBaseModel):
     uptime_percentages: Dict[str, float]
     daily_statuses: Dict[str, Dict[str, str]]
+
+
+# --- Context Intelligence Suite Models ---
+
+class ContextProject(OrmBaseModel):
+    """A context project for organizing AI agent context."""
+    id: int
+    name: str
+    description: Optional[str] = None
+    is_active: bool = True
+    item_count: int = 0
+    total_size_bytes: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class ContextProjectListResponse(OrmBaseModel):
+    projects: List[ContextProject]
+    meta: PaginationMeta
+
+
+class ContextItem(OrmBaseModel):
+    """A context item (spec, plan, code, etc.) within a project."""
+    id: int
+    project_id: int
+    item_type: str
+    name: str
+    content: Optional[str] = None
+    file_size_bytes: int = 0
+    mime_type: Optional[str] = None
+    original_filename: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+    has_content: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+
+class ContextItemListResponse(OrmBaseModel):
+    items: List[ContextItem]
+    meta: PaginationMeta
+
+
+class ContextUsage(OrmBaseModel):
+    """Storage usage for context items."""
+    used_bytes: int
+    limit_bytes: int
+    used_percentage: float
+    plan_name: str

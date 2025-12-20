@@ -146,25 +146,14 @@ class TrendsAGIClient:
     def get_ai_insights(self, trend_id: int) -> Optional[models.AIInsight]:
         """
         Get cached AI-powered insights for a specific trend.
-        Returns None if no insight is available.
+        
+        Note: This method only retrieves existing, cached insights. New insights 
+        must be generated via the TrendsAGI web dashboard.
+        
+        Returns None if no insight is available for the given trend.
         """
         response_data = self._request('GET', f'/api/trends/{trend_id}/ai-insights')
         return models.AIInsight.model_validate(response_data) if response_data else None
-
-    def generate_ai_insights(self, trend_id: int) -> models.InsightTaskResponse:
-        """
-        Queue a job to generate new AI-powered insights for a trend.
-        Returns a task response object containing the task_id to poll.
-        """
-        response_data = self._request('POST', f'/api/trends/{trend_id}/ai-insights/generate')
-        return models.InsightTaskResponse.model_validate(response_data)
-
-    def get_insight_generation_status(self, task_id: str) -> models.InsightTaskStatusResponse:
-        """
-        Check the status of an AI insight generation task.
-        """
-        response_data = self._request('GET', f'/api/trends/ai-insights/status/{task_id}')
-        return models.InsightTaskStatusResponse.model_validate(response_data)
 
     # --- Custom Reports Methods ---
 
@@ -429,3 +418,202 @@ class TrendsAGIClient:
         """
         async for message in self._connect_websocket("/ws/finance-live"):
             yield message
+
+    # --- Context Intelligence Suite Methods ---
+
+    def list_context_projects(
+        self,
+        limit: int = 20,
+        offset: int = 0,
+        include_inactive: bool = False
+    ) -> models.ContextProjectListResponse:
+        """
+        List all context projects for the current user.
+        
+        :param limit: Maximum number of projects to return.
+        :param offset: Number of projects to skip for pagination.
+        :param include_inactive: Include archived projects.
+        """
+        params = {"limit": limit, "offset": offset, "include_inactive": include_inactive}
+        response_data = self._request('GET', '/api/intelligence/context/projects', params=params)
+        return models.ContextProjectListResponse.model_validate(response_data)
+
+    def create_context_project(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        share_with_org: bool = False
+    ) -> models.ContextProject:
+        """
+        Create a new context project to organize specs, plans, and code.
+        
+        :param name: Project name (must be unique for the user).
+        :param description: Optional description.
+        :param share_with_org: Share with organization members (enterprise only).
+        """
+        payload = {"name": name, "description": description, "share_with_org": share_with_org}
+        response_data = self._request('POST', '/api/intelligence/context/projects', json=payload)
+        return models.ContextProject.model_validate(response_data)
+
+    def get_context_project(self, project_id: int) -> models.ContextProject:
+        """
+        Get a context project with all its items.
+        
+        :param project_id: The project ID.
+        """
+        response_data = self._request('GET', f'/api/intelligence/context/projects/{project_id}')
+        return models.ContextProject.model_validate(response_data)
+
+    def delete_context_project(self, project_id: int) -> None:
+        """
+        Delete a context project and all its items.
+        
+        :param project_id: The project ID to delete.
+        """
+        self._request('DELETE', f'/api/intelligence/context/projects/{project_id}')
+
+    def list_context_items(
+        self,
+        project_id: Optional[int] = None,
+        item_type: Optional[str] = None,
+        search: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> models.ContextItemListResponse:
+        """
+        List and query context items for the current user.
+        
+        :param project_id: Filter by project.
+        :param item_type: Filter by type (product_spec, tech_stack, style_guide, plan, reference_code, etc).
+        :param search: Search in item names.
+        :param limit: Maximum items to return.
+        :param offset: Number of items to skip.
+        """
+        params = {k: v for k, v in locals().items() if v is not None and k != 'self'}
+        response_data = self._request('GET', '/api/intelligence/context/items', params=params)
+        return models.ContextItemListResponse.model_validate(response_data)
+
+    def create_context_item(
+        self,
+        project_id: int,
+        item_type: str,
+        name: str,
+        content: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> models.ContextItem:
+        """
+        Create a text-based context item (spec, plan, style guide, etc).
+        
+        :param project_id: The project ID to add the item to.
+        :param item_type: Type of item (product_spec, tech_stack, style_guide, plan, custom).
+        :param name: Item name.
+        :param content: Text content for the item.
+        :param metadata: Optional key-value metadata.
+        """
+        payload = {
+            "project_id": project_id,
+            "item_type": item_type,
+            "name": name,
+            "content": content,
+            "metadata": metadata
+        }
+        response_data = self._request('POST', '/api/intelligence/context/items', json=payload)
+        return models.ContextItem.model_validate(response_data)
+
+    def upload_context_file(
+        self,
+        project_id: int,
+        file_path: str,
+        item_type: str = "reference_code",
+        name: Optional[str] = None
+    ) -> models.ContextItem:
+        """
+        Upload a file as a context item (code files, images, etc).
+        
+        :param project_id: The project ID.
+        :param file_path: Path to the file to upload.
+        :param item_type: Type (reference_code, reference_image, etc).
+        :param name: Optional display name (defaults to filename).
+        """
+        import os
+        import mimetypes
+        
+        filename = os.path.basename(file_path)
+        mime_type, _ = mimetypes.guess_type(file_path)
+        
+        with open(file_path, 'rb') as f:
+            files = {'file': (filename, f, mime_type or 'application/octet-stream')}
+            data = {'project_id': str(project_id), 'item_type': item_type}
+            if name:
+                data['name'] = name
+            
+            # Remove Content-Type header for multipart
+            headers = dict(self._session.headers)
+            headers.pop('Content-Type', None)
+            
+            url = f"{self.base_url}/api/intelligence/context/items/upload"
+            response = self._session.post(url, files=files, data=data, headers=headers)
+        
+        if response.status_code != 201:
+            try:
+                error_detail = response.json().get('detail', response.text)
+            except:
+                error_detail = response.text
+            raise exceptions.APIError(response.status_code, error_detail)
+        
+        return models.ContextItem.model_validate(response.json())
+
+    def get_context_item(self, item_id: int, include_content: bool = True) -> models.ContextItem:
+        """
+        Get a context item with its content.
+        
+        :param item_id: The item ID.
+        :param include_content: Whether to include the text content.
+        """
+        params = {"include_content": include_content}
+        response_data = self._request('GET', f'/api/intelligence/context/items/{item_id}', params=params)
+        return models.ContextItem.model_validate(response_data)
+
+    def delete_context_item(self, item_id: int) -> None:
+        """
+        Delete a context item.
+        
+        :param item_id: The item ID to delete.
+        """
+        self._request('DELETE', f'/api/intelligence/context/items/{item_id}')
+
+    def get_context_usage(self) -> models.ContextUsage:
+        """
+        Get current context storage usage and limits for your plan.
+        """
+        response_data = self._request('GET', '/api/intelligence/context/usage')
+        return models.ContextUsage.model_validate(response_data)
+
+    def query_context(
+        self,
+        project_id: Optional[int] = None,
+        item_type: Optional[str] = None,
+        search: Optional[str] = None
+    ) -> List[models.ContextItem]:
+        """
+        Query context items for use in AI agent workflows.
+        Returns the full content of matching items.
+        
+        :param project_id: Filter by project.
+        :param item_type: Filter by type.
+        :param search: Search in item names.
+        """
+        response = self.list_context_items(
+            project_id=project_id,
+            item_type=item_type,
+            search=search,
+            limit=100
+        )
+        
+        # Fetch full content for each item
+        items_with_content = []
+        for item in response.items:
+            full_item = self.get_context_item(item.id, include_content=True)
+            items_with_content.append(full_item)
+        
+        return items_with_content
