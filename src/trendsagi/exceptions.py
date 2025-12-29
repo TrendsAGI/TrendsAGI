@@ -26,3 +26,15 @@ class RateLimitError(APIError):
 class ConflictError(APIError):
     """Raised for 409 Conflict errors."""
     pass
+
+class MaintenanceError(APIError):
+    """
+    Raised when the API is in maintenance mode (503 Service Unavailable).
+    
+    This typically occurs when Redis or other critical backend services are unavailable.
+    During maintenance, API usage cannot be tracked, so requests are blocked to prevent
+    untracked overage billing.
+    """
+    def __init__(self, message: str = "TrendsAGI is currently under maintenance. Please try again later."):
+        super().__init__(503, message)
+        self.message = message

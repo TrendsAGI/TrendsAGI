@@ -126,6 +126,7 @@ class Recommendation(OrmBaseModel):
     priority: str
     status: str
     created_at: datetime
+    status: Optional[str] = None
     updated_at: datetime
     user_feedback: Optional[str] = None
 
@@ -150,6 +151,7 @@ class CrisisEvent(OrmBaseModel):
     source_keywords: Optional[List[str]] = None
     impacted_entity: Optional[str] = None
     created_at: datetime
+    status: Optional[str] = None
     updated_at: datetime
 
 class CrisisEventListResponse(OrmBaseModel):
@@ -165,6 +167,7 @@ class FinancialNews(OrmBaseModel):
     sentiment: Optional[str] = None
     company: Optional[str] = None
     created_at: datetime
+    status: Optional[str] = None
 
 class FinancialPressRelease(OrmBaseModel):
     id: int
@@ -174,6 +177,7 @@ class FinancialPressRelease(OrmBaseModel):
     source_timestamp: Optional[str] = None
     sentiment: Optional[str] = None
     created_at: datetime
+    status: Optional[str] = None
 
 class EarningsReport(OrmBaseModel):
     id: int
@@ -185,6 +189,7 @@ class EarningsReport(OrmBaseModel):
     source_timestamp: Optional[str] = None
     sentiment: Optional[str] = None
     created_at: datetime
+    status: Optional[str] = None
 
 class IPONews(OrmBaseModel):
     id: int
@@ -194,6 +199,7 @@ class IPONews(OrmBaseModel):
     filing_date: Optional[str] = None
     expected_trade_date: Optional[str] = None
     created_at: datetime
+    status: Optional[str] = None
 
 class MarketSentiment(OrmBaseModel):
     id: int
@@ -201,6 +207,7 @@ class MarketSentiment(OrmBaseModel):
     drivers: Optional[List[str]] = None
     source_timestamp: Optional[str] = None
     created_at: datetime
+    status: Optional[str] = None
 
 
 class ForexFactoryEvent(OrmBaseModel):
@@ -264,6 +271,7 @@ class TopicInterest(OrmBaseModel):
     volume_threshold_value: Optional[int] = None
     percentage_growth_value: Optional[float] = None
     created_at: datetime
+    status: Optional[str] = None
 
 class ExportConfiguration(OrmBaseModel):
     id: int
@@ -302,6 +310,7 @@ class Notification(OrmBaseModel):
     notification_type: str
     is_read: bool
     created_at: datetime
+    status: Optional[str] = None
     read_at: Optional[datetime] = None
     data: Optional[Dict[str, Any]] = None
 
@@ -353,6 +362,7 @@ class ContextProject(OrmBaseModel):
     item_count: int = 0
     total_size_bytes: int = 0
     created_at: datetime
+    status: Optional[str] = None
     updated_at: datetime
 
 
@@ -374,6 +384,7 @@ class ContextItem(OrmBaseModel):
     metadata: Optional[Dict[str, Any]] = None
     has_content: bool = False
     created_at: datetime
+    status: Optional[str] = None
     updated_at: datetime
 
 

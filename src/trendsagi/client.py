@@ -67,6 +67,8 @@ class TrendsAGIClient:
                 raise exceptions.ConflictError(response.status_code, error_detail)
             if response.status_code == 429:
                 raise exceptions.RateLimitError(response.status_code, error_detail)
+            if response.status_code == 503:
+                raise exceptions.MaintenanceError(error_detail)
             
             raise exceptions.APIError(response.status_code, error_detail)
 
@@ -263,6 +265,9 @@ class TrendsAGIClient:
         }
         payload = {k: v for k, v in payload.items() if v is not None}
         response_data = self._request('POST', '/api/user/topic-interests', json=payload)
+        # Server returns a list; return the first created interest
+        if isinstance(response_data, list):
+            return models.TopicInterest.model_validate(response_data[0])
         return models.TopicInterest.model_validate(response_data)
         
     def delete_topic_interest(self, interest_id: int) -> None:
