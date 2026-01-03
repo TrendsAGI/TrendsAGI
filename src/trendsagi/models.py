@@ -266,7 +266,7 @@ class HomepageFinancialDataResponse(OrmBaseModel):
 class TopicInterest(OrmBaseModel):
     id: int
     user_id: int
-    keyword: str
+    keyword: Optional[str] = None
     alert_condition_type: str
     volume_threshold_value: Optional[int] = None
     percentage_growth_value: Optional[float] = None
