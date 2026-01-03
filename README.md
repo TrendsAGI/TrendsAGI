@@ -123,6 +123,35 @@ for rec in recs.recommendations:
     )
 ```
 
+## Advanced Agent Configuration
+
+The client supports advanced configuration for agent intelligence, retrieval, and safety:
+
+```python
+agent = client.create_agent(
+    name="Research Assistant",
+    description="Deep research agent with safety guardrails",
+    
+    # Query Reformulation
+    enable_query_expansion=True,
+    query_expansion_prompt="Expand queries to include synonym technical terms.",
+    
+    # Retrieval Settings
+    top_k_retrieved_chunks=100,
+    lexical_alpha=0.4,
+    semantic_alpha=0.6,
+    
+    # Reranking
+    enable_rerank=True,
+    reranker_score_threshold=0.7,
+    
+    # Safety (Model Armor)
+    safety_prompt_injection="high",
+    safety_malicious_urls="high",
+    safety_csam="high"
+)
+```
+
 ## Real-Time Streaming
 
 For agents that need to react instantly to market moves.

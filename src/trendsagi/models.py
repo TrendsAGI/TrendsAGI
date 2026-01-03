@@ -399,3 +399,107 @@ class ContextUsage(OrmBaseModel):
     limit_bytes: int
     used_percentage: float
     plan_name: str
+
+
+# --- Agents Models (formerly Deep Analysis) ---
+
+class Agent(OrmBaseModel):
+    """An AI agent with configurable settings for conversations."""
+    id: int
+    name: str
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    
+    # Generation settings (Gemini Flash 3.0)
+    temperature: float = 1.0
+    max_output_tokens: int = 8192
+    thinking_level: str = "HIGH"
+    top_p: Optional[float] = 0.95
+    top_k: Optional[int] = 64
+    
+    # Conversation settings
+    enable_multi_turn: bool = True
+    enable_web_search: bool = False
+    
+    # Persona & style
+    persona_preset: Optional[str] = None
+    system_prompt: Optional[str] = None
+    
+    # Output format
+    output_language: Optional[str] = None
+    response_format: Optional[str] = "prose"
+    
+    # Safety
+    safety_level: str = "block_medium_and_above"
+    
+    # Query Reformulation
+    enable_query_expansion: bool = False
+    query_expansion_prompt: Optional[str] = None
+    query_expansion_examples: List[str] = Field(default_factory=list)
+    enable_query_decomposition: bool = False
+    query_decomposition_prompt: Optional[str] = None
+
+    # Retrieval
+    top_k_retrieved_chunks: int = 160
+    lexical_alpha: float = 0.35
+    semantic_alpha: float = 0.65
+
+    # Rerank
+    enable_rerank: bool = True
+    top_k_reranked_chunks: int = 25
+    reranker_score_threshold: float = 0.0
+    rerank_instructions: Optional[str] = None
+
+    # Filter
+    enable_filter: bool = True
+    filter_prompt: Optional[str] = None
+
+    # Model Armor / Granular Safety
+    safety_csam: str = 'high'
+    safety_malicious_urls: str = 'high'
+    safety_prompt_injection: str = 'medium'
+    safety_sexual_content: str = 'disabled'
+    safety_hate_speech: str = 'disabled'
+    safety_harassment: str = 'disabled'
+    safety_dangerous_content: str = 'disabled'
+    
+    # Context
+    default_project_id: Optional[int] = None
+    
+    # Metadata
+    is_archived: bool = False
+    conversation_count: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+
+class AgentListResponse(OrmBaseModel):
+    agents: List[Agent]
+    meta: PaginationMeta
+
+
+class AgentConversation(OrmBaseModel):
+    """A conversation within an agent."""
+    id: int
+    agent_id: int
+    title: Optional[str] = None
+    query: str
+    task_id: Optional[str] = None
+    response_json: Optional[Dict[str, Any]] = None
+    use_context: bool = False
+    project_id: Optional[int] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class AgentConversationListResponse(OrmBaseModel):
+    conversations: List[AgentConversation]
+    meta: PaginationMeta
+
+
+class AgentTaskResponse(OrmBaseModel):
+    """Response from queueing an agent analysis task."""
+    task_id: str
+    status: str
+    message: Optional[str] = None
+    conversation_id: Optional[int] = None

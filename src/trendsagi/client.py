@@ -622,3 +622,403 @@ class TrendsAGIClient:
             items_with_content.append(full_item)
         
         return items_with_content
+
+    # --- Agents API Methods (formerly Deep Analysis) ---
+
+    def list_agents(
+        self,
+        limit: int = 20,
+        offset: int = 0,
+        include_archived: bool = False
+    ) -> models.AgentListResponse:
+        """
+        List all agents for the current user.
+        
+        :param limit: Maximum number of agents to return.
+        :param offset: Number of agents to skip for pagination.
+        :param include_archived: Include archived agents.
+        """
+        params = {"limit": limit, "offset": offset, "include_archived": include_archived}
+        response_data = self._request('GET', '/api/intelligence/agents', params=params)
+        return models.AgentListResponse.model_validate(response_data)
+
+    def create_agent(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        temperature: float = 1.0,
+        max_output_tokens: int = 8192,
+        thinking_level: str = "HIGH",
+        enable_multi_turn: bool = True,
+        enable_web_search: bool = False,
+        persona_preset: Optional[str] = None,
+        system_prompt: Optional[str] = None,
+        output_language: Optional[str] = None,
+        response_format: str = "prose",
+        safety_level: str = "block_medium_and_above",
+        
+        # Query Reformulation
+        enable_query_expansion: bool = False,
+        query_expansion_prompt: Optional[str] = None,
+        query_expansion_examples: Optional[List[str]] = None,
+        enable_query_decomposition: bool = False,
+        query_decomposition_prompt: Optional[str] = None,
+
+        # Retrieval
+        top_k_retrieved_chunks: int = 160,
+        lexical_alpha: float = 0.35,
+        semantic_alpha: float = 0.65,
+
+        # Rerank
+        enable_rerank: bool = True,
+        top_k_reranked_chunks: int = 25,
+        reranker_score_threshold: float = 0.0,
+        rerank_instructions: Optional[str] = None,
+
+        # Filter
+        enable_filter: bool = True,
+        filter_prompt: Optional[str] = None,
+
+        # Model Armor / Granular Safety
+        safety_csam: str = 'high',
+        safety_malicious_urls: str = 'high',
+        safety_prompt_injection: str = 'medium',
+        safety_sexual_content: str = 'disabled',
+        safety_hate_speech: str = 'disabled',
+        safety_harassment: str = 'disabled',
+        safety_dangerous_content: str = 'disabled',
+
+        default_project_id: Optional[int] = None
+    ) -> models.Agent:
+        """
+        Create a new AI agent with custom settings.
+        
+        :param name: Agent name.
+        :param description: Optional description.
+        :param temperature: Controls randomness (0.0-2.0, default 1.0 recommended).
+        :param max_output_tokens: Max tokens in response (default 8192, max 65536).
+        :param thinking_level: Reasoning depth: MINIMAL, LOW, MEDIUM, HIGH.
+        :param enable_multi_turn: Enable multi-turn conversation reformulation.
+        :param enable_web_search: Enable grounding with Google Search.
+        :param persona_preset: Preset persona: analyst, researcher, advisor, technical, creative.
+        :param system_prompt: Custom system prompt.
+        :param output_language: ISO language code for translation (e.g., 'es', 'fr').
+        :param response_format: Format: prose, bullet_points, structured, json.
+        :param safety_level: Safety threshold for content filtering.
+
+        # Advanced Settings
+        :param enable_query_expansion: Reformulate queries for better recall.
+        :param query_expansion_prompt: Custom instruction for expansion.
+        :param query_expansion_examples: List of example expansions.
+        :param enable_query_decomposition: Break down complex queries.
+        :param query_decomposition_prompt: Custom instruction for decomposition.
+
+        :param top_k_retrieved_chunks: Max chunks to retrieve (1-200).
+        :param lexical_alpha: Weight for keyword search (0.0-1.0).
+        :param semantic_alpha: Weight for semantic search (0.0-1.0).
+
+        :param enable_rerank: Enable reranking of results.
+        :param top_k_reranked_chunks: Max chunks after reranking (1-100).
+        :param reranker_score_threshold: Minimum score to keep a chunk.
+        :param rerank_instructions: Custom reranking guidelines.
+
+        :param enable_filter: Filter irrelevant chunks.
+        :param filter_prompt: Custom filtering instructions.
+
+        :param safety_csam: CSAM filter level.
+        :param safety_malicious_urls: Malicious URL filter level.
+        :param safety_prompt_injection: Prompt injection filter level.
+        :param safety_sexual_content: Sexual content filter level.
+        :param safety_hate_speech: Hate speech filter level.
+        :param safety_harassment: Harassment filter level.
+        :param safety_dangerous_content: Dangerous content filter level.
+
+        :param default_project_id: Default context project for this agent.
+        """
+        payload = {
+            "name": name,
+            "description": description,
+            "temperature": temperature,
+            "max_output_tokens": max_output_tokens,
+            "thinking_level": thinking_level,
+            "enable_multi_turn": enable_multi_turn,
+            "enable_web_search": enable_web_search,
+            "persona_preset": persona_preset,
+            "system_prompt": system_prompt,
+            "output_language": output_language,
+            "response_format": response_format,
+            "safety_level": safety_level,
+            
+            # Query Reformulation
+            "enable_query_expansion": enable_query_expansion,
+            "query_expansion_prompt": query_expansion_prompt,
+            "query_expansion_examples": query_expansion_examples if query_expansion_examples is not None else [],
+            "enable_query_decomposition": enable_query_decomposition,
+            "query_decomposition_prompt": query_decomposition_prompt,
+
+            # Retrieval
+            "top_k_retrieved_chunks": top_k_retrieved_chunks,
+            "lexical_alpha": lexical_alpha,
+            "semantic_alpha": semantic_alpha,
+
+            # Rerank
+            "enable_rerank": enable_rerank,
+            "top_k_reranked_chunks": top_k_reranked_chunks,
+            "reranker_score_threshold": reranker_score_threshold,
+            "rerank_instructions": rerank_instructions,
+
+            # Filter
+            "enable_filter": enable_filter,
+            "filter_prompt": filter_prompt,
+
+            # Model Armor
+            "safety_csam": safety_csam,
+            "safety_malicious_urls": safety_malicious_urls,
+            "safety_prompt_injection": safety_prompt_injection,
+            "safety_sexual_content": safety_sexual_content,
+            "safety_hate_speech": safety_hate_speech,
+            "safety_harassment": safety_harassment,
+            "safety_dangerous_content": safety_dangerous_content,
+
+            "default_project_id": default_project_id
+        }
+        payload = {k: v for k, v in payload.items() if v is not None}
+        response_data = self._request('POST', '/api/intelligence/agents', json=payload)
+        return models.Agent.model_validate(response_data)
+
+    def get_agent(self, agent_id: int) -> models.Agent:
+        """
+        Get an agent by ID.
+        
+        :param agent_id: The agent ID.
+        """
+        response_data = self._request('GET', f'/api/intelligence/agents/{agent_id}')
+        return models.Agent.model_validate(response_data)
+
+    def update_agent(
+        self,
+        agent_id: int,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_output_tokens: Optional[int] = None,
+        thinking_level: Optional[str] = None,
+        enable_multi_turn: Optional[bool] = None,
+        enable_web_search: Optional[bool] = None,
+        persona_preset: Optional[str] = None,
+        system_prompt: Optional[str] = None,
+        output_language: Optional[str] = None,
+        response_format: Optional[str] = None,
+        safety_level: Optional[str] = None,
+        
+        # Query Reformulation
+        enable_query_expansion: Optional[bool] = None,
+        query_expansion_prompt: Optional[str] = None,
+        query_expansion_examples: Optional[List[str]] = None,
+        enable_query_decomposition: Optional[bool] = None,
+        query_decomposition_prompt: Optional[str] = None,
+
+        # Retrieval
+        top_k_retrieved_chunks: Optional[int] = None,
+        lexical_alpha: Optional[float] = None,
+        semantic_alpha: Optional[float] = None,
+
+        # Rerank
+        enable_rerank: Optional[bool] = None,
+        top_k_reranked_chunks: Optional[int] = None,
+        reranker_score_threshold: Optional[float] = None,
+        rerank_instructions: Optional[str] = None,
+
+        # Filter
+        enable_filter: Optional[bool] = None,
+        filter_prompt: Optional[str] = None,
+
+        # Model Armor / Granular Safety
+        safety_csam: Optional[str] = None,
+        safety_malicious_urls: Optional[str] = None,
+        safety_prompt_injection: Optional[str] = None,
+        safety_sexual_content: Optional[str] = None,
+        safety_hate_speech: Optional[str] = None,
+        safety_harassment: Optional[str] = None,
+        safety_dangerous_content: Optional[str] = None,
+
+        default_project_id: Optional[int] = None,
+        is_archived: Optional[bool] = None
+    ) -> models.Agent:
+        """
+        Update an agent's settings.
+        
+        :param agent_id: The agent ID to update.
+        :param name: New name.
+        :param description: New description.
+        :param temperature: Controls randomness (0.0-2.0).
+        :param max_output_tokens: Max tokens in response.
+        :param thinking_level: Reasoning depth.
+        :param enable_multi_turn: Enable multi-turn conversations.
+        :param enable_web_search: Enable web search grounding.
+        :param persona_preset: Preset persona.
+        :param system_prompt: Custom system prompt.
+        :param output_language: Translation language.
+        :param response_format: Output format.
+        :param safety_level: Safety threshold.
+
+        # Advanced Settings
+        :param enable_query_expansion: Reformulate queries for better recall.
+        :param query_expansion_prompt: Custom instruction for expansion.
+        :param query_expansion_examples: List of example expansions.
+        :param enable_query_decomposition: Break down complex queries.
+        :param query_decomposition_prompt: Custom instruction for decomposition.
+
+        :param top_k_retrieved_chunks: Max chunks to retrieve (1-200).
+        :param lexical_alpha: Weight for keyword search (0.0-1.0).
+        :param semantic_alpha: Weight for semantic search (0.0-1.0).
+
+        :param enable_rerank: Enable reranking of results.
+        :param top_k_reranked_chunks: Max chunks after reranking (1-100).
+        :param reranker_score_threshold: Minimum score to keep a chunk.
+        :param rerank_instructions: Custom reranking guidelines.
+
+        :param enable_filter: Filter irrelevant chunks.
+        :param filter_prompt: Custom filtering instructions.
+
+        :param safety_csam: CSAM filter level.
+        :param safety_malicious_urls: Malicious URL filter level.
+        :param safety_prompt_injection: Prompt injection filter level.
+        :param safety_sexual_content: Sexual content filter level.
+        :param safety_hate_speech: Hate speech filter level.
+        :param safety_harassment: Harassment filter level.
+        :param safety_dangerous_content: Dangerous content filter level.
+
+        :param default_project_id: Default context project.
+        :param is_archived: Archive the agent.
+        """
+        payload = {
+            "name": name,
+            "description": description,
+            "temperature": temperature,
+            "max_output_tokens": max_output_tokens,
+            "thinking_level": thinking_level,
+            "enable_multi_turn": enable_multi_turn,
+            "enable_web_search": enable_web_search,
+            "persona_preset": persona_preset,
+            "system_prompt": system_prompt,
+            "output_language": output_language,
+            "response_format": response_format,
+            "safety_level": safety_level,
+            
+            # Query Reformulation
+            "enable_query_expansion": enable_query_expansion,
+            "query_expansion_prompt": query_expansion_prompt,
+            "query_expansion_examples": query_expansion_examples,
+            "enable_query_decomposition": enable_query_decomposition,
+            "query_decomposition_prompt": query_decomposition_prompt,
+
+            # Retrieval
+            "top_k_retrieved_chunks": top_k_retrieved_chunks,
+            "lexical_alpha": lexical_alpha,
+            "semantic_alpha": semantic_alpha,
+
+            # Rerank
+            "enable_rerank": enable_rerank,
+            "top_k_reranked_chunks": top_k_reranked_chunks,
+            "reranker_score_threshold": reranker_score_threshold,
+            "rerank_instructions": rerank_instructions,
+
+            # Filter
+            "enable_filter": enable_filter,
+            "filter_prompt": filter_prompt,
+
+            # Model Armor
+            "safety_csam": safety_csam,
+            "safety_malicious_urls": safety_malicious_urls,
+            "safety_prompt_injection": safety_prompt_injection,
+            "safety_sexual_content": safety_sexual_content,
+            "safety_hate_speech": safety_hate_speech,
+            "safety_harassment": safety_harassment,
+            "safety_dangerous_content": safety_dangerous_content,
+
+            "default_project_id": default_project_id,
+            "is_archived": is_archived
+        }
+        payload = {k: v for k, v in payload.items() if v is not None}
+        response_data = self._request('PUT', f'/api/intelligence/agents/{agent_id}', json=payload)
+        return models.Agent.model_validate(response_data)
+
+    def delete_agent(self, agent_id: int) -> None:
+        """
+        Delete an agent and all its conversations.
+        
+        :param agent_id: The agent ID to delete.
+        """
+        self._request('DELETE', f'/api/intelligence/agents/{agent_id}')
+
+    def list_agent_conversations(
+        self,
+        agent_id: int,
+        limit: int = 20,
+        offset: int = 0
+    ) -> models.AgentConversationListResponse:
+        """
+        List conversations for an agent.
+        
+        :param agent_id: The agent ID.
+        :param limit: Maximum conversations to return.
+        :param offset: Number to skip for pagination.
+        """
+        params = {"limit": limit, "offset": offset}
+        response_data = self._request('GET', f'/api/intelligence/agents/{agent_id}/conversations', params=params)
+        return models.AgentConversationListResponse.model_validate(response_data)
+
+    def get_agent_conversation(self, conversation_id: int) -> models.AgentConversation:
+        """
+        Get a specific conversation by ID.
+        
+        :param conversation_id: The conversation ID.
+        """
+        response_data = self._request('GET', f'/api/intelligence/agents/conversations/{conversation_id}')
+        return models.AgentConversation.model_validate(response_data)
+
+    def delete_agent_conversation(self, conversation_id: int) -> None:
+        """
+        Delete a conversation.
+        
+        :param conversation_id: The conversation ID to delete.
+        """
+        self._request('DELETE', f'/api/intelligence/agents/conversations/{conversation_id}')
+
+    def agent_chat(
+        self,
+        agent_id: int,
+        query: str,
+        conversation_id: Optional[int] = None,
+        project_id: Optional[int] = None,
+        guidance_ids: Optional[List[int]] = None
+    ) -> models.AgentTaskResponse:
+        """
+        Send a message to an agent and queue analysis.
+        
+        :param agent_id: The agent ID to chat with.
+        :param query: The question or message to analyze.
+        :param conversation_id: Continue an existing conversation (for multi-turn).
+        :param project_id: Override the agent's default context project.
+        :param guidance_ids: Specific context item IDs to use as guidance.
+        :returns: Task response with task_id for polling status.
+        """
+        payload = {
+            "query": query,
+            "conversation_id": conversation_id,
+            "project_id": project_id,
+            "guidance_ids": guidance_ids
+        }
+        payload = {k: v for k, v in payload.items() if v is not None}
+        response_data = self._request('POST', f'/api/intelligence/agents/{agent_id}/chat', json=payload)
+        return models.AgentTaskResponse.model_validate(response_data)
+
+    def get_agent_task_status(self, task_id: str) -> Dict[str, Any]:
+        """
+        Check the status of an agent analysis task.
+        
+        :param task_id: The task ID from agent_chat response.
+        :returns: Status dict with 'status' (PENDING, SUCCESS, FAILURE) and 'result' when complete.
+        """
+        return self._request('GET', f'/api/intelligence/agents/tasks/{task_id}')
