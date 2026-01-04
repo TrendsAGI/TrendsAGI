@@ -1022,3 +1022,141 @@ class TrendsAGIClient:
         :returns: Status dict with 'status' (PENDING, SUCCESS, FAILURE) and 'result' when complete.
         """
         return self._request('GET', f'/api/intelligence/agents/tasks/{task_id}')
+
+    # --- Blog Methods ---
+
+    def get_blog_posts(self, limit: int = 20, offset: int = 0, tag: Optional[str] = None) -> models.BlogPostListResponse:
+        """
+        Get a list of published blog posts.
+        """
+        params = {"limit": limit, "offset": offset, "tag": tag}
+        response_data = self._request('GET', '/api/blog/posts', params=params)
+        return models.BlogPostListResponse.model_validate(response_data)
+
+    def get_blog_post(self, slug: str) -> models.BlogPost:
+        """
+        Get a single blog post by its slug.
+        """
+        response_data = self._request('GET', f'/api/blog/posts/{slug}')
+        return models.BlogPost.model_validate(response_data)
+
+
+    # --- User Profile & API Keys Methods ---
+
+    def get_user_profile(self) -> models.UserProfile:
+        """
+        Get the authenticated user's profile details.
+        """
+        response_data = self._request('GET', '/api/user/profile')
+        return models.UserProfile.model_validate(response_data)
+
+    def get_api_keys(self) -> List[models.ApiKey]:
+        """
+        List all API keys for the current user.
+        """
+        response_data = self._request('GET', '/api/user/api-keys')
+        # Response format usually {"keys": [...] }
+        if isinstance(response_data, dict) and "keys" in response_data:
+            return [models.ApiKey.model_validate(k) for k in response_data["keys"]]
+        # Fallback if list returned directly
+        return [models.ApiKey.model_validate(k) for k in response_data]
+
+    def create_api_key(self, name: str, permissions: Optional[List[str]] = None) -> models.ApiKeyCreateResponse:
+        """
+        Create a new API key.
+        """
+        payload = {"name": name, "permissions": permissions or []}
+        response_data = self._request('POST', '/api/user/api-keys', json=payload)
+        return models.ApiKeyCreateResponse.model_validate(response_data)
+
+    def delete_api_key(self, key_id: int) -> None:
+        """
+        Delete an API key.
+        """
+        self._request('DELETE', f'/api/user/api-keys/{key_id}')
+
+    def get_api_usage(self) -> models.ApiUsageResponse:
+        """
+        Get API usage statistics for the current user.
+        """
+        response_data = self._request('GET', '/api/user/api-usage')
+        return models.ApiUsageResponse.model_validate(response_data)
+
+
+    # --- Organization Methods ---
+
+    def get_organization_members(self) -> List[models.OrgMember]:
+        """
+        List members of the current user's organization.
+        """
+        response_data = self._request('GET', '/api/org/members')
+        if isinstance(response_data, dict) and "members" in response_data:
+            return [models.OrgMember.model_validate(m) for m in response_data["members"]]
+        return [models.OrgMember.model_validate(m) for m in response_data]
+
+    def get_organization_invites(self) -> List[models.OrgInvite]:
+        """
+        List pending invites for the organization.
+        """
+        response_data = self._request('GET', '/api/org/invites')
+        if isinstance(response_data, dict) and "invites" in response_data:
+            return [models.OrgInvite.model_validate(i) for i in response_data["invites"]]
+        return [models.OrgInvite.model_validate(i) for i in response_data]
+
+
+    # --- Billing Methods ---
+
+    def get_billing_portal_url(self, return_url: Optional[str] = None) -> str:
+        """
+        Get a one-time URL for the Stripe Customer Portal.
+        """
+        payload = {}
+        if return_url:
+            payload["return_url"] = return_url
+            
+        # Usually a POST request to generate the session
+        response_data = self._request('POST', '/api/billing/customer-portal', json=payload)
+        return response_data.get("url", "")
+
+
+    # --- Integrations Methods ---
+
+    def get_webhooks(self) -> List[models.WebhookSubscription]:
+        """
+        List configured webhooks.
+        """
+        response_data = self._request('GET', '/api/integrations/webhooks')
+        if isinstance(response_data, dict) and "webhooks" in response_data:
+            return [models.WebhookSubscription.model_validate(w) for w in response_data["webhooks"]]
+        return [models.WebhookSubscription.model_validate(w) for w in response_data]
+
+    def get_slack_status(self) -> models.SlackStatus:
+        """
+        Check the status of the Slack integration.
+        """
+        response_data = self._request('GET', '/api/integrations/slack/status')
+        return models.SlackStatus.model_validate(response_data)
+
+
+    # --- Visitor Tracking Methods ---
+
+    def track_visitor_event(
+        self, 
+        session_id: str, 
+        event_type: str, 
+        page_url: Optional[str] = None, 
+        event_data: Optional[Dict[str, Any]] = None,
+        visitor_fingerprint: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Track a public visitor event (no auth required usually, but key validates quota).
+        """
+        payload = {
+            "session_id": session_id,
+            "event_type": event_type,
+            "page_url": page_url,
+            "event_data": event_data,
+            "visitor_fingerprint": visitor_fingerprint
+        }
+        payload = {k: v for k, v in payload.items() if v is not None}
+        return self._request('POST', '/api/events/track', json=payload)

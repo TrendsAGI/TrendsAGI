@@ -503,3 +503,117 @@ class AgentTaskResponse(OrmBaseModel):
     status: str
     message: Optional[str] = None
     conversation_id: Optional[int] = None
+
+
+# --- Blog Models ---
+
+class BlogPost(OrmBaseModel):
+    id: int
+    title: str
+    slug: str
+    excerpt: Optional[str] = None
+    cover_image: Optional[str] = None
+    published_at: datetime
+    author_name: Optional[str] = None
+    reading_time_minutes: int = 0
+    content: Optional[str] = None  # Full content included in single post view
+
+class BlogPostListResponse(OrmBaseModel):
+    posts: List[BlogPost]
+    meta: PaginationMeta
+
+
+# --- User Profile & API Keys Models ---
+
+class UserSubscription(OrmBaseModel):
+    plan_name: str
+    status: str
+    current_period_end: Optional[datetime] = None
+    cancel_at_period_end: bool = False
+
+class UserProfile(OrmBaseModel):
+    id: int
+    email: str
+    full_name: Optional[str] = None
+    is_active: bool
+    is_verified: bool
+    organization_role: Optional[str] = None
+    subscription: Optional[UserSubscription] = None
+    avatar_url: Optional[str] = None
+    created_at: datetime
+
+class ApiKey(OrmBaseModel):
+    id: int
+    name: str
+    prefix: str
+    created_at: datetime
+    last_used_at: Optional[datetime] = None
+    permissions: List[str] = Field(default_factory=list)
+    is_active: bool = True
+
+class ApiKeyCreateResponse(ApiKey):
+    key: str  # The full secret key, only returned on creation
+
+class ApiKeyListResponse(OrmBaseModel):
+    keys: List[ApiKey]
+
+class ApiUsageSummary(OrmBaseModel):
+    plan_daily_limit: int
+    requests_today: int
+    remaining_today: int
+
+class ApiUsageDaily(OrmBaseModel):
+    date: date
+    request_count: int
+
+class ApiUsageResponse(OrmBaseModel):
+    summary: ApiUsageSummary
+    daily_usage: List[ApiUsageDaily] = Field(default_factory=list)
+
+
+# --- Organization Models ---
+
+class OrgMember(OrmBaseModel):
+    id: int
+    email: str
+    full_name: Optional[str] = None
+    role: str
+    joined_at: datetime
+    user_id: Optional[int] = None
+
+class OrgMemberListResponse(OrmBaseModel):
+    members: List[OrgMember]
+
+class OrgInvite(OrmBaseModel):
+    id: int
+    email: str
+    role: str
+    invited_by_email: Optional[str] = None
+    status: str
+    created_at: datetime
+    expires_at: datetime
+
+class OrgInviteListResponse(OrmBaseModel):
+    invites: List[OrgInvite]
+
+    
+# --- Integration Models ---
+
+class WebhookSubscription(OrmBaseModel):
+    id: int
+    target_url: str
+    events: List[str]
+    is_active: bool
+    secret: Optional[str] = None # Partial/masked usually
+    created_at: datetime
+    failure_count: int = 0
+
+class WebhookListResponse(OrmBaseModel):
+    webhooks: List[WebhookSubscription]
+
+class SlackStatus(OrmBaseModel):
+    is_connected: bool
+    team_name: Optional[str] = None
+    channel: Optional[str] = None
+    channel_id: Optional[str] = None
+    configuration_url: Optional[str] = None
