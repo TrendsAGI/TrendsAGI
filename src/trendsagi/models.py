@@ -519,15 +519,15 @@ class BlogPost(OrmBaseModel):
     content: Optional[str] = None  # Full content included in single post view
 
 class BlogPostListResponse(OrmBaseModel):
-    posts: List[BlogPost]
-    meta: PaginationMeta
+    posts: List[BlogPost] = Field(default_factory=list)
+    meta: Optional[PaginationMeta] = None
 
 
 # --- User Profile & API Keys Models ---
 
 class UserSubscription(OrmBaseModel):
-    plan_name: str
-    status: str
+    plan_name: Optional[str] = None
+    status: Optional[str] = None
     current_period_end: Optional[datetime] = None
     cancel_at_period_end: bool = False
 
@@ -535,40 +535,49 @@ class UserProfile(OrmBaseModel):
     id: int
     email: str
     full_name: Optional[str] = None
-    is_active: bool
-    is_verified: bool
+    is_active: bool = True
+    is_verified: Optional[bool] = None
     organization_role: Optional[str] = None
     subscription: Optional[UserSubscription] = None
     avatar_url: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
 
 class ApiKey(OrmBaseModel):
     id: int
     name: str
-    prefix: str
-    created_at: datetime
+    prefix: Optional[str] = None
+    created_at: Optional[datetime] = None
     last_used_at: Optional[datetime] = None
     permissions: List[str] = Field(default_factory=list)
     is_active: bool = True
 
-class ApiKeyCreateResponse(ApiKey):
-    key: str  # The full secret key, only returned on creation
+class ApiKeyCreateResponse(OrmBaseModel):
+    id: int
+    name: str
+    key: Optional[str] = Field(None, alias="api_key")  # Full key only on creation
+    prefix: Optional[str] = None
+    created_at: Optional[datetime] = None
 
 class ApiKeyListResponse(OrmBaseModel):
     keys: List[ApiKey]
 
 class ApiUsageSummary(OrmBaseModel):
-    plan_daily_limit: int
-    requests_today: int
-    remaining_today: int
+    plan_daily_limit: Optional[int] = None
+    requests_today: Optional[int] = None
+    remaining_today: Optional[int] = None
+    total_requests_last_30_days: Optional[int] = None
+    cost_estimated_today: Optional[float] = None
 
 class ApiUsageDaily(OrmBaseModel):
     date: date
     request_count: int
 
 class ApiUsageResponse(OrmBaseModel):
-    summary: ApiUsageSummary
+    summary: Optional[ApiUsageSummary] = None
     daily_usage: List[ApiUsageDaily] = Field(default_factory=list)
+    # Allow raw dict format from API
+    total_requests_last_30_days: Optional[int] = None
+    cost_estimated_today: Optional[float] = None
 
 
 # --- Organization Models ---
@@ -577,8 +586,8 @@ class OrgMember(OrmBaseModel):
     id: int
     email: str
     full_name: Optional[str] = None
-    role: str
-    joined_at: datetime
+    role: Optional[str] = None
+    joined_at: Optional[datetime] = None
     user_id: Optional[int] = None
 
 class OrgMemberListResponse(OrmBaseModel):
@@ -612,8 +621,10 @@ class WebhookListResponse(OrmBaseModel):
     webhooks: List[WebhookSubscription]
 
 class SlackStatus(OrmBaseModel):
-    is_connected: bool
+    is_connected: Optional[bool] = Field(None, alias="is_active")
+    is_active: Optional[bool] = None
     team_name: Optional[str] = None
     channel: Optional[str] = None
     channel_id: Optional[str] = None
     configuration_url: Optional[str] = None
+    new_trend_alerts: Optional[bool] = None

@@ -1031,6 +1031,9 @@ class TrendsAGIClient:
         """
         params = {"limit": limit, "offset": offset, "tag": tag}
         response_data = self._request('GET', '/api/blog/posts', params=params)
+        # Handle API returning list directly instead of {posts: [], meta: {}}
+        if isinstance(response_data, list):
+            response_data = {"posts": response_data}
         return models.BlogPostListResponse.model_validate(response_data)
 
     def get_blog_post(self, slug: str) -> models.BlogPost:
