@@ -79,83 +79,51 @@ class TrendsAGIClient:
 
     def get_trends(
         self,
-        search: Optional[str] = None,
         sort_by: str = 'volume',
-        order: str = 'desc',
+        sort_dir: str = 'desc',
         limit: int = 20,
         offset: int = 0,
-        period: str = '24h',
-        category: Optional[str] = None,
         start_date: Optional[str] = None,
-        end_date: Optional[str] = None
+        end_date: Optional[str] = None,
+        min_snapshots: Optional[int] = None,
+        exclude_sentiment: Optional[str] = None,
+        interests: Optional[List[str]] = None
     ) -> models.TrendListResponse:
         """
         Retrieve a list of currently trending topics.
         """
-        params = {k: v for k, v in locals().items() if v is not None and k != 'self'}
+        page = (offset // limit) + 1
+        params = {
+            "page": page,
+            "limit": limit,
+            "sort_by": sort_by,
+            "sort_dir": sort_dir,
+            "start_date": start_date,
+            "end_date": end_date,
+            "min_snapshots": min_snapshots,
+            "exclude_sentiment": exclude_sentiment
+        }
+        if interests:
+            params["interests"] = ",".join(interests)
+            
+        params = {k: v for k, v in params.items() if v is not None}
         response_data = self._request('GET', '/api/trends', params=params)
         return models.TrendListResponse.model_validate(response_data)
 
-    def get_trend_analytics(self, trend_id: int, period: str = '7d', start_date: Optional[str] = None, end_date: Optional[str] = None) -> models.TrendAnalytics:
+    def get_trend(self, trend_id: int) -> models.TrendItem:
         """
-        Retrieve historical data points for a specific trend.
+        Retrieve a single trend by ID.
         """
-        params = {"period": period, "startDate": start_date, "endDate": end_date}
-        params = {k: v for k, v in params.items() if v is not None}
-        response_data = self._request('GET', f'/api/trends/{trend_id}/analytics', params=params)
-        return models.TrendAnalytics.model_validate(response_data)
+        response_data = self._request('GET', f'/api/trends/{trend_id}')
+        return models.TrendItem.model_validate(response_data)
 
-    def get_trend_autocomplete(self, query: str) -> models.AutocompleteResponse:
+    def analyze_trend(self, trend_id: int, force_refresh: bool = False) -> models.AnalysisResponse:
         """
-        Get trend name suggestions for typeahead search.
+        Trigger an analysis task for a trend.
         """
-        response_data = self._request('GET', '/api/trends/autocomplete', params={"query": query})
-        return models.AutocompleteResponse.model_validate(response_data)
-
-    def get_trend_categories(self) -> models.ActiveCategoriesResponse:
-        """
-        Get a list of all categories that have at least one associated trend.
-        """
-        response_data = self._request('GET', '/api/trends/categories')
-        return models.ActiveCategoriesResponse.model_validate(response_data)
-
-    def search_insights(
-        self,
-        key_theme_contains: Optional[str] = None,
-        audience_keyword: Optional[str] = None,
-        angle_contains: Optional[str] = None,
-        sentiment_category: Optional[str] = None,
-        overall_topic_category_llm: Optional[str] = None,
-        trend_name_contains: Optional[str] = None,
-        limit: int = 20,
-        offset: int = 0,
-        sort_by: str = 'timestamp',
-        order: str = 'desc'
-    ) -> models.InsightSearchResponse:
-        """
-        Search for trends based on the content of their AI-generated insights.
-        """
-        params = {
-            "keyThemeContains": key_theme_contains, "audienceKeyword": audience_keyword,
-            "angleContains": angle_contains, "sentimentCategory": sentiment_category,
-            "overallTopicCategoryLlm": overall_topic_category_llm, "trendNameContains": trend_name_contains,
-            "limit": limit, "offset": offset, "sort_by": sort_by, "order": order
-        }
-        params = {k: v for k, v in params.items() if v is not None}
-        response_data = self._request('GET', '/api/insights/search', params=params)
-        return models.InsightSearchResponse.model_validate(response_data)
-        
-    def get_ai_insights(self, trend_id: int) -> Optional[models.AIInsight]:
-        """
-        Get cached AI-powered insights for a specific trend.
-        
-        Note: This method only retrieves existing, cached insights. New insights 
-        must be generated via the TrendsAGI web dashboard.
-        
-        Returns None if no insight is available for the given trend.
-        """
-        response_data = self._request('GET', f'/api/trends/{trend_id}/ai-insights')
-        return models.AIInsight.model_validate(response_data) if response_data else None
+        payload = {"force_refresh": force_refresh}
+        response_data = self._request('POST', f'/api/trends/{trend_id}/analyze', json=payload)
+        return models.AnalysisResponse.model_validate(response_data)
 
     # --- Custom Reports Methods ---
 
@@ -171,14 +139,16 @@ class TrendsAGIClient:
     def get_recommendations(
         self,
         limit: int = 10, offset: int = 0, recommendation_type: Optional[str] = None,
-        source_trend_query: Optional[str] = None, priority: Optional[str] = None, status: str = 'new'
+        source_trend_query: Optional[str] = None, priority: Optional[str] = None, status: str = 'new',
+        match_user_interests: bool = False
     ) -> models.RecommendationListResponse:
         """
         Get actionable recommendations generated for the user.
         """
         params = {
             "limit": limit, "offset": offset, "type": recommendation_type, 
-            "sourceTrendQ": source_trend_query, "priority": priority, "status": status
+            "sourceTrendQ": source_trend_query, "priority": priority, "status": status,
+            "match_user_interests": str(match_user_interests).lower()
         }
         params = {k: v for k, v in params.items() if v is not None}
         response_data = self._request('GET', '/api/intelligence/recommendations', params=params)
@@ -215,13 +185,6 @@ class TrendsAGIClient:
         response_data = self._request('GET', '/api/intelligence/crisis-events', params=params)
         return models.CrisisEventListResponse.model_validate(response_data)
 
-    def get_crisis_event(self, event_id: int) -> models.CrisisEvent:
-        """
-        Retrieve a single crisis event by its unique ID.
-        """
-        response_data = self._request('GET', f'/api/intelligence/crisis-events/{event_id}')
-        return models.CrisisEvent.model_validate(response_data)
-
     def perform_crisis_event_action(self, event_id: int, action: str) -> models.CrisisEvent:
         """
         Update the status of a crisis event (e.g., "acknowledge", "archive").
@@ -248,7 +211,7 @@ class TrendsAGIClient:
 
     def get_topic_interests(self) -> List[models.TopicInterest]:
         """Retrieve the list of topic interests tracked by the user."""
-        response_data = self._request('GET', '/api/user/topic-interests')
+        response_data = self._request('GET', '/api/user/interests')
         return [models.TopicInterest.model_validate(item) for item in response_data]
 
     def create_topic_interest(
@@ -264,7 +227,7 @@ class TrendsAGIClient:
             "volume_threshold_value": volume_threshold_value, "percentage_growth_value": percentage_growth_value
         }
         payload = {k: v for k, v in payload.items() if v is not None}
-        response_data = self._request('POST', '/api/user/topic-interests', json=payload)
+        response_data = self._request('POST', '/api/user/interests', json=payload)
         # Server returns a list; return the first created interest
         if isinstance(response_data, list):
             return models.TopicInterest.model_validate(response_data[0])
@@ -272,63 +235,12 @@ class TrendsAGIClient:
         
     def delete_topic_interest(self, interest_id: int) -> None:
         """Delete a specific topic interest."""
-        self._request('DELETE', f'/api/user/topic-interests/{interest_id}')
+        self._request('DELETE', f'/api/user/interests/{interest_id}')
 
-    def get_export_settings(self) -> List[models.ExportConfiguration]:
-        """Get all of the user's data export configurations."""
-        response_data = self._request('GET', '/api/user/export/settings')
-        return [models.ExportConfiguration.model_validate(item) for item in response_data]
-
-    def save_export_settings(
-        self,
-        destination: str,
-        selected_fields: List[str],
-        config: Dict[str, Any],
-        schedule: str = "none",
-        schedule_time: Optional[str] = None,
-        is_active: bool = False,
-        config_id: Optional[int] = None
-    ) -> models.ExportConfiguration:
-        """
-        Create or update an export configuration.
-        """
-        payload = {
-            "id": config_id, "destination": destination, "config": config,
-            "schedule": schedule, "schedule_time": schedule_time, "is_active": is_active,
-            "selected_fields": selected_fields
-        }
-        payload = {k: v for k, v in payload.items() if v is not None}
-        response_data = self._request('POST', '/api/user/export/settings', json=payload)
-        return models.ExportConfiguration.model_validate(response_data)
-
-    def delete_export_setting(self, config_id: int) -> None:
-        """Delete an export configuration."""
-        self._request('DELETE', f'/api/user/export/settings/{config_id}')
-
-    def get_export_history(self, limit: int = 15, offset: int = 0) -> models.ExportHistoryResponse:
-        """Get the user's export execution history."""
-        response_data = self._request('GET', '/api/user/export/history', params={"limit": limit, "offset": offset})
-        return models.ExportHistoryResponse.model_validate(response_data)
-
-    def run_export_now(self, config_id: int) -> models.ExportExecutionLog:
-        """Trigger an immediate export."""
-        response_data = self._request('POST', f'/api/user/export/configurations/{config_id}/run-now')
-        return models.ExportExecutionLog.model_validate(response_data)
-        
     def get_dashboard_overview(self) -> models.DashboardOverview:
         """Get key statistics, top trends, and recent alerts for the dashboard."""
-        response_data = self._request('GET', '/api/dashboard/overview')
+        response_data = self._request('GET', '/dashboard/overview')
         return models.DashboardOverview.model_validate(response_data)
-
-    def get_recent_notifications(self, limit: int = 10) -> models.NotificationListResponse:
-        """Get recent notifications for the user."""
-        response_data = self._request('GET', '/api/user/notifications/recent', params={"limit": limit})
-        return models.NotificationListResponse.model_validate(response_data)
-
-    def mark_notifications_read(self, ids: Optional[List[int]] = None) -> Dict[str, Any]:
-        """Mark notifications as read. If ids is None, marks all as read."""
-        payload = {"ids": ids if ids is not None else []}
-        return self._request('POST', '/api/user/notifications/mark-read', json=payload)
 
     # --- Public Information & Status Methods ---
     
@@ -347,7 +259,7 @@ class TrendsAGIClient:
         """
         original_key = self._session.headers.pop("X-API-Key", None)
         try:
-            response_data = self._request('GET', '/api/v1/public/homepage-financial-data')
+            response_data = self._request('GET', '/public/homepage-data')
             return models.HomepageFinancialDataResponse.model_validate(response_data)
         finally:
             if original_key:
@@ -355,22 +267,16 @@ class TrendsAGIClient:
     
     def get_available_plans(self) -> List[models.SubscriptionPlan]:
         """Retrieve a list of all publicly available subscription plans."""
-        response_data = self._request('GET', '/api/plans')
+        response_data = self._request('GET', '/plans')
         return [models.SubscriptionPlan.model_validate(plan) for plan in response_data]
 
     def get_api_status(self) -> models.StatusPage:
         """
         Retrieve the current operational status of the API and its components.
         """
-        response_data = self._request('GET', '/api/status')
+        response_data = self._request('GET', '/status')
         return models.StatusPage.model_validate(response_data)
-        
-    def get_api_status_history(self) -> models.StatusHistoryResponse:
-        """
-        Retrieve the 90-day uptime history for all API components.
-        """
-        response_data = self._request('GET', '/api/status-history')
-        return models.StatusHistoryResponse.model_validate(response_data)
+
 
     # --- WebSocket Methods ---
 
@@ -639,7 +545,7 @@ class TrendsAGIClient:
         :param include_archived: Include archived agents.
         """
         params = {"limit": limit, "offset": offset, "include_archived": include_archived}
-        response_data = self._request('GET', '/api/intelligence/agents', params=params)
+        response_data = self._request('GET', '/api/agents', params=params)
         return models.AgentListResponse.model_validate(response_data)
 
     def create_agent(
@@ -783,7 +689,7 @@ class TrendsAGIClient:
             "default_project_id": default_project_id
         }
         payload = {k: v for k, v in payload.items() if v is not None}
-        response_data = self._request('POST', '/api/intelligence/agents', json=payload)
+        response_data = self._request('POST', '/api/agents', json=payload)
         return models.Agent.model_validate(response_data)
 
     def get_agent(self, agent_id: int) -> models.Agent:
@@ -792,7 +698,7 @@ class TrendsAGIClient:
         
         :param agent_id: The agent ID.
         """
-        response_data = self._request('GET', f'/api/intelligence/agents/{agent_id}')
+        response_data = self._request('GET', f'/api/agents/{agent_id}')
         return models.Agent.model_validate(response_data)
 
     def update_agent(
@@ -941,7 +847,7 @@ class TrendsAGIClient:
             "is_archived": is_archived
         }
         payload = {k: v for k, v in payload.items() if v is not None}
-        response_data = self._request('PUT', f'/api/intelligence/agents/{agent_id}', json=payload)
+        response_data = self._request('PUT', f'/api/agents/{agent_id}', json=payload)
         return models.Agent.model_validate(response_data)
 
     def delete_agent(self, agent_id: int) -> None:
@@ -950,7 +856,7 @@ class TrendsAGIClient:
         
         :param agent_id: The agent ID to delete.
         """
-        self._request('DELETE', f'/api/intelligence/agents/{agent_id}')
+        self._request('DELETE', f'/api/agents/{agent_id}')
 
     def list_agent_conversations(
         self,
@@ -966,7 +872,7 @@ class TrendsAGIClient:
         :param offset: Number to skip for pagination.
         """
         params = {"limit": limit, "offset": offset}
-        response_data = self._request('GET', f'/api/intelligence/agents/{agent_id}/conversations', params=params)
+        response_data = self._request('GET', f'/api/agents/{agent_id}/conversations', params=params)
         return models.AgentConversationListResponse.model_validate(response_data)
 
     def get_agent_conversation(self, conversation_id: int) -> models.AgentConversation:
@@ -975,7 +881,7 @@ class TrendsAGIClient:
         
         :param conversation_id: The conversation ID.
         """
-        response_data = self._request('GET', f'/api/intelligence/agents/conversations/{conversation_id}')
+        response_data = self._request('GET', f'/api/agents/conversations/{conversation_id}')
         return models.AgentConversation.model_validate(response_data)
 
     def delete_agent_conversation(self, conversation_id: int) -> None:
@@ -984,7 +890,7 @@ class TrendsAGIClient:
         
         :param conversation_id: The conversation ID to delete.
         """
-        self._request('DELETE', f'/api/intelligence/agents/conversations/{conversation_id}')
+        self._request('DELETE', f'/api/agents/conversations/{conversation_id}')
 
     def agent_chat(
         self,
@@ -1011,7 +917,7 @@ class TrendsAGIClient:
             "guidance_ids": guidance_ids
         }
         payload = {k: v for k, v in payload.items() if v is not None}
-        response_data = self._request('POST', f'/api/intelligence/agents/{agent_id}/chat', json=payload)
+        response_data = self._request('POST', f'/api/agents/{agent_id}/chat', json=payload)
         return models.AgentTaskResponse.model_validate(response_data)
 
     def get_agent_task_status(self, task_id: str) -> Dict[str, Any]:
@@ -1021,7 +927,7 @@ class TrendsAGIClient:
         :param task_id: The task ID from agent_chat response.
         :returns: Status dict with 'status' (PENDING, SUCCESS, FAILURE) and 'result' when complete.
         """
-        return self._request('GET', f'/api/intelligence/agents/tasks/{task_id}')
+        return self._request('GET', f'/api/agents/tasks/{task_id}')
 
     # --- Blog Methods ---
 

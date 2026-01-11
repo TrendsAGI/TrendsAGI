@@ -24,11 +24,7 @@ class PaginationMeta(BaseModel):
 
 
 # --- Autocomplete and Categories Models ---
-class AutocompleteResponse(OrmBaseModel):
-    suggestions: List[str]
-
-class ActiveCategoriesResponse(OrmBaseModel):
-    categories: List[str]
+# Removed: AutocompleteResponse, ActiveCategoriesResponse
 
 # --- Trends & Insights Models ---
 class TrendItem(OrmBaseModel):
@@ -36,8 +32,10 @@ class TrendItem(OrmBaseModel):
     name: str
     volume: Optional[int] = None
     timestamp: datetime
-    meta_description: Optional[str] = None
     category: Optional[str] = None
+    sentiment_category: Optional[str] = None
+    # Fields below may not be populated in list view by current Go backend
+    meta_description: Optional[str] = None
     growth: Optional[float] = None
     previous_volume: Optional[int] = None
     absolute_change: Optional[int] = None
@@ -47,57 +45,15 @@ class TrendItem(OrmBaseModel):
 
 class TrendListResponse(OrmBaseModel):
     trends: List[TrendItem]
-    meta: PaginationMeta 
+    total: int # Go returns 'total' int64, not 'meta' object for pagination
+    # meta: PaginationMeta # Removed
 
-class TrendDataPoint(OrmBaseModel):
-    date: datetime
-    volume: Optional[int] = None
-    velocity_per_hour: Optional[float] = None
-    acceleration: Optional[float] = None
-    is_forecast: Optional[bool] = False
+class AnalysisResponse(OrmBaseModel):
+    task_id: str
+    status: str
 
-class TrendAnalytics(OrmBaseModel):
-    trend_id: int
-    name: str
-    period: str
-    start_date: Optional[str] = None
-    end_date: str
-    data: List[TrendDataPoint]
-
-class TrendSearchResultItem(OrmBaseModel):
-    id: int
-    name: str
-    category: Optional[str] = None
-    volume: Optional[int] = None
-    timestamp: Optional[datetime] = None
-    meta_description: Optional[str] = None
-
-class InsightSearchResponse(OrmBaseModel):
-    trends: List[TrendSearchResultItem]
-    meta: PaginationMeta
-
-class AIInsightContentBrief(OrmBaseModel):
-    target_audience_segments: List[str]
-    key_angles_for_content: List[str]
-    suggested_content_formats: List[str]
-    call_to_action_ideas: List[str]
-
-class AIInsightAdTargeting(OrmBaseModel):
-    primary_audience_keywords: List[str]
-    secondary_audience_keywords: List[str]
-    potential_demographics_summary: Optional[str]
-
-class AIInsight(OrmBaseModel):
-    trend_id: int
-    trend_name: str
-    sentiment_summary: Optional[str]
-    sentiment_category: Optional[str]
-    key_themes: List[str]
-    content_brief: Optional[AIInsightContentBrief]
-    ad_platform_targeting: Optional[AIInsightAdTargeting]
-    overall_topic_category_llm: Optional[str]
-    generated_at: datetime
-    llm_model_used: str
+# Removed: TrendDataPoint, TrendAnalytics, TrendSearchResultItem, InsightSearchResponse, 
+# AIInsightContentBrief, AIInsightAdTargeting, AIInsight
 
 # --- Custom Report Models ---
 class ReportMeta(OrmBaseModel):
@@ -126,7 +82,6 @@ class Recommendation(OrmBaseModel):
     priority: str
     status: str
     created_at: datetime
-    status: Optional[str] = None
     updated_at: datetime
     user_feedback: Optional[str] = None
 
@@ -151,7 +106,6 @@ class CrisisEvent(OrmBaseModel):
     source_keywords: Optional[List[str]] = None
     impacted_entity: Optional[str] = None
     created_at: datetime
-    status: Optional[str] = None
     updated_at: datetime
 
 class CrisisEventListResponse(OrmBaseModel):
@@ -273,29 +227,7 @@ class TopicInterest(OrmBaseModel):
     created_at: datetime
     status: Optional[str] = None
 
-class ExportConfiguration(OrmBaseModel):
-    id: int
-    destination: str
-    config: Dict[str, Any]
-    schedule: str
-    schedule_time: Optional[str] = None
-    is_active: bool
-    selected_fields: List[str] = Field(default_factory=list)
-    file_name_template: Optional[str] = None
-
-class ExportExecutionLog(OrmBaseModel):
-    id: int
-    execution_time: datetime
-    duration_seconds: Optional[float] = None
-    destination: str
-    status: str
-    message: Optional[str] = None
-    records_exported: Optional[int] = None
-    export_configuration_id: Optional[int] = None
-
-class ExportHistoryResponse(OrmBaseModel):
-    history: List[ExportExecutionLog]
-    meta: PaginationMeta
+# Export models removed
 
 class DashboardStats(OrmBaseModel):
     active_trends: int
