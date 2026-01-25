@@ -110,6 +110,35 @@ class TrendsAGIClient:
         response_data = self._request('GET', '/api/trends', params=params)
         return models.TrendListResponse.model_validate(response_data)
 
+    def get_trend_autocomplete(self, query: str) -> models.AutocompleteResponse:
+        """
+        Get autocomplete suggestions for a query.
+        """
+        params = {"q": query}
+        response_data = self._request('GET', '/api/trends/autocomplete', params=params)
+        # If response is just a list of strings ["foo", "bar"]
+        if isinstance(response_data, list):
+            return models.AutocompleteResponse(suggestions=response_data)
+        return models.AutocompleteResponse.model_validate(response_data)
+
+    def get_trend_categories(self) -> models.CategoryListResponse:
+        """
+        Get list of active trend categories.
+        """
+        response_data = self._request('GET', '/api/trends/categories')
+        # If response is list of dicts
+        if isinstance(response_data, list):
+            return models.CategoryListResponse(categories=[models.CategoryInfo.model_validate(c) for c in response_data])
+        return models.CategoryListResponse.model_validate(response_data)
+
+    def search_insights(self, key_theme_contains: str, limit: int = 10) -> models.TrendListResponse:
+        """
+        Search for trends based on their AI insights content.
+        """
+        params = {"q": key_theme_contains, "limit": limit}
+        response_data = self._request('GET', '/api/insights/search', params=params)
+        return models.TrendListResponse.model_validate(response_data)
+
     def get_trend(self, trend_id: int) -> models.TrendItem:
         """
         Retrieve a single trend by ID.
@@ -237,10 +266,73 @@ class TrendsAGIClient:
         """Delete a specific topic interest."""
         self._request('DELETE', f'/api/user/interests/{interest_id}')
 
+    # --- Export Settings Methods ---
+
+    def get_export_settings(self) -> List[models.ExportConfig]:
+        """Get all export configurations."""
+        response_data = self._request('GET', '/api/user/export/settings')
+        # Expecting list of configs
+        if isinstance(response_data, list):
+            return [models.ExportConfig.model_validate(item) for item in response_data]
+        return [models.ExportConfig.model_validate(item) for item in response_data.get('settings', [])]
+
+    def save_export_settings(
+        self,
+        destination: str,
+        config: Dict[str, Any],
+        schedule: str,
+        schedule_time: str,
+        is_active: bool = True,
+        selected_fields: Optional[List[str]] = None
+    ) -> models.ExportConfig:
+        """
+        Save a new export configuration.
+        """
+        payload = {
+            "destination": destination,
+            "config": config,
+            "schedule": schedule,
+            "schedule_time": schedule_time,
+            "is_active": is_active,
+            "selected_fields": selected_fields or []
+        }
+        response_data = self._request('POST', '/api/user/export/settings', json=payload)
+        return models.ExportConfig.model_validate(response_data)
+
+    def delete_export_setting(self, config_id: int) -> None:
+        """Delete an export configuration."""
+        self._request('DELETE', f'/api/user/export/settings/{config_id}')
+
+    def run_export_now(self, config_id: int) -> models.ExportRunResponse:
+        """Trigger an immediate run of an export configuration."""
+        response_data = self._request('POST', f'/api/user/export/configurations/{config_id}/run-now')
+        return models.ExportRunResponse.model_validate(response_data)
+
+    def get_export_history(self, limit: int = 20, offset: int = 0) -> models.ExportHistoryListResponse:
+        """Get history of export runs."""
+        params = {"limit": limit, "offset": offset}
+        response_data = self._request('GET', '/api/user/export/history', params=params)
+        return models.ExportHistoryListResponse.model_validate(response_data)
+
     def get_dashboard_overview(self) -> models.DashboardOverview:
         """Get key statistics, top trends, and recent alerts for the dashboard."""
         response_data = self._request('GET', '/dashboard/overview')
         return models.DashboardOverview.model_validate(response_data)
+
+    def get_recent_notifications(self, limit: int = 10) -> models.NotificationListResponse:
+        """
+        Get recent notifications for the user.
+        """
+        params = {"limit": limit}
+        response_data = self._request('GET', '/api/user/notifications/recent', params=params)
+        return models.NotificationListResponse.model_validate(response_data)
+
+    def mark_notifications_read(self, ids: List[int]) -> Dict[str, Any]:
+        """
+        Mark specific notifications as read. Returns updated counts.
+        """
+        payload = {"ids": ids}
+        return self._request('POST', '/api/user/notifications/mark-read', json=payload)
 
     # --- Public Information & Status Methods ---
     
@@ -259,7 +351,7 @@ class TrendsAGIClient:
         """
         original_key = self._session.headers.pop("X-API-Key", None)
         try:
-            response_data = self._request('GET', '/public/homepage-data')
+            response_data = self._request('GET', '/api/public/homepage-data')
             return models.HomepageFinancialDataResponse.model_validate(response_data)
         finally:
             if original_key:
@@ -267,7 +359,7 @@ class TrendsAGIClient:
     
     def get_available_plans(self) -> List[models.SubscriptionPlan]:
         """Retrieve a list of all publicly available subscription plans."""
-        response_data = self._request('GET', '/plans')
+        response_data = self._request('GET', '/api/plans')
         return [models.SubscriptionPlan.model_validate(plan) for plan in response_data]
 
     def get_api_status(self) -> models.StatusPage:
@@ -298,6 +390,8 @@ class TrendsAGIClient:
                 while True:
                     try:
                         message = await websocket.recv()
+                        if isinstance(message, bytes):
+                            message = message.decode('utf-8')
                         yield message
                     except websockets.ConnectionClosed:
                         break
@@ -1024,7 +1118,7 @@ class TrendsAGIClient:
             payload["return_url"] = return_url
             
         # Usually a POST request to generate the session
-        response_data = self._request('POST', '/api/billing/customer-portal', json=payload)
+        response_data = self._request('POST', '/api/billing/create-portal-session', json=payload)
         return response_data.get("url", "")
 
 

@@ -24,7 +24,24 @@ class PaginationMeta(BaseModel):
 
 
 # --- Autocomplete and Categories Models ---
-# Removed: AutocompleteResponse, ActiveCategoriesResponse
+
+class AutocompleteResult(OrmBaseModel):
+    suggestion: str
+    type: str = "keyword" # keyword, trend, category
+    score: Optional[float] = None
+
+class AutocompleteResponse(OrmBaseModel):
+    suggestions: List[str] # Simple list of strings based on local_test.py expectation
+
+class CategoryInfo(OrmBaseModel):
+    id: int
+    name: str
+    slug: str
+    description: Optional[str] = None
+    active_trends_count: int = 0
+
+class CategoryListResponse(OrmBaseModel):
+    categories: List[CategoryInfo]
 
 # --- Trends & Insights Models ---
 class TrendItem(OrmBaseModel):
@@ -227,7 +244,38 @@ class TopicInterest(OrmBaseModel):
     created_at: datetime
     status: Optional[str] = None
 
-# Export models removed
+# --- Export Models ---
+
+class ExportConfig(OrmBaseModel):
+    id: int
+    user_id: int
+    destination: str  # 'aws', 'gcp', 'email'
+    config: Dict[str, Any]
+    schedule: str # 'daily', 'weekly'
+    schedule_time: str
+    is_active: bool
+    selected_fields: List[str]
+    created_at: datetime
+    updated_at: datetime
+
+class ExportHistory(OrmBaseModel):
+    id: int
+    config_id: int
+    status: str
+    file_url: Optional[str] = None
+    row_count: int
+    error_message: Optional[str] = None
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+class ExportHistoryListResponse(OrmBaseModel):
+    history: List[ExportHistory]
+    meta: Optional[PaginationMeta] = None
+
+class ExportRunResponse(OrmBaseModel):
+    status: str
+    message: Optional[str] = None
+    run_id: Optional[str] = None
 
 class DashboardStats(OrmBaseModel):
     active_trends: int
