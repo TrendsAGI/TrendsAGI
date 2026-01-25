@@ -26,31 +26,43 @@ class PaginationMeta(BaseModel):
 # --- Autocomplete and Categories Models ---
 
 class AutocompleteResult(OrmBaseModel):
-    suggestion: str
-    type: str = "keyword" # keyword, trend, category
-    score: Optional[float] = None
+    name: str
+    category: Optional[str] = None
+    volume: Optional[int] = None
+    # Support 'suggestion' if backend changes or for compatibility
+    suggestion: Optional[str] = None
 
 class AutocompleteResponse(OrmBaseModel):
-    suggestions: List[str] # Simple list of strings based on local_test.py expectation
+    # Backend returns 'results' list of objects
+    results: List[AutocompleteResult] = Field(default_factory=list)
+    
+    @property
+    def suggestions(self) -> List[str]:
+        # Helper to maintain compatibility with test script expectations
+        return [r.name for r in self.results]
 
 class CategoryInfo(OrmBaseModel):
-    id: int
     name: str
-    slug: str
+    trend_count: int = 0
+    # Optional fields that might not be in the current backend response
+    id: Optional[int] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
-    active_trends_count: int = 0
 
 class CategoryListResponse(OrmBaseModel):
     categories: List[CategoryInfo]
 
 # --- Trends & Insights Models ---
 class TrendItem(OrmBaseModel):
-    id: int
-    name: str
+    id: Optional[int] = None # ID might be optional in some contexts (e.g. search results)
+    name: Optional[str] = Field(None, alias="title") # Handle 'title' from search results
     volume: Optional[int] = None
-    timestamp: datetime
+    timestamp: Optional[datetime] = None
     category: Optional[str] = None
+    sentiment: Optional[str] = None # 'sentiment' in search results
     sentiment_category: Optional[str] = None
+    type: Optional[str] = None # 'type' in search results
+    
     # Fields below may not be populated in list view by current Go backend
     meta_description: Optional[str] = None
     growth: Optional[float] = None
@@ -61,9 +73,16 @@ class TrendItem(OrmBaseModel):
     overall_trend: Optional[str] = Field(None, description="Qualitative assessment of the trend's direction (growing, declining, stable).")
 
 class TrendListResponse(OrmBaseModel):
-    trends: List[TrendItem]
-    total: int # Go returns 'total' int64, not 'meta' object for pagination
-    # meta: PaginationMeta # Removed
+    trends: List[TrendItem] = Field(default_factory=list)
+    total: Optional[int] = 0
+    # Search endpoint returns 'results' instead of 'trends'
+    results: Optional[List[TrendItem]] = None
+    
+    def model_post_init(self, __context: Any) -> None:
+        # Map 'results' to 'trends' if present
+        if self.results and not self.trends:
+            self.trends = self.results
+            self.total = len(self.results)
 
 class AnalysisResponse(OrmBaseModel):
     task_id: str
@@ -228,10 +247,44 @@ class HomepageIPONewsResponse(OrmBaseModel):
     status: str
     expected_trade_date: str
 
+class HomepageDataEvent(OrmBaseModel):
+    id: int
+    type: str
+    title: str
+    company: Optional[str] = None
+    summary: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    sentiment: Optional[str] = None
+
 class HomepageFinancialDataResponse(OrmBaseModel):
-    earnings_reports: List[HomepageEarningsReportResponse]
-    releases: List[CombinedReleaseResponse]
-    ipo_filings_news: List[HomepageIPONewsResponse]
+    recent_events: List[HomepageDataEvent] = Field(default_factory=list)
+    last_updated: Optional[datetime] = None
+    
+    # Backward compatibility properties
+    @property
+    def earnings_reports(self) -> List[HomepageEarningsReportResponse]:
+        return [
+            HomepageEarningsReportResponse(
+                id=e.id, company=e.company or "Unknown", 
+                source_timestamp=e.timestamp, report_time_of_day="Unknown", period="Unknown"
+            ) for e in self.recent_events if e.type == 'earnings'
+        ]
+
+    @property
+    def releases(self) -> List[CombinedReleaseResponse]:
+        return [
+            CombinedReleaseResponse(
+                id=str(e.id), title=e.title, published_at=str(e.timestamp), source="Unknown"
+            ) for e in self.recent_events if e.type in ['news', 'press_release']
+        ]
+
+    @property
+    def ipo_filings_news(self) -> List[HomepageIPONewsResponse]:
+        return [
+             HomepageIPONewsResponse(
+                id=e.id, company=e.company or "Unknown", symbol="N/A", status="Active", expected_trade_date="Unknown"
+            ) for e in self.recent_events if e.type == 'ipo'
+        ]
 
 # --- User & Account Management Models ---
 class TopicInterest(OrmBaseModel):
@@ -273,9 +326,15 @@ class ExportHistoryListResponse(OrmBaseModel):
     meta: Optional[PaginationMeta] = None
 
 class ExportRunResponse(OrmBaseModel):
-    status: str
+    success: bool
     message: Optional[str] = None
-    run_id: Optional[str] = None
+    execution_log_id: Optional[int] = None
+    # Compatibility with old model
+    status: Optional[str] = None 
+    
+    def model_post_init(self, __context: Any) -> None:
+        if self.success and not self.status:
+            self.status = "success"
 
 class DashboardStats(OrmBaseModel):
     active_trends: int
@@ -287,21 +346,27 @@ class Notification(OrmBaseModel):
     id: int
     title: str
     message: str
-    notification_type: str
+    type: str # Backend uses 'type'
     is_read: bool
     created_at: datetime
     status: Optional[str] = None
     read_at: Optional[datetime] = None
     data: Optional[Dict[str, Any]] = None
+    
+    @property
+    def notification_type(self) -> str:
+        return self.type
 
 class DashboardOverview(OrmBaseModel):
-    stats: DashboardStats
-    top_trends: List[TrendItem]
-    recent_alerts: List[Notification]
+    stats: Optional[DashboardStats] = None
+    top_trends: List[TrendItem] = Field(default_factory=list)
+    recent_alerts: List[Notification] = Field(default_factory=list)
+    # Handle "status": "ok" case
+    status: Optional[str] = None
 
 class NotificationListResponse(OrmBaseModel):
-    notifications: List[Notification]
-    unread_count: int
+    notifications: List[Notification] = Field(default_factory=list)
+    unread_count: Optional[int] = 0 # Might be missing in backend response
 
 # --- Public Information & Status Models ---
 class SessionInfoResponse(OrmBaseModel):
