@@ -1,7 +1,7 @@
 # File: trendsagi-client/trendsagi/models.py
 
-from pydantic import BaseModel, Field, HttpUrl
-from typing import List, Optional, Any, Dict
+from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
+from typing import List, Optional, Any, Dict, Union
 from datetime import datetime, date
 
 # --- Base & Helper Models ---
@@ -11,9 +11,9 @@ class OrmBaseModel(BaseModel):
         populate_by_name = True  
 
 class PaginationMeta(BaseModel):
-    total: int
-    limit: int
-    offset: int
+    total: Optional[int] = 0
+    limit: Optional[int] = 20
+    offset: Optional[int] = 0
     period: Optional[str] = None
     sort_by: Optional[str] = None
     order: Optional[str] = None
@@ -77,19 +77,46 @@ class TrendListResponse(OrmBaseModel):
     total: Optional[int] = 0
     # Search endpoint returns 'results' instead of 'trends'
     results: Optional[List[TrendItem]] = None
+    meta: Optional[PaginationMeta] = None
     
     def model_post_init(self, __context: Any) -> None:
         # Map 'results' to 'trends' if present
         if self.results and not self.trends:
             self.trends = self.results
             self.total = len(self.results)
+            
+    @model_validator(mode='after')
+    def ensure_meta(self):
+        if self.meta is None:
+            self.meta = PaginationMeta(
+                total=self.total or 0,
+                limit=len(self.trends) if self.trends else 20,
+                offset=0
+            )
+        return self
 
 class AnalysisResponse(OrmBaseModel):
     task_id: str
     status: str
 
-# Removed: TrendDataPoint, TrendAnalytics, TrendSearchResultItem, InsightSearchResponse, 
-# AIInsightContentBrief, AIInsightAdTargeting, AIInsight
+class SnapshotData(OrmBaseModel):
+    timestamp: datetime
+    volume: Optional[int] = None
+    
+    @property
+    def date(self) -> datetime:
+        return self.timestamp
+
+class TrendAnalyticsResponse(OrmBaseModel):
+    trend_id: int
+    name: str
+    period: str
+    current_volume: Optional[int] = None
+    previous_volume: Optional[int] = None
+    volume_change_percent: Optional[float] = None
+    data: List[SnapshotData] = Field(default_factory=list)
+    velocity_per_hour: Optional[float] = None
+    velocity_trend: Optional[str] = None
 
 # --- Custom Report Models ---
 class ReportMeta(OrmBaseModel):
@@ -253,7 +280,7 @@ class HomepageDataEvent(OrmBaseModel):
     title: str
     company: Optional[str] = None
     summary: Optional[str] = None
-    timestamp: Optional[datetime] = None
+    timestamp: Optional[Union[datetime, str]] = None
     sentiment: Optional[str] = None
 
 class HomepageFinancialDataResponse(OrmBaseModel):
@@ -266,7 +293,8 @@ class HomepageFinancialDataResponse(OrmBaseModel):
         return [
             HomepageEarningsReportResponse(
                 id=e.id, company=e.company or "Unknown", 
-                source_timestamp=e.timestamp, report_time_of_day="Unknown", period="Unknown"
+                source_timestamp=e.timestamp if isinstance(e.timestamp, datetime) else None, 
+                report_time_of_day="Unknown", period="Unknown"
             ) for e in self.recent_events if e.type == 'earnings'
         ]
 
@@ -313,12 +341,12 @@ class ExportConfig(OrmBaseModel):
 
 class ExportHistory(OrmBaseModel):
     id: int
-    config_id: int
+    config_id: Optional[int] = None
     status: str
     file_url: Optional[str] = None
-    row_count: int
+    row_count: Optional[int] = None
     error_message: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
 class ExportHistoryListResponse(OrmBaseModel):
@@ -358,11 +386,18 @@ class Notification(OrmBaseModel):
         return self.type
 
 class DashboardOverview(OrmBaseModel):
-    stats: Optional[DashboardStats] = None
+    stats: DashboardStats = Field(default_factory=lambda: DashboardStats(active_trends=0, alerts_today=0, topic_interests=0))
     top_trends: List[TrendItem] = Field(default_factory=list)
     recent_alerts: List[Notification] = Field(default_factory=list)
     # Handle "status": "ok" case
     status: Optional[str] = None
+    
+    @field_validator('stats', mode='before')
+    @classmethod
+    def set_stats_default(cls, v):
+        if v is None:
+            return DashboardStats(active_trends=0, alerts_today=0, topic_interests=0)
+        return v
 
 class NotificationListResponse(OrmBaseModel):
     notifications: List[Notification] = Field(default_factory=list)
@@ -376,8 +411,8 @@ class SubscriptionPlan(OrmBaseModel):
     id: int
     name: str
     description: Optional[str] = None
-    price_monthly: Optional[Dict[str, float]] = None
-    price_yearly: Optional[Dict[str, float]] = None
+    price_monthly: Optional[Union[Dict[str, float], float, int]] = None
+    price_yearly: Optional[Union[Dict[str, float], float, int]] = None
     is_custom: bool
     features: Optional[Dict[str, Any]] = Field(default_factory=dict)
 

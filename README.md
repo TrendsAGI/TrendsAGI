@@ -184,22 +184,49 @@ from trendsagi import exceptions
 try:
     client.get_trends()
 except exceptions.RateLimitError as e:
-    print(f"Slow down! Retry in {e.retry_after}s") # Handle backoff
+    print("Rate limited. Slow down and retry.")
 except exceptions.AuthenticationError:
     print("Check your API Key")
 ```
 
-## Base Rate Limits
+## Throttling and Retries
 
-Responses include `X-RateLimit-*` headers.
-Not including usage based limits.
+If you want the SDK to automatically retry on 429 responses, enable it at initialization.
 
-| Plan | API Access | Daily Calls (Approx) | Live Streaming |
-|------|------------|----------------------|----------------|
-| **Signal** | ✅ Yes | 100 | ❌ |
-| **Advantage** | ✅ Yes | ~10k | ❌ |
-| **Scale** | ✅ Yes | ~100k | ✅ Available |
-| **Enterprise** | ✅ Yes | Unlimited | ✅ Available |
+```python
+import os
+client = TrendsAGIClient(
+    api_key=os.getenv("TRENDSAGI_API_KEY"),
+    enable_retry_on_rate_limit=True,
+    max_retries=3,
+    max_retry_wait=10.0,
+    retry_backoff_factor=0.5,
+    retry_jitter=0.1,
+)
+```
+
+Retries are only applied to `429 Too Many Requests` and honor `Retry-After` when provided.
+By default, retries are disabled to avoid changing behavior for existing clients.
+
+## Rate Limits & Throttling
+
+Responses include standard `X-RateLimit-*` headers for usage limits, plus per-second throttling headers.
+
+**Common headers**
+- `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+- `X-RateLimit-Limit-Second`, `X-RateLimit-Remaining-Second`, `X-RateLimit-Reset-Second`
+- `Retry-After` (when throttled)
+
+**Per-second throttle (burst protection)**
+
+| Plan | Requests / Second |
+|------|-------------------|
+| **Developer** | 2 |
+| **Advantage** | 10 |
+| **Scale** | 50 |
+| **Enterprise** | 200 |
+
+Unauthenticated requests are throttled separately.
 
 ## Support & Resources
 
