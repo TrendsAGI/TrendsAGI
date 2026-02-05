@@ -304,14 +304,37 @@ class TrendsAGIClient:
         params = {k: v for k, v in params.items() if v is not None}
         response_data = self._request('GET', '/api/intelligence/crisis-events', params=params)
         return models.CrisisEventListResponse.model_validate(response_data)
+
+    def _fallback_crisis_event_from_list(self, event_id: int) -> models.CrisisEvent:
+        """
+        Fallback when the single-event endpoint returns a status-only payload or is unavailable.
+        """
+        try:
+            resp = self.get_crisis_events(limit=100, status="active")
+            for e in resp.events:
+                if e.id == event_id:
+                    return e
+        except Exception:
+            pass
+        raise exceptions.NotFoundError(404, f"Crisis event {event_id} not found")
         
     def get_crisis_event(self, event_id: int) -> models.CrisisEvent:
         """
         Get a single crisis event.
         """
-        # This was missing too
-        response_data = self._request('GET', f'/api/intelligence/crisis-events/{event_id}')
-        return models.CrisisEvent.model_validate(response_data)
+        try:
+            response_data = self._request('GET', f'/api/intelligence/crisis-events/{event_id}')
+        except exceptions.NotFoundError:
+            return self._fallback_crisis_event_from_list(event_id)
+
+        try:
+            return models.CrisisEvent.model_validate(response_data)
+        except ValidationError:
+            if isinstance(response_data, dict) and (
+                "status" in response_data or "success" in response_data
+            ):
+                return self._fallback_crisis_event_from_list(event_id)
+            raise
 
     def perform_crisis_event_action(self, event_id: int, action: str) -> models.CrisisEvent:
         """
