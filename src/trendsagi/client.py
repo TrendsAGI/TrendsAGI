@@ -9,6 +9,8 @@ import random
 import time
 from typing import Optional, List, Dict, Any, AsyncGenerator
 
+from pydantic import ValidationError
+
 from . import models
 from . import exceptions
 
@@ -316,7 +318,15 @@ class TrendsAGIClient:
         Update the status of a crisis event (e.g., "acknowledge", "archive").
         """
         response_data = self._request('POST', f'/api/intelligence/crisis-events/{event_id}/action', json={"action": action})
-        return models.CrisisEvent.model_validate(response_data)
+        try:
+            return models.CrisisEvent.model_validate(response_data)
+        except ValidationError:
+            # Some backend versions only return a simple status/success payload.
+            if isinstance(response_data, dict) and (
+                "status" in response_data or "success" in response_data
+            ):
+                return self.get_crisis_event(event_id)
+            raise
 
     def get_financial_data(self, timezone: Optional[str] = None) -> models.FinancialDataResponse:
         """
@@ -429,7 +439,18 @@ class TrendsAGIClient:
         Mark specific notifications as read. Returns updated counts.
         """
         payload = {"ids": ids}
-        return self._request('POST', '/api/user/notifications/mark-read', json=payload)
+        response_data = self._request('POST', '/api/user/notifications/mark-read', json=payload)
+        # Backend may return only {"success": true}; ensure unread_count is present for callers.
+        if isinstance(response_data, dict) and "unread_count" not in response_data:
+            try:
+                recent = self.get_recent_notifications(limit=100)
+                unread_count = recent.unread_count
+                if unread_count is None:
+                    unread_count = sum(1 for n in recent.notifications if not n.is_read)
+                response_data["unread_count"] = unread_count
+            except Exception:
+                response_data["unread_count"] = 0
+        return response_data
 
     # --- Public Information & Status Methods ---
     

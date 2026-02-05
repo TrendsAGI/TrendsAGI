@@ -403,6 +403,18 @@ class NotificationListResponse(OrmBaseModel):
     notifications: List[Notification] = Field(default_factory=list)
     unread_count: Optional[int] = 0 # Might be missing in backend response
 
+    @model_validator(mode='before')
+    @classmethod
+    def set_unread_count_default(cls, data):
+        if isinstance(data, dict) and "unread_count" not in data:
+            notifications = data.get("notifications") or []
+            try:
+                unread_count = sum(1 for n in notifications if not n.get("is_read", False))
+            except Exception:
+                unread_count = 0
+            data["unread_count"] = unread_count
+        return data
+
 # --- Public Information & Status Models ---
 class SessionInfoResponse(OrmBaseModel):
     country: str
