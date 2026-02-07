@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.5.13"
+version = "0.6.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
@@ -42,4 +42,4 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-trendsagi = ["templates/**/*"]
+trendsagi = ["templates/Dockerfile", "templates/terraform/*.tf"]
