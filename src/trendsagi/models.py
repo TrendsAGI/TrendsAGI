@@ -99,6 +99,55 @@ class AnalysisResponse(OrmBaseModel):
     task_id: str
     status: str
 
+class TrendMetrics(OrmBaseModel):
+    velocity_score: Optional[float] = None
+    velocity_1h: Optional[float] = None
+    predicted_cpc_usd: Optional[float] = None
+    commercial_intent: Optional[float] = None
+
+class PlatformSignal(OrmBaseModel):
+    primary_source: Optional[str] = None
+    virality_distribution: Dict[str, float] = Field(default_factory=dict)
+
+class AudienceInjection(OrmBaseModel):
+    demographics: Dict[str, Any] = Field(default_factory=dict)
+    interest_keywords: List[str] = Field(default_factory=list)
+    negative_keywords: List[str] = Field(default_factory=list)
+    platform_payloads: Dict[str, Any] = Field(default_factory=dict)
+
+class BrandSafety(OrmBaseModel):
+    level: Optional[str] = None
+    flags: List[str] = Field(default_factory=list)
+
+class AIInsight(OrmBaseModel):
+    trend_id: int
+    trend_name: Optional[str] = None
+    sentiment_summary: Optional[str] = None
+    sentiment_category: Optional[str] = None
+    key_themes: List[str] = Field(default_factory=list)
+    content_brief: Dict[str, Any] = Field(default_factory=dict)
+    ad_platform_targeting: Dict[str, Any] = Field(default_factory=dict)
+    trend_metrics: Optional[TrendMetrics] = None
+    platform_signal: Optional[PlatformSignal] = None
+    audience_injection: Optional[AudienceInjection] = None
+    brand_safety: Optional[BrandSafety] = None
+    crm_and_support_insights: Dict[str, Any] = Field(default_factory=dict)
+    overall_topic_category_llm: Optional[str] = None
+    analysis_notes: Optional[str] = None
+    llm_model_used: Optional[str] = None
+    generated_at: Optional[datetime] = None
+    usage_count: Optional[int] = None
+    usage_limit: Optional[int] = None
+
+class GenerateAIInsightResponse(OrmBaseModel):
+    task_id: str
+    status: str
+    message: Optional[str] = None
+
+class AIInsightTaskStatus(OrmBaseModel):
+    status: str
+    error: Optional[str] = None
+
 class SnapshotData(OrmBaseModel):
     timestamp: datetime
     volume: Optional[int] = None

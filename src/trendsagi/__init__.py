@@ -1,5 +1,25 @@
-# File: trendsagi/__init__.py
+from .client import TrendsAGIClient
+from . import exceptions
 
-from .client import TrendsAGIClient # Assuming TrendsAGIClient is in trendsagi/client.py
-from . import exceptions            # Assuming exceptions are defined in trendsagi/exceptions.py
-                                    # Or: from .errors import exceptions if it's in trendsagi/errors.py
+from .integrations import (
+    AdPlatformExecutor,
+    ExecutionResult,
+    PlatformExecutionError,
+    GoogleAdsExecutor,
+    MetaAdsExecutor,
+    TikTokAdsExecutor,
+    LinkedInAdsExecutor,
+)
+
+__all__ = [
+    "TrendsAGIClient",
+    "exceptions",
+    "AdPlatformExecutor",
+    "ExecutionResult",
+    "PlatformExecutionError",
+    "GoogleAdsExecutor",
+    "MetaAdsExecutor",
+    "TikTokAdsExecutor",
+    "LinkedInAdsExecutor",
+]
+

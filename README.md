@@ -74,10 +74,55 @@ insights = client.get_ai_insights(trend_id=trend_id)
 if insights:
     print(f"Key Themes: {insights.key_themes}")
     print(f"Sentiment: {insights.sentiment_summary}")
-    print(f"Target Audience: {insights.content_brief.target_audience_segments}")
+    print(f"Target Audience: {insights.content_brief.get('target_audience_segments', [])}")
 else:
-    print("No insights available for this trend yet. Insights must be generated via the dashboard.")
+    # Optionally queue generation
+    task = client.generate_ai_insights(trend_id=trend_id, force_refresh=False)
+    print(f"Insight generation queued: {task.task_id} ({task.status})")
 ```
+
+### 2.1 Credentialless Audience Execution (BYOC)
+Use TrendsAGI as a signal layer and execute audience updates in your own infrastructure.
+
+```python
+import os
+from trendsagi import GoogleAdsExecutor, MetaAdsExecutor
+
+insight = client.get_ai_insights(trend_id=trend_id)
+if not insight:
+    raise RuntimeError("No insight available yet")
+
+# Caller-managed credentials (env or your secret manager)
+google = GoogleAdsExecutor({
+    "access_token": os.environ["GOOGLE_ADS_ACCESS_TOKEN"],
+    "developer_token": os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"],
+})
+
+meta = MetaAdsExecutor({
+    "access_token": os.environ["META_ACCESS_TOKEN"],
+})
+
+# Dry run first
+preview = google.apply_targeting(
+    insight,
+    customer_id="1234567890",
+    campaign_id="111222333",
+    dry_run=True,
+)
+print(preview.response)
+
+# Execute live
+google.apply_targeting(insight, customer_id="1234567890", campaign_id="111222333")
+meta.apply_targeting(insight, adset_id="120200100300400500")
+```
+
+Supported executors:
+- `GoogleAdsExecutor`
+- `MetaAdsExecutor`
+- `TikTokAdsExecutor`
+- `LinkedInAdsExecutor`
+
+All executors require runtime-supplied credentials and do not persist them.
 
 ### 3. Context Intelligence Suite
 Manage complex context for your agents by organizing specifications, plans, and reference materials.
@@ -207,6 +252,17 @@ client = TrendsAGIClient(
 
 Retries are only applied to `429 Too Many Requests` and honor `Retry-After` when provided.
 By default, retries are disabled to avoid changing behavior for existing clients.
+
+## Optional Scaffolder
+
+You can scaffold customer-hosted deployment templates:
+
+```bash
+trendsagi scaffold --type docker
+trendsagi scaffold --type terraform
+```
+
+This copies templates into your current directory (`Dockerfile` or `terraform/`).
 
 ## Rate Limits & Throttling
 

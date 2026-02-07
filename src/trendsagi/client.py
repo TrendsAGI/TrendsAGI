@@ -205,6 +205,33 @@ class TrendsAGIClient:
         """
         response_data = self._request('GET', f'/api/trends/{trend_id}')
         return models.TrendItem.model_validate(response_data)
+
+    def get_ai_insights(self, trend_id: int) -> Optional[models.AIInsight]:
+        """
+        Retrieve cached AI insights for a trend.
+
+        This endpoint is read-focused and returns pre-generated insight data used for
+        client-side decision engines.
+        """
+        response_data = self._request('GET', f'/api/trends/{trend_id}/ai-insights')
+        if response_data is None:
+            return None
+        return models.AIInsight.model_validate(response_data)
+
+    def generate_ai_insights(self, trend_id: int, force_refresh: bool = False) -> models.GenerateAIInsightResponse:
+        """
+        Queue AI insight generation for a trend.
+        """
+        payload = {"force_refresh": force_refresh}
+        response_data = self._request('POST', f'/api/trends/{trend_id}/ai-insights/generate', json=payload)
+        return models.GenerateAIInsightResponse.model_validate(response_data)
+
+    def get_ai_insight_status(self, task_id: str) -> models.AIInsightTaskStatus:
+        """
+        Check the status of an AI insight generation task.
+        """
+        response_data = self._request('GET', f'/api/trends/ai-insights/status/{task_id}')
+        return models.AIInsightTaskStatus.model_validate(response_data)
         
     def get_trend_analytics(self, trend_id: int, period: str = '7d') -> models.TrendAnalyticsResponse:
         """
