@@ -9,10 +9,25 @@ Connect your paid social and search workflows to live market signals.
 
 `trendsagi` is a BYOC-first SDK: TrendsAGI provides intelligence (`/api/trends`, `/api/trends/{id}/ai-insights`), and you execute Google/Meta/TikTok/LinkedIn updates from your own infrastructure with runtime credentials.
 
+## Plan Notes (API Access)
+- Developer plan includes:
+  - 1 API integration connection
+  - 100 API calls/day included
+  - Overage billing above included daily usage
+- Advantage/Scale unlock higher daily API limits, more keys, and expanded team workflows.
+
 ## Resources
 - API Docs: [https://trendsagi.com/api-docs](https://trendsagi.com/api-docs)
 - Endpoint Reference: [https://trendsagi.com/api-docs#endpoints](https://trendsagi.com/api-docs#endpoints)
 - BYOC Integrations Guide (repo): [`INTEGRATIONS_BYOC.md`](./INTEGRATIONS_BYOC.md)
+
+## JavaScript / TypeScript SDK
+
+This repository now also contains the JavaScript/TypeScript SDK package source in:
+
+- [`javascript/`](./javascript)
+
+It ships as the npm package `trendsagi`, with Python parity method names, BYOC ad executors, and a matching `trendsagi scaffold` CLI.
 
 ## Installation
 
