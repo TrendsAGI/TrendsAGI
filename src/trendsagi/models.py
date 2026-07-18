@@ -1,6 +1,6 @@
 # File: trendsagi-client/trendsagi/models.py
 
-from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import List, Optional, Any, Dict, Union
 from datetime import datetime, date
 
@@ -183,19 +183,78 @@ class CustomReport(OrmBaseModel):
     meta: ReportMeta
 
 # --- Intelligence Suite Models ---
+class RecommendationEvidence(OrmBaseModel):
+    """A measured or structured signal supporting a recommendation."""
+
+    metric: str
+    label: str
+    value: Any
+    unit: Optional[str] = None
+    interpretation: Optional[str] = None
+    source: str
+    source_url: Optional[str] = None
+    observed_at: Optional[datetime] = None
+
+
+class RecommendationConfidence(OrmBaseModel):
+    """Evidence completeness metadata, not a predicted outcome probability."""
+
+    score: int = Field(ge=0, le=100)
+    level: str
+    method: str
+    reasons: List[str] = Field(default_factory=list)
+    missing_signals: List[str] = Field(default_factory=list)
+
+
+class RecommendationExpectedBenefit(OrmBaseModel):
+    outcome: str
+    basis: str
+    measurement: str
+
+
+class RecommendationUrgency(OrmBaseModel):
+    level: str
+    window: str
+    reason: str
+
+
+class RecommendationDataQuality(OrmBaseModel):
+    status: str
+    freshness: str
+    snapshot_at: Optional[datetime] = None
+    evidence_count: int = Field(ge=0)
+    missing_signals: List[str] = Field(default_factory=list)
+
+
+class RecommendationDecisionBrief(OrmBaseModel):
+    """The recommendation's evidence, timing, expected value, and next actions."""
+
+    why_now: str
+    evidence: List[RecommendationEvidence] = Field(default_factory=list)
+    confidence: RecommendationConfidence
+    expected_benefit: RecommendationExpectedBenefit
+    urgency: RecommendationUrgency
+    next_steps: List[str] = Field(default_factory=list)
+    data_quality: RecommendationDataQuality
+    actionable: bool
+
+
 class Recommendation(OrmBaseModel):
     id: int
     user_id: int
     type: str
     title: str
     details: str
-    source_trend_id: Optional[int] = None
+    # Older API records may contain an integer while current records use a string.
+    source_trend_id: Optional[Union[str, int]] = None
     source_trend_name: Optional[str] = None
     priority: str
     status: str
     created_at: datetime
     updated_at: datetime
     user_feedback: Optional[str] = None
+    # Optional so SDK 0.9 remains compatible with older API deployments and fixtures.
+    decision_brief: Optional[RecommendationDecisionBrief] = None
 
 class RecommendationListResponse(OrmBaseModel):
     recommendations: List[Recommendation]

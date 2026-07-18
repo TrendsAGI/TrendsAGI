@@ -21,14 +21,6 @@ Connect your paid social and search workflows to live market signals.
 - Endpoint Reference: [https://trendsagi.com/api-docs#endpoints](https://trendsagi.com/api-docs#endpoints)
 - BYOC Integrations Guide (repo): [`INTEGRATIONS_BYOC.md`](./INTEGRATIONS_BYOC.md)
 
-## JavaScript / TypeScript SDK
-
-This repository now also contains the JavaScript/TypeScript SDK package source in:
-
-- [`javascript/`](./javascript)
-
-It ships as the npm package `trendsagi`, with Python parity method names, BYOC ad executors, and a matching `trendsagi scaffold` CLI.
-
 ## Installation
 
 ```bash
@@ -66,6 +58,38 @@ google.apply_targeting(
 )
 ```
 
+## Evidence-backed recommendations
+
+Recommendations include an optional decision brief that explains why an action is
+timely, the measured signals behind it, expected benefit, urgency, and concrete next
+steps. The confidence score measures evidence completeness; it is not a prediction of
+business outcomes.
+
+```python
+recommendations = client.get_recommendations(
+    match_user_interests=True,
+    priority="high",
+    sort="priority",
+    limit=10,
+)
+
+for recommendation in recommendations.recommendations:
+    brief = recommendation.decision_brief
+    if brief is None:
+        # Compatible with API deployments that predate decision briefs.
+        continue
+
+    print(recommendation.title, brief.confidence.score, brief.why_now)
+    if brief.actionable and brief.next_steps:
+        print("Next step:", brief.next_steps[0])
+    else:
+        print("Verify first; missing:", ", ".join(brief.data_quality.missing_signals))
+```
+
+Use `actionable` and `data_quality` to degrade honestly when a trend is stale or
+supporting signals are incomplete. The API returns HTTP 409 if a client attempts to
+mark a recommendation `actioned` while its current brief is not actionable.
+
 ## Supported Integrations
 
 - `GoogleAdsExecutor`
@@ -85,6 +109,7 @@ All integrations support:
 - `GET /api/trends/{trend_id}/ai-insights`
 - `POST /api/trends/{trend_id}/ai-insights/generate`
 - `GET /api/trends/ai-insights/status/{task_id}`
+- `GET /api/intelligence/recommendations`
 
 For full request/response contracts and all other endpoints, use the API docs link above.
 
