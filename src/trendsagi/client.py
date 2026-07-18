@@ -2,7 +2,6 @@
 
 import re
 import requests
-import asyncio
 import websockets
 import ssl
 import random
@@ -285,17 +284,72 @@ class TrendsAGIClient:
 
     def get_recommendations(
         self,
-        limit: int = 10, offset: int = 0, recommendation_type: Optional[str] = None,
-        source_trend_query: Optional[str] = None, priority: Optional[str] = None, status: str = 'new',
-        match_user_interests: bool = False
+        limit: int = 10,
+        offset: int = 0,
+        recommendation_type: Optional[str] = None,
+        source_trend_query: Optional[str] = None,
+        priority: Optional[str] = None,
+        status: str = 'new',
+        match_user_interests: bool = False,
+        sort: str = 'priority',
     ) -> models.RecommendationListResponse:
         """
-        Get actionable recommendations generated for the user.
+        Get prioritized, evidence-backed recommendations generated for the user.
+
+        The ``decision_brief.confidence.score`` in each recommendation measures
+        evidence completeness. It is not a probability that the action will succeed.
+
+        :param limit: Number of records to request. Values above the API maximum
+                      are capped at 100.
+        :param offset: Zero-based pagination offset.
+        :param recommendation_type: Optional recommendation type, or ``"all"``.
+        :param source_trend_query: Optional source-trend name search (maximum 100 characters).
+        :param priority: Optional ``low``, ``medium``, ``high``, ``critical``, or ``all``.
+        :param status: ``new`` (default), ``viewed``, ``actioned``, ``dismissed``, or ``all``.
+        :param match_user_interests: Restrict results to the user's saved interests.
+        :param sort: ``priority`` (default) or ``newest``.
         """
+        if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
+            raise ValueError("limit must be a positive integer")
+        if not isinstance(offset, int) or isinstance(offset, bool) or offset < 0:
+            raise ValueError("offset must be a non-negative integer")
+
+        valid_types = {
+            "pr_response", "content_idea", "marketing_angle", "seo_optimization",
+            "influencer_collab", "product_improvement", "crm_strategy", "monitoring",
+            "other", "all",
+        }
+        normalized_type = recommendation_type.strip() if recommendation_type is not None else None
+        normalized_type = normalized_type or None
+        if normalized_type is not None and normalized_type not in valid_types:
+            raise ValueError("unsupported recommendation type")
+        normalized_source_query = (
+            source_trend_query.strip() if source_trend_query is not None else None
+        )
+        normalized_source_query = normalized_source_query or None
+        if normalized_source_query is not None and len(normalized_source_query) > 100:
+            raise ValueError("source_trend_query must be 100 characters or fewer")
+
+        normalized_priority = priority.lower().strip() if priority is not None else None
+        normalized_priority = normalized_priority or None
+        if normalized_priority not in {None, "low", "medium", "high", "critical", "all"}:
+            raise ValueError("unsupported recommendation priority")
+        normalized_status = status.lower().strip() or "new"
+        if normalized_status not in {"new", "viewed", "actioned", "dismissed", "all"}:
+            raise ValueError("unsupported recommendation status")
+        normalized_sort = sort.lower().strip() or "priority"
+        if normalized_sort not in {"priority", "newest"}:
+            raise ValueError("sort must be priority or newest")
+
         params = {
-            "limit": limit, "offset": offset, "type": recommendation_type, 
-            "sourceTrendQ": source_trend_query, "priority": priority, "status": status,
-            "match_user_interests": str(match_user_interests).lower()
+            "limit": min(limit, 100),
+            "offset": offset,
+            "type": normalized_type,
+            "sourceTrendQ": normalized_source_query,
+            "priority": normalized_priority,
+            "status": normalized_status,
+            "match_user_interests": str(match_user_interests).lower(),
+            "sort": normalized_sort,
         }
         params = {k: v for k, v in params.items() if v is not None}
         response_data = self._request('GET', '/api/intelligence/recommendations', params=params)
@@ -303,14 +357,29 @@ class TrendsAGIClient:
 
     def perform_recommendation_action(self, recommendation_id: int, action: Optional[str] = None, feedback: Optional[str] = None) -> models.Recommendation:
         """
-        Update a recommendation's status or provide feedback.
-        """
-        if action and feedback:
-            raise ValueError("Only one of 'action' or 'feedback' can be provided at a time.")
-        if not action and not feedback:
-            raise ValueError("Either 'action' or 'feedback' must be provided.")
+        Update one recommendation workflow state or provide feedback.
 
-        payload = {"action": action, "feedback": feedback}
+        The API rejects ``action="actioned"`` with HTTP 409 when the current
+        decision brief is not actionable. Refresh the recommendation and verify
+        its missing evidence before retrying that transition.
+        """
+        if not isinstance(recommendation_id, int) or isinstance(recommendation_id, bool) or recommendation_id <= 0:
+            raise ValueError("recommendation_id must be a positive integer")
+        normalized_action = action.lower().strip() if action is not None else None
+        normalized_action = normalized_action or None
+        normalized_feedback = feedback.strip() if feedback is not None else None
+        normalized_feedback = normalized_feedback or None
+
+        if normalized_action and normalized_feedback:
+            raise ValueError("Only one of 'action' or 'feedback' can be provided at a time.")
+        if not normalized_action and not normalized_feedback:
+            raise ValueError("Either 'action' or 'feedback' must be provided.")
+        if normalized_action not in {None, "new", "viewed", "actioned", "dismissed"}:
+            raise ValueError("unsupported recommendation action")
+        if normalized_feedback is not None and len(normalized_feedback) > 500:
+            raise ValueError("feedback must be 500 characters or fewer")
+
+        payload = {"action": normalized_action, "feedback": normalized_feedback}
         payload = {k: v for k, v in payload.items() if v is not None}
         response_data = self._request('POST', f'/api/intelligence/recommendations/{recommendation_id}/action', json=payload)
         return models.Recommendation.model_validate(response_data)

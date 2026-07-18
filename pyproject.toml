@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.8.1"
+version = "0.9.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
