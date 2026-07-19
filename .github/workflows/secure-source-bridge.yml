@@ -1,0 +1,31 @@
+name: Secure source bridge probe
+
+on:
+  push:
+    branches:
+      - ops/secure-source-audit-20260719-probe2
+    paths:
+      - .github/workflows/secure-source-bridge.yml
+
+permissions:
+  contents: read
+
+env:
+  MARKER: secure-source-bridge-probe
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create harmless marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$MARKER" > bridge-probe.txt
+      - name: Upload marker
+        uses: actions/upload-artifact@v4
+        with:
+          name: secure-source-bridge-probe
+          path: bridge-probe.txt
+          retention-days: 1
