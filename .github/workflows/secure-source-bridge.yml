@@ -8,24 +8,25 @@ on:
       - .github/workflows/secure-source-bridge.yml
 
 permissions:
-  contents: read
-
-env:
-  MARKER: secure-source-bridge-probe
+  contents: write
 
 jobs:
   probe:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Create harmless marker
+      - name: Check out probe branch
+        uses: actions/checkout@v4
+        with:
+          ref: ops/secure-source-audit-20260719-probe2
+      - name: Commit harmless completion marker
         shell: bash
         run: |
           set -euo pipefail
-          printf '%s\n' "$MARKER" > bridge-probe.txt
-      - name: Upload marker
-        uses: actions/upload-artifact@v4
-        with:
-          name: secure-source-bridge-probe
-          path: bridge-probe.txt
-          retention-days: 1
+          mkdir -p bridge
+          printf 'completed\n' > bridge/probe-status.txt
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add bridge/probe-status.txt
+          git commit -m 'chore: record secure bridge probe' || exit 0
+          git push origin HEAD:ops/secure-source-audit-20260719-probe2
