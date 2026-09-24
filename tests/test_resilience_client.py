@@ -18,6 +18,16 @@ class ResilienceClientTests(unittest.TestCase):
         self.session=Mock()
         self.client._session=self.session
 
+    def test_create_interest_selects_newest_matching_result(self):
+        def interest(id, keyword):
+            return dict(id=id,user_id=7,keyword=keyword,alert_condition_type='volume_threshold',created_at='2026-09-24T10:00:00Z')
+        self.session.request.return_value=response(201,[interest(1,'paid media'),interest(8,'earthquake'),interest(3,'earthquake')])
+        self.assertEqual(self.client.create_topic_interest('earthquake','volume_threshold').id,8)
+        for payload in ([],[interest(1,'paid media')]):
+            self.session.request.return_value=response(201,payload)
+            with self.assertRaises(exceptions.TrendsAGIError):
+                self.client.create_topic_interest('earthquake','volume_threshold')
+
     def test_legacy_event_and_additive_evidence(self):
         legacy=models.CrisisEvent.model_validate(event())
         self.assertEqual(legacy.source_refs,[])

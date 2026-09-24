@@ -532,9 +532,14 @@ class TrendsAGIClient:
         }
         payload = {k: v for k, v in payload.items() if v is not None}
         response_data = self._request('POST', '/api/user/interests', json=payload)
-        # Server returns a list; return the first created interest
+        # The server returns all owned interests, without guaranteed ordering.
+        # Select the newest matching interest rather than an unrelated old row.
         if isinstance(response_data, list):
-            return models.TopicInterest.model_validate(response_data[0])
+            matches = [models.TopicInterest.model_validate(item) for item in response_data
+                       if isinstance(item, dict) and item.get('keyword') == keyword]
+            if not matches:
+                raise exceptions.TrendsAGIError('The server response did not include the created topic interest.')
+            return max(matches, key=lambda item: item.id)
         return models.TopicInterest.model_validate(response_data)
         
     def delete_topic_interest(self, interest_id: int) -> None:

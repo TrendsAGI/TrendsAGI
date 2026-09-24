@@ -11,6 +11,7 @@ All notable changes to the official TrendsAGI Python client are documented here.
 - Audits every SDK HTTP call against backend routes and supplies an OpenAPI contract; legacy financial-data is explicitly unavailable.
 - Replaces fixed trend IDs with discovery examples and provides tested server-side JavaScript HTTP examples.
 - Keeps BYOC executors and existing exception base classes. Advertising examples use previews.
+- Correctly identifies a newly created monitoring interest in the backend's unordered list response.
 - Resilience is beta, with limited official-source coverage; completeness is not probability and HTML export is not offline inference.
 
 ## [0.9.0] - Unreleased changes included in 0.10.0
