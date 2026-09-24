@@ -2,12 +2,22 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
-## [0.9.0] - Unreleased
+## [0.10.0] - 2026-09-24 release candidate
+
+- Includes the previously unreleased 0.9.0 recommendation changes below; PyPI's prior release was 0.8.1.
+- Adds typed crisis details, source evidence, append-only reviews, JSON/HTML exports, source health and explicit location preferences.
+- Adds optional evidence/freshness/review models compatible with older payloads.
+- Adds configurable positive HTTP timeouts, malformed-response handling and compatible authorization/capability exceptions.
+- Audits every SDK HTTP call against backend routes and supplies an OpenAPI contract; legacy financial-data is explicitly unavailable.
+- Replaces fixed trend IDs with discovery examples and provides tested server-side JavaScript HTTP examples.
+- Keeps BYOC executors and existing exception base classes. Advertising examples use previews.
+- Resilience is beta, with limited official-source coverage; completeness is not probability and HTML export is not offline inference.
+
+## [0.9.0] - Unreleased changes included in 0.10.0
 
 ### Added
 
-- Typed recommendation decision briefs with supporting evidence, evidence-completeness
-  confidence, expected benefit, urgency, data quality, and next steps.
+- Typed recommendation decision briefs with supporting evidence, evidence completeness, expected benefit, urgency, data quality, and next steps.
 - Explicit recommendation ordering with `priority` (default) and `newest` modes.
 
 ### Changed

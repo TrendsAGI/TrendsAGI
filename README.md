@@ -1,137 +1,122 @@
-# TrendsAGI Official Python Client
+# TrendsAGI Python SDK
 
-[![PyPI Version](https://img.shields.io/pypi/v/trendsagi.svg)](https://pypi.org/project/trendsagi/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
+Official Python access to TrendsAGI paid-media intelligence and operational resilience.
 
-## About
-Connect your paid social and search workflows to live market signals.
+Install:
 
-`trendsagi` is a BYOC-first SDK: TrendsAGI provides intelligence (`/api/trends`, `/api/trends/{id}/ai-insights`), and you execute Google/Meta/TikTok/LinkedIn updates from your own infrastructure with runtime credentials.
-
-## Plan Notes (API Access)
-- Developer plan includes:
-  - 1 API integration connection
-  - 100 API calls/day included
-  - Overage billing above included daily usage
-- Advantage/Scale unlock higher daily API limits, more keys, and expanded team workflows.
-
-## Resources
-- API Docs: [https://trendsagi.com/api-docs](https://trendsagi.com/api-docs)
-- Endpoint Reference: [https://trendsagi.com/api-docs#endpoints](https://trendsagi.com/api-docs#endpoints)
-- BYOC Integrations Guide (repo): [`INTEGRATIONS_BYOC.md`](./INTEGRATIONS_BYOC.md)
-
-## Installation
-
-```bash
-pip install trendsagi
+```sh
+python -m pip install --upgrade trendsagi
 ```
 
-## Quick Start (BYOC Execution)
+Python 3.8+ is supported. Configure `TRENDSAGI_API_KEY` with your own TrendsAGI API key. A PyPI publishing token is not a TrendsAGI API key.
+
+- [API documentation](https://trendsagi.com/api-docs)
+- [OpenAPI contract](https://trendsagi.com/openapi.json)
+- [Resilience methodology](https://trendsagi.com/research/resilience)
+- [BYOC advertising execution](INTEGRATIONS_BYOC.md)
+
+## Paid media: inspect an actual trend
 
 ```python
 import os
 from trendsagi import TrendsAGIClient
-from trendsagi.integrations import GoogleAdsExecutor
 
-client = TrendsAGIClient(api_key=os.getenv("TRENDSAGI_API_KEY"))
-
-# 1) Read intelligence
-insight = client.get_ai_insights(trend_id=123)
-if not insight:
-    raise RuntimeError("AI insight not ready yet")
-
-# 2) Execute in your own runtime (credentials stay with you)
-google = GoogleAdsExecutor(
-    {
-        "access_token": os.environ["GOOGLE_ADS_ACCESS_TOKEN"],
-        "developer_token": os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"],
-    }
-)
-
-# 3) Strict mode: fail fast on weak payloads / missing required IDs
-google.apply_targeting(
-    insight,
-    customer_id="1234567890",
-    campaign_id="9876543210",
-    strict_mode=True,
-)
+client = TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"], timeout=20)
+trends = client.get_trends(limit=5)
+if not trends.trends:
+    print("No trends available in this window.")
+else:
+    trend = next((item for item in trends.trends if item.id is not None), None)
+    if trend is not None:
+        insight = client.get_ai_insights(trend.id)
+        print(insight if insight else "No cached insight yet.")
 ```
 
-## Evidence-backed recommendations
+This example reads cached data. Insight generation is a separate queued operation subject to your entitlement and usage limits. Recommendation scores using `evidence_completeness_v1` measure available evidence, not campaign uplift or event probability.
 
-Recommendations include an optional decision brief that explains why an action is
-timely, the measured signals behind it, expected benefit, urgency, and concrete next
-steps. The confidence score measures evidence completeness; it is not a prediction of
-business outcomes.
+Google, Meta, TikTok and LinkedIn executors remain BYOC: credentials stay in your runtime. Start with `dry_run=True` and `strict_mode=True`. Inspect the preview before explicitly executing a change. See the integration guide for required account identifiers and provider permissions.
+
+## Resilience — Beta
+
+The resilience methods require the existing crisis-functionality entitlement. An API key does not bypass subscription access, ownership checks or usage accounting.
 
 ```python
-recommendations = client.get_recommendations(
-    match_user_interests=True,
-    priority="high",
-    sort="priority",
-    limit=10,
+import os
+from pathlib import Path
+from trendsagi import TrendsAGIClient
+
+client = TrendsAGIClient(os.environ["TRENDSAGI_API_KEY"], timeout=20)
+events = client.get_crisis_events(status="all", time_range="7d")
+if not events.events:
+    print("No matching events. Review your location and keyword interests.")
+else:
+    event = client.get_crisis_evidence(events.events[0].id)
+    print(event.title, event.freshness, event.review_status)
+    for source in event.source_refs:
+        print(source.source_id, source.observed_at, source.source_url)
+    for limitation in event.limitations:
+        print("Limitation:", limitation)
+    Path("evidence.html").write_text(
+        client.export_crisis_event(event.id, format="html"), encoding="utf-8"
+    )
+```
+
+HTML exports are dated, self-contained evidence snapshots. They work offline but do not perform offline AI inference or update offline.
+
+To opt into official-source matching, set a location using `set_resilience_location("Nottinghamshire")` and maintain an active keyword interest such as `flood`. Both must match. An empty location disables matching. Inspect `get_resilience_sources()` for availability and coverage.
+
+After reviewing evidence, append a human assessment explicitly:
+
+```python
+reviewed = client.review_crisis_event(
+    event.id,
+    assessment="unconfirmed",
+    rationale="The source reports an event; impact on our operation is not established.",
+    evidence_version=event.evidence_version,
 )
-
-for recommendation in recommendations.recommendations:
-    brief = recommendation.decision_brief
-    if brief is None:
-        # Compatible with API deployments that predate decision briefs.
-        continue
-
-    print(recommendation.title, brief.confidence.score, brief.why_now)
-    if brief.actionable and brief.next_steps:
-        print("Next step:", brief.next_steps[0])
-    else:
-        print("Verify first; missing:", ", ".join(brief.data_quality.missing_signals))
 ```
 
-Use `actionable` and `data_quality` to degrade honestly when a trend is stale or
-supporting signals are incomplete. The API returns HTTP 409 if a client attempts to
-mark a recommendation `actioned` while its current brief is not actionable.
+Assessments are `unconfirmed`, `supported` or `disputed`. A changed evidence version returns HTTP 409; refresh before reviewing again. Reviews preserve history and are separate from acknowledge/archive/reopen actions.
 
-## Supported Integrations
+Official sources initially cover Environment Agency flood warnings in England and USGS global magnitude 4.5+ earthquakes. Social signals and heuristic severity do not establish an incident. One publisher is not independent corroboration.
 
-- `GoogleAdsExecutor`
-- `MetaAdsExecutor`
-- `TikTokAdsExecutor`
-- `LinkedInAdsExecutor`
-
-All integrations support:
-- runtime-supplied credentials
-- deterministic idempotency keys
-- dry-run previews (`dry_run=True`)
-- strict validation (`strict_mode=True`)
-
-## Core Endpoints Used by Integrations
-
-- `GET /api/trends`
-- `GET /api/trends/{trend_id}/ai-insights`
-- `POST /api/trends/{trend_id}/ai-insights/generate`
-- `GET /api/trends/ai-insights/status/{task_id}`
-- `GET /api/intelligence/recommendations`
-
-For full request/response contracts and all other endpoints, use the API docs link above.
-
-## CLI Scaffolder
-
-```bash
-# Docker template
-trendsagi scaffold --type docker --output ./runner
-
-# Terraform template
-trendsagi scaffold --type terraform --output ./infra
-```
-
-## Error Handling
+## Errors and compatibility
 
 ```python
 from trendsagi import exceptions
 
 try:
-    client.get_trends(limit=5)
+    sources = client.get_resilience_sources()
+except exceptions.AuthorizationError:
+    print("This account lacks the necessary entitlement.")
+except exceptions.ConflictError:
+    print("Refresh the evidence before recording a review.")
 except exceptions.RateLimitError:
-    print("Rate limited; retry with backoff")
-except exceptions.AuthenticationError:
-    print("Invalid API key")
+    print("Respect the usage limit and retry later.")
+except exceptions.CapabilityUnavailableError:
+    print("This capability is unavailable; do not poll indefinitely.")
+except exceptions.TrendsAGIError as error:
+    print(type(error).__name__)
 ```
+
+The default HTTP timeout is 20 seconds and is configurable. Rate-limit retries are opt-in and bounded. New event fields are optional; legacy responses without evidence remain readable. `CapabilityUnavailableError` retains compatibility with `MaintenanceError`, and authorization errors remain `APIError` subclasses.
+
+The legacy financial-data method remains for compatibility but its backend capability is unavailable. It is not an active product feature.
+
+## JavaScript / TypeScript
+
+Use standard HTTPS with `X-API-Key`; there is no maintained npm SDK represented by this release. Tested examples are in [examples/resilience.mjs](examples/resilience.mjs). Never ship account API keys in public browser code.
+
+## Deployment and data
+
+This SDK does not establish UK-only hosting, security certification, defence accreditation or permission to redistribute source content. Consult the current [privacy](https://trendsagi.com/privacy), [security](https://trendsagi.com/security), and source licensing information. Preserve tenant isolation and source restrictions when exporting.
+
+## Development
+
+```sh
+python -m unittest discover -s tests -v
+python -m build
+python -m twine check dist/*
+```
+
+See [CHANGELOG.md](CHANGELOG.md) for release changes. Supported API methods and known unavailable capabilities are recorded in the contract audit.

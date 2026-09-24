@@ -266,6 +266,50 @@ class UsageInfo(OrmBaseModel):
     count: int
     limit: int
 
+class CrisisEvidence(OrmBaseModel):
+    attribution: Optional[str] = None
+    licence_url: Optional[str] = None
+    id: int
+    source_id: str
+    reference_id: str
+    source_url: str
+    observed_at: datetime
+    retrieved_at: datetime
+    excerpt: str
+    claim: str
+    content_hash: str
+
+class CrisisReview(OrmBaseModel):
+    id: int
+    reviewer_id: int
+    assessment: str
+    rationale: str
+    evidence_version: str
+    created_at: datetime
+
+class EvidenceCompleteness(OrmBaseModel):
+    score: int
+    method: str
+    meaning: Optional[str] = None
+
+class ResilienceSource(OrmBaseModel):
+    id: str
+    name: str
+    attribution: str
+    licence_url: str
+    coverage: str
+    status: str
+    last_attempt_at: Optional[datetime] = None
+    last_success_at: Optional[datetime] = None
+    observation_count: int = 0
+    fetch_duration_ms: Optional[int] = None
+
+class ResilienceSourceList(OrmBaseModel):
+    sources: List[ResilienceSource] = Field(default_factory=list)
+
+class ResilienceSettings(OrmBaseModel):
+    location_query: str = ''
+
 class CrisisEvent(OrmBaseModel):
     id: int
     user_id: int
@@ -278,6 +322,26 @@ class CrisisEvent(OrmBaseModel):
     impacted_entity: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+    trend_id: Optional[int] = None
+    trend_snapshot_link: Optional[str] = None
+    detection_method: Optional[str] = None
+    method_version: Optional[str] = None
+    evidence_as_of: Optional[datetime] = None
+    freshness: Optional[str] = None
+    analysis_status: Optional[str] = None
+    severity_basis: Optional[str] = None
+    model_version: Optional[str] = None
+    provider_severity: Optional[str] = None
+    location: Optional[str] = None
+    source_state: Optional[str] = None
+    review_status: Optional[str] = None
+    evidence_version: Optional[str] = None
+    evidence_completeness: Optional[EvidenceCompleteness] = None
+    corroboration: Optional[Dict[str, Any]] = None
+    source_refs: List[CrisisEvidence] = Field(default_factory=list)
+    reviews: List[CrisisReview] = Field(default_factory=list)
+    limitations: List[str] = Field(default_factory=list)
 
 class CrisisEventListResponse(OrmBaseModel):
     events: List[CrisisEvent]

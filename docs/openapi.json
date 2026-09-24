@@ -1,0 +1,7036 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TrendsAGI public SDK API",
+    "version": "0.10.0",
+    "description": "Supported SDK HTTP routes. Resilience is beta. Schemas preserve legacy optional fields; opaque older request bodies are detailed in the human API reference. No internal admin routes."
+  },
+  "servers": [
+    {
+      "url": "https://api.trendsagi.com"
+    },
+    {
+      "url": "https://staging-api.trendsagi.com"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "AudienceInjection": {
+        "properties": {
+          "demographics": {
+            "additionalProperties": true,
+            "title": "Demographics",
+            "type": "object"
+          },
+          "interest_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Interest Keywords",
+            "type": "array"
+          },
+          "negative_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Negative Keywords",
+            "type": "array"
+          },
+          "platform_payloads": {
+            "additionalProperties": true,
+            "title": "Platform Payloads",
+            "type": "object"
+          }
+        },
+        "title": "AudienceInjection",
+        "type": "object"
+      },
+      "BrandSafety": {
+        "properties": {
+          "level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Level"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          }
+        },
+        "title": "BrandSafety",
+        "type": "object"
+      },
+      "PlatformSignal": {
+        "properties": {
+          "primary_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Primary Source"
+          },
+          "virality_distribution": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Virality Distribution",
+            "type": "object"
+          }
+        },
+        "title": "PlatformSignal",
+        "type": "object"
+      },
+      "TrendMetrics": {
+        "properties": {
+          "velocity_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Velocity Score"
+          },
+          "velocity_1h": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Velocity 1H"
+          },
+          "predicted_cpc_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Predicted Cpc Usd"
+          },
+          "commercial_intent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Commercial Intent"
+          }
+        },
+        "title": "TrendMetrics",
+        "type": "object"
+      },
+      "AIInsight": {
+        "properties": {
+          "trend_id": {
+            "title": "Trend Id",
+            "type": "integer"
+          },
+          "trend_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Trend Name"
+          },
+          "sentiment_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment Summary"
+          },
+          "sentiment_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment Category"
+          },
+          "key_themes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Key Themes",
+            "type": "array"
+          },
+          "content_brief": {
+            "additionalProperties": true,
+            "title": "Content Brief",
+            "type": "object"
+          },
+          "ad_platform_targeting": {
+            "additionalProperties": true,
+            "title": "Ad Platform Targeting",
+            "type": "object"
+          },
+          "trend_metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TrendMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "platform_signal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlatformSignal"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "audience_injection": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AudienceInjection"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "brand_safety": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrandSafety"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "crm_and_support_insights": {
+            "additionalProperties": true,
+            "title": "Crm And Support Insights",
+            "type": "object"
+          },
+          "overall_topic_category_llm": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Overall Topic Category Llm"
+          },
+          "analysis_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Analysis Notes"
+          },
+          "llm_model_used": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Llm Model Used"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Generated At"
+          },
+          "usage_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Usage Count"
+          },
+          "usage_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Usage Limit"
+          }
+        },
+        "required": [
+          "trend_id"
+        ],
+        "title": "AIInsight",
+        "type": "object"
+      },
+      "AIInsightTaskStatus": {
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "AIInsightTaskStatus",
+        "type": "object"
+      },
+      "AnalysisResponse": {
+        "properties": {
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ],
+        "title": "AnalysisResponse",
+        "type": "object"
+      },
+      "ApiKey": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prefix"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Created At"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Last Used At"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Permissions",
+            "type": "array"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ApiKey",
+        "type": "object"
+      },
+      "ApiKeyCreateResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Api Key"
+          },
+          "prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prefix"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Created At"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "ApiKeyCreateResponse",
+        "type": "object"
+      },
+      "ApiKeyListResponse": {
+        "properties": {
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/ApiKey"
+            },
+            "title": "Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys"
+        ],
+        "title": "ApiKeyListResponse",
+        "type": "object"
+      },
+      "ApiUsageDaily": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "request_count": {
+            "title": "Request Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "request_count"
+        ],
+        "title": "ApiUsageDaily",
+        "type": "object"
+      },
+      "ApiUsageSummary": {
+        "properties": {
+          "plan_daily_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Plan Daily Limit"
+          },
+          "requests_today": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Requests Today"
+          },
+          "remaining_today": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Remaining Today"
+          },
+          "total_requests_last_30_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Requests Last 30 Days"
+          },
+          "cost_estimated_today": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Estimated Today"
+          }
+        },
+        "title": "ApiUsageSummary",
+        "type": "object"
+      },
+      "ApiUsageResponse": {
+        "properties": {
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApiUsageSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "daily_usage": {
+            "items": {
+              "$ref": "#/components/schemas/ApiUsageDaily"
+            },
+            "title": "Daily Usage",
+            "type": "array"
+          },
+          "total_requests_last_30_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Total Requests Last 30 Days"
+          },
+          "cost_estimated_today": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Estimated Today"
+          }
+        },
+        "title": "ApiUsageResponse",
+        "type": "object"
+      },
+      "AutocompleteResult": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Volume"
+          },
+          "suggestion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Suggestion"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "AutocompleteResult",
+        "type": "object"
+      },
+      "AutocompleteResponse": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/AutocompleteResult"
+            },
+            "title": "Results",
+            "type": "array"
+          }
+        },
+        "title": "AutocompleteResponse",
+        "type": "object"
+      },
+      "BlogPost": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Excerpt"
+          },
+          "cover_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cover Image"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Author Name"
+          },
+          "reading_time_minutes": {
+            "default": 0,
+            "title": "Reading Time Minutes",
+            "type": "integer"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Content"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "published_at"
+        ],
+        "title": "BlogPost",
+        "type": "object"
+      },
+      "PaginationMeta": {
+        "properties": {
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "title": "Total"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 20,
+            "title": "Limit"
+          },
+          "offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "title": "Offset"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Period"
+          },
+          "sort_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sort By"
+          },
+          "order": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Order"
+          },
+          "search": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Search"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End Date"
+          }
+        },
+        "title": "PaginationMeta",
+        "type": "object"
+      },
+      "BlogPostListResponse": {
+        "properties": {
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/BlogPost"
+            },
+            "title": "Posts",
+            "type": "array"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "title": "BlogPostListResponse",
+        "type": "object"
+      },
+      "CategoryInfo": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "trend_count": {
+            "default": 0,
+            "title": "Trend Count",
+            "type": "integer"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Slug"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CategoryInfo",
+        "type": "object"
+      },
+      "CategoryListResponse": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryInfo"
+            },
+            "title": "Categories",
+            "type": "array"
+          }
+        },
+        "required": [
+          "categories"
+        ],
+        "title": "CategoryListResponse",
+        "type": "object"
+      },
+      "CombinedReleaseResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "published_at": {
+            "title": "Published At",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Id"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "published_at",
+          "source"
+        ],
+        "title": "CombinedReleaseResponse",
+        "type": "object"
+      },
+      "ComponentStatus": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          }
+        },
+        "required": [
+          "name",
+          "status"
+        ],
+        "title": "ComponentStatus",
+        "type": "object"
+      },
+      "CrisisEvidence": {
+        "properties": {
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Attribution"
+          },
+          "licence_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Licence Url"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "source_id": {
+            "title": "Source Id",
+            "type": "string"
+          },
+          "reference_id": {
+            "title": "Reference Id",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "observed_at": {
+            "format": "date-time",
+            "title": "Observed At",
+            "type": "string"
+          },
+          "retrieved_at": {
+            "format": "date-time",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "excerpt": {
+            "title": "Excerpt",
+            "type": "string"
+          },
+          "claim": {
+            "title": "Claim",
+            "type": "string"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source_id",
+          "reference_id",
+          "source_url",
+          "observed_at",
+          "retrieved_at",
+          "excerpt",
+          "claim",
+          "content_hash"
+        ],
+        "title": "CrisisEvidence",
+        "type": "object"
+      },
+      "CrisisReview": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "reviewer_id": {
+            "title": "Reviewer Id",
+            "type": "integer"
+          },
+          "assessment": {
+            "title": "Assessment",
+            "type": "string"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "evidence_version": {
+            "title": "Evidence Version",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reviewer_id",
+          "assessment",
+          "rationale",
+          "evidence_version",
+          "created_at"
+        ],
+        "title": "CrisisReview",
+        "type": "object"
+      },
+      "EvidenceCompleteness": {
+        "properties": {
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "meaning": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Meaning"
+          }
+        },
+        "required": [
+          "score",
+          "method"
+        ],
+        "title": "EvidenceCompleteness",
+        "type": "object"
+      },
+      "CrisisEvent": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "detected_at": {
+            "format": "date-time",
+            "title": "Detected At",
+            "type": "string"
+          },
+          "source_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Keywords"
+          },
+          "impacted_entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Impacted Entity"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "trend_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Trend Id"
+          },
+          "trend_snapshot_link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Trend Snapshot Link"
+          },
+          "detection_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Detection Method"
+          },
+          "method_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Method Version"
+          },
+          "evidence_as_of": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence As Of"
+          },
+          "freshness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Freshness"
+          },
+          "analysis_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Analysis Status"
+          },
+          "severity_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Severity Basis"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Model Version"
+          },
+          "provider_severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Provider Severity"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Location"
+          },
+          "source_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source State"
+          },
+          "review_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Review Status"
+          },
+          "evidence_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence Version"
+          },
+          "evidence_completeness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceCompleteness"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "corroboration": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Corroboration"
+          },
+          "source_refs": {
+            "items": {
+              "$ref": "#/components/schemas/CrisisEvidence"
+            },
+            "title": "Source Refs",
+            "type": "array"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/CrisisReview"
+            },
+            "title": "Reviews",
+            "type": "array"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Limitations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "title",
+          "summary",
+          "severity",
+          "status",
+          "detected_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CrisisEvent",
+        "type": "object"
+      },
+      "CrisisEventListResponse": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/CrisisEvent"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "required": [
+          "events",
+          "meta"
+        ],
+        "title": "CrisisEventListResponse",
+        "type": "object"
+      },
+      "ReportMeta": {
+        "properties": {
+          "row_count": {
+            "title": "Row Count",
+            "type": "integer"
+          },
+          "limit_applied": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Limit Applied"
+          },
+          "time_period": {
+            "title": "Time Period",
+            "type": "string"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "End Date"
+          },
+          "usage_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Usage Count"
+          },
+          "usage_limit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Usage Limit"
+          }
+        },
+        "required": [
+          "row_count",
+          "time_period"
+        ],
+        "title": "ReportMeta",
+        "type": "object"
+      },
+      "CustomReport": {
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/ReportMeta"
+          }
+        },
+        "required": [
+          "columns",
+          "rows",
+          "meta"
+        ],
+        "title": "CustomReport",
+        "type": "object"
+      },
+      "DashboardStats": {
+        "properties": {
+          "active_trends": {
+            "title": "Active Trends",
+            "type": "integer"
+          },
+          "alerts_today": {
+            "title": "Alerts Today",
+            "type": "integer"
+          },
+          "topic_interests": {
+            "title": "Topic Interests",
+            "type": "integer"
+          },
+          "avg_growth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Avg Growth"
+          }
+        },
+        "required": [
+          "active_trends",
+          "alerts_today",
+          "topic_interests"
+        ],
+        "title": "DashboardStats",
+        "type": "object"
+      },
+      "Notification": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "is_read": {
+            "title": "Is Read",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Read At"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Data"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "message",
+          "type",
+          "is_read",
+          "created_at"
+        ],
+        "title": "Notification",
+        "type": "object"
+      },
+      "TrendItem": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Title"
+          },
+          "volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Volume"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Timestamp"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment"
+          },
+          "sentiment_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment Category"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Type"
+          },
+          "meta_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Meta Description"
+          },
+          "growth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Growth"
+          },
+          "previous_volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Previous Volume"
+          },
+          "absolute_change": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Absolute Change"
+          },
+          "average_velocity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Average velocity (posts/hour) over recent snapshots.",
+            "title": "Average Velocity"
+          },
+          "trend_stability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Standard deviation of volume over recent snapshots. Lower is more stable.",
+            "title": "Trend Stability"
+          },
+          "overall_trend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Qualitative assessment of the trend's direction (growing, declining, stable).",
+            "title": "Overall Trend"
+          }
+        },
+        "title": "TrendItem",
+        "type": "object"
+      },
+      "DashboardOverview": {
+        "properties": {
+          "stats": {
+            "$ref": "#/components/schemas/DashboardStats"
+          },
+          "top_trends": {
+            "items": {
+              "$ref": "#/components/schemas/TrendItem"
+            },
+            "title": "Top Trends",
+            "type": "array"
+          },
+          "recent_alerts": {
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            },
+            "title": "Recent Alerts",
+            "type": "array"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "title": "DashboardOverview",
+        "type": "object"
+      },
+      "EarningsReport": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "revenue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Revenue"
+          },
+          "earnings_per_share": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Earnings Per Share"
+          },
+          "guidance_update": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Guidance Update"
+          },
+          "source_timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Timestamp"
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "period",
+          "created_at"
+        ],
+        "title": "EarningsReport",
+        "type": "object"
+      },
+      "ExportConfig": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          },
+          "destination": {
+            "title": "Destination",
+            "type": "string"
+          },
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "schedule": {
+            "title": "Schedule",
+            "type": "string"
+          },
+          "schedule_time": {
+            "title": "Schedule Time",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "selected_fields": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Selected Fields",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "destination",
+          "config",
+          "schedule",
+          "schedule_time",
+          "is_active",
+          "selected_fields",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ExportConfig",
+        "type": "object"
+      },
+      "ExportHistory": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "config_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Config Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "file_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "File Url"
+          },
+          "row_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Row Count"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Error Message"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Created At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Completed At"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "title": "ExportHistory",
+        "type": "object"
+      },
+      "ExportHistoryListResponse": {
+        "properties": {
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ExportHistory"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "history"
+        ],
+        "title": "ExportHistoryListResponse",
+        "type": "object"
+      },
+      "ExportRunResponse": {
+        "properties": {
+          "success": {
+            "title": "Success",
+            "type": "boolean"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Message"
+          },
+          "execution_log_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Execution Log Id"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "success"
+        ],
+        "title": "ExportRunResponse",
+        "type": "object"
+      },
+      "FinancialNews": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "source_timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Timestamp"
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Company"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "summary",
+          "created_at"
+        ],
+        "title": "FinancialNews",
+        "type": "object"
+      },
+      "FinancialPressRelease": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "source_timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Timestamp"
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "title",
+          "summary",
+          "created_at"
+        ],
+        "title": "FinancialPressRelease",
+        "type": "object"
+      },
+      "ForexFactoryEvent": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "event_at": {
+            "format": "date-time",
+            "title": "Event At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Impact"
+          },
+          "event_name": {
+            "title": "Event Name",
+            "type": "string"
+          },
+          "actual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Actual"
+          },
+          "forecast": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Forecast"
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Previous"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "event_at",
+          "currency",
+          "event_name",
+          "updated_at"
+        ],
+        "title": "ForexFactoryEvent",
+        "type": "object"
+      },
+      "IPONews": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Symbol"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "filing_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Filing Date"
+          },
+          "expected_trade_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Expected Trade Date"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "created_at"
+        ],
+        "title": "IPONews",
+        "type": "object"
+      },
+      "MarketSentiment": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "sentiment": {
+            "title": "Sentiment",
+            "type": "string"
+          },
+          "drivers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Drivers"
+          },
+          "source_timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Timestamp"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "id",
+          "sentiment",
+          "created_at"
+        ],
+        "title": "MarketSentiment",
+        "type": "object"
+      },
+      "FinancialDataResponse": {
+        "properties": {
+          "market_sentiment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MarketSentiment"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "earnings_reports": {
+            "items": {
+              "$ref": "#/components/schemas/EarningsReport"
+            },
+            "title": "Earnings Reports",
+            "type": "array"
+          },
+          "financial_news": {
+            "items": {
+              "$ref": "#/components/schemas/FinancialNews"
+            },
+            "title": "Financial News",
+            "type": "array"
+          },
+          "financial_press_releases": {
+            "items": {
+              "$ref": "#/components/schemas/FinancialPressRelease"
+            },
+            "title": "Financial Press Releases",
+            "type": "array"
+          },
+          "ipo_filings_news": {
+            "items": {
+              "$ref": "#/components/schemas/IPONews"
+            },
+            "title": "Ipo Filings News",
+            "type": "array"
+          },
+          "forex_factory_events": {
+            "items": {
+              "$ref": "#/components/schemas/ForexFactoryEvent"
+            },
+            "title": "Forex Factory Events",
+            "type": "array"
+          }
+        },
+        "title": "FinancialDataResponse",
+        "type": "object"
+      },
+      "GenerateAIInsightResponse": {
+        "properties": {
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Message"
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ],
+        "title": "GenerateAIInsightResponse",
+        "type": "object"
+      },
+      "HomepageDataEvent": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Company"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Summary"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Timestamp"
+          },
+          "sentiment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sentiment"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title"
+        ],
+        "title": "HomepageDataEvent",
+        "type": "object"
+      },
+      "HomepageEarningsReportResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "source_timestamp": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Timestamp"
+          },
+          "report_time_of_day": {
+            "title": "Report Time Of Day",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "report_time_of_day",
+          "period"
+        ],
+        "title": "HomepageEarningsReportResponse",
+        "type": "object"
+      },
+      "HomepageFinancialDataResponse": {
+        "properties": {
+          "recent_events": {
+            "items": {
+              "$ref": "#/components/schemas/HomepageDataEvent"
+            },
+            "title": "Recent Events",
+            "type": "array"
+          },
+          "last_updated": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Last Updated"
+          }
+        },
+        "title": "HomepageFinancialDataResponse",
+        "type": "object"
+      },
+      "HomepageIPONewsResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "expected_trade_date": {
+            "title": "Expected Trade Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "company",
+          "symbol",
+          "status",
+          "expected_trade_date"
+        ],
+        "title": "HomepageIPONewsResponse",
+        "type": "object"
+      },
+      "NotificationListResponse": {
+        "properties": {
+          "notifications": {
+            "items": {
+              "$ref": "#/components/schemas/Notification"
+            },
+            "title": "Notifications",
+            "type": "array"
+          },
+          "unread_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "title": "Unread Count"
+          }
+        },
+        "title": "NotificationListResponse",
+        "type": "object"
+      },
+      "OrgInvite": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "invited_by_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Invited By Email"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "status",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "OrgInvite",
+        "type": "object"
+      },
+      "OrgInviteListResponse": {
+        "properties": {
+          "invites": {
+            "items": {
+              "$ref": "#/components/schemas/OrgInvite"
+            },
+            "title": "Invites",
+            "type": "array"
+          }
+        },
+        "required": [
+          "invites"
+        ],
+        "title": "OrgInviteListResponse",
+        "type": "object"
+      },
+      "OrgMember": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Full Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Role"
+          },
+          "joined_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Joined At"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ],
+        "title": "OrgMember",
+        "type": "object"
+      },
+      "OrgMemberListResponse": {
+        "properties": {
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/OrgMember"
+            },
+            "title": "Members",
+            "type": "array"
+          }
+        },
+        "required": [
+          "members"
+        ],
+        "title": "OrgMemberListResponse",
+        "type": "object"
+      },
+      "OrmBaseModel": {
+        "properties": {},
+        "title": "OrmBaseModel",
+        "type": "object"
+      },
+      "RecommendationConfidence": {
+        "description": "Evidence completeness metadata, not a predicted outcome probability.",
+        "properties": {
+          "score": {
+            "maximum": 100,
+            "minimum": 0,
+            "title": "Score",
+            "type": "integer"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "missing_signals": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Signals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "score",
+          "level",
+          "method"
+        ],
+        "title": "RecommendationConfidence",
+        "type": "object"
+      },
+      "RecommendationDataQuality": {
+        "properties": {
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "freshness": {
+            "title": "Freshness",
+            "type": "string"
+          },
+          "snapshot_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Snapshot At"
+          },
+          "evidence_count": {
+            "minimum": 0,
+            "title": "Evidence Count",
+            "type": "integer"
+          },
+          "missing_signals": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Signals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "status",
+          "freshness",
+          "evidence_count"
+        ],
+        "title": "RecommendationDataQuality",
+        "type": "object"
+      },
+      "RecommendationDecisionBrief": {
+        "description": "The recommendation's evidence, timing, expected value, and next actions.",
+        "properties": {
+          "why_now": {
+            "title": "Why Now",
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationEvidence"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/RecommendationConfidence"
+          },
+          "expected_benefit": {
+            "$ref": "#/components/schemas/RecommendationExpectedBenefit"
+          },
+          "urgency": {
+            "$ref": "#/components/schemas/RecommendationUrgency"
+          },
+          "next_steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Next Steps",
+            "type": "array"
+          },
+          "data_quality": {
+            "$ref": "#/components/schemas/RecommendationDataQuality"
+          },
+          "actionable": {
+            "title": "Actionable",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "why_now",
+          "confidence",
+          "expected_benefit",
+          "urgency",
+          "data_quality",
+          "actionable"
+        ],
+        "title": "RecommendationDecisionBrief",
+        "type": "object"
+      },
+      "RecommendationEvidence": {
+        "description": "A measured or structured signal supporting a recommendation.",
+        "properties": {
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit"
+          },
+          "interpretation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Interpretation"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Url"
+          },
+          "observed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          }
+        },
+        "required": [
+          "metric",
+          "label",
+          "value",
+          "source"
+        ],
+        "title": "RecommendationEvidence",
+        "type": "object"
+      },
+      "RecommendationExpectedBenefit": {
+        "properties": {
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "basis": {
+            "title": "Basis",
+            "type": "string"
+          },
+          "measurement": {
+            "title": "Measurement",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "basis",
+          "measurement"
+        ],
+        "title": "RecommendationExpectedBenefit",
+        "type": "object"
+      },
+      "RecommendationUrgency": {
+        "properties": {
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "window": {
+            "title": "Window",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "window",
+          "reason"
+        ],
+        "title": "RecommendationUrgency",
+        "type": "object"
+      },
+      "Recommendation": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "details": {
+            "title": "Details",
+            "type": "string"
+          },
+          "source_trend_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Trend Id"
+          },
+          "source_trend_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source Trend Name"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "user_feedback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "User Feedback"
+          },
+          "decision_brief": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecommendationDecisionBrief"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "type",
+          "title",
+          "details",
+          "priority",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Recommendation",
+        "type": "object"
+      },
+      "RecommendationListResponse": {
+        "properties": {
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/Recommendation"
+            },
+            "title": "Recommendations",
+            "type": "array"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PaginationMeta"
+          }
+        },
+        "required": [
+          "recommendations",
+          "meta"
+        ],
+        "title": "RecommendationListResponse",
+        "type": "object"
+      },
+      "ResilienceSettings": {
+        "properties": {
+          "location_query": {
+            "default": "",
+            "title": "Location Query",
+            "type": "string"
+          }
+        },
+        "title": "ResilienceSettings",
+        "type": "object"
+      },
+      "ResilienceSource": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "attribution": {
+            "title": "Attribution",
+            "type": "string"
+          },
+          "licence_url": {
+            "title": "Licence Url",
+            "type": "string"
+          },
+          "coverage": {
+            "title": "Coverage",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "last_attempt_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Last Attempt At"
+          },
+          "last_success_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Last Success At"
+          },
+          "observation_count": {
+            "default": 0,
+            "title": "Observation Count",
+            "type": "integer"
+          },
+          "fetch_duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fetch Duration Ms"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "attribution",
+          "licence_url",
+          "coverage",
+          "status"
+        ],
+        "title": "ResilienceSource",
+        "type": "object"
+      },
+      "ResilienceSourceList": {
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/ResilienceSource"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "title": "ResilienceSourceList",
+        "type": "object"
+      },
+      "SessionInfoResponse": {
+        "properties": {
+          "country": {
+            "title": "Country",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "title": "SessionInfoResponse",
+        "type": "object"
+      },
+      "SlackStatus": {
+        "properties": {
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Is Active"
+          },
+          "team_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Team Name"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Channel"
+          },
+          "channel_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Channel Id"
+          },
+          "configuration_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Configuration Url"
+          },
+          "new_trend_alerts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "New Trend Alerts"
+          }
+        },
+        "title": "SlackStatus",
+        "type": "object"
+      },
+      "SnapshotData": {
+        "properties": {
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Volume"
+          }
+        },
+        "required": [
+          "timestamp"
+        ],
+        "title": "SnapshotData",
+        "type": "object"
+      },
+      "StatusHistoryResponse": {
+        "properties": {
+          "uptime_percentages": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Uptime Percentages",
+            "type": "object"
+          },
+          "daily_statuses": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Daily Statuses",
+            "type": "object"
+          }
+        },
+        "required": [
+          "uptime_percentages",
+          "daily_statuses"
+        ],
+        "title": "StatusHistoryResponse",
+        "type": "object"
+      },
+      "StatusPage": {
+        "properties": {
+          "overall_status": {
+            "title": "Overall Status",
+            "type": "string"
+          },
+          "last_updated": {
+            "format": "date-time",
+            "title": "Last Updated",
+            "type": "string"
+          },
+          "components": {
+            "items": {
+              "$ref": "#/components/schemas/ComponentStatus"
+            },
+            "title": "Components",
+            "type": "array"
+          }
+        },
+        "required": [
+          "overall_status",
+          "last_updated",
+          "components"
+        ],
+        "title": "StatusPage",
+        "type": "object"
+      },
+      "SubscriptionPlan": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "price_monthly": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Price Monthly"
+          },
+          "price_yearly": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "type": "object"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Price Yearly"
+          },
+          "is_custom": {
+            "title": "Is Custom",
+            "type": "boolean"
+          },
+          "features": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Features"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "is_custom"
+        ],
+        "title": "SubscriptionPlan",
+        "type": "object"
+      },
+      "TopicInterest": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          },
+          "keyword": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Keyword"
+          },
+          "alert_condition_type": {
+            "title": "Alert Condition Type",
+            "type": "string"
+          },
+          "volume_threshold_value": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Volume Threshold Value"
+          },
+          "percentage_growth_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Percentage Growth Value"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "id",
+          "user_id",
+          "alert_condition_type",
+          "created_at"
+        ],
+        "title": "TopicInterest",
+        "type": "object"
+      },
+      "TrendAnalyticsResponse": {
+        "properties": {
+          "trend_id": {
+            "title": "Trend Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "current_volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Current Volume"
+          },
+          "previous_volume": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Previous Volume"
+          },
+          "volume_change_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Volume Change Percent"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotData"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "velocity_per_hour": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Velocity Per Hour"
+          },
+          "velocity_trend": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Velocity Trend"
+          }
+        },
+        "required": [
+          "trend_id",
+          "name",
+          "period"
+        ],
+        "title": "TrendAnalyticsResponse",
+        "type": "object"
+      },
+      "TrendListResponse": {
+        "properties": {
+          "trends": {
+            "items": {
+              "$ref": "#/components/schemas/TrendItem"
+            },
+            "title": "Trends",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 0,
+            "title": "Total"
+          },
+          "results": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/TrendItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Results"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaginationMeta"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          }
+        },
+        "title": "TrendListResponse",
+        "type": "object"
+      },
+      "UsageInfo": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count",
+          "limit"
+        ],
+        "title": "UsageInfo",
+        "type": "object"
+      },
+      "UserSubscription": {
+        "properties": {
+          "plan_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Plan Name"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "current_period_end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Current Period End"
+          },
+          "cancel_at_period_end": {
+            "default": false,
+            "title": "Cancel At Period End",
+            "type": "boolean"
+          }
+        },
+        "title": "UserSubscription",
+        "type": "object"
+      },
+      "UserProfile": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Full Name"
+          },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "is_verified": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Is Verified"
+          },
+          "organization_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Organization Role"
+          },
+          "subscription": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserSubscription"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Avatar Url"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Created At"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ],
+        "title": "UserProfile",
+        "type": "object"
+      },
+      "WebhookSubscription": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "target_url": {
+            "title": "Target Url",
+            "type": "string"
+          },
+          "events": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Secret"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "failure_count": {
+            "default": 0,
+            "title": "Failure Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "target_url",
+          "events",
+          "is_active",
+          "created_at"
+        ],
+        "title": "WebhookSubscription",
+        "type": "object"
+      },
+      "WebhookListResponse": {
+        "properties": {
+          "webhooks": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookSubscription"
+            },
+            "title": "Webhooks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "webhooks"
+        ],
+        "title": "WebhookListResponse",
+        "type": "object"
+      }
+    }
+  },
+  "paths": {
+    "/api/trends": {
+      "get": {
+        "operationId": "get_trends",
+        "summary": "Retrieve a list of currently trending topics.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/trends/autocomplete": {
+      "get": {
+        "operationId": "get_trend_autocomplete",
+        "summary": "Get autocomplete suggestions for a query.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutocompleteResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/trends/categories": {
+      "get": {
+        "operationId": "get_trend_categories",
+        "summary": "Get list of active trend categories.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/insights/search": {
+      "get": {
+        "operationId": "search_insights",
+        "summary": "Search for trends based on their AI insights content.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}": {
+      "get": {
+        "operationId": "get_trend",
+        "summary": "Retrieve a single trend by ID.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendItem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/trends/{trend_id}/ai-insights": {
+      "get": {
+        "operationId": "get_ai_insights",
+        "summary": "Retrieve cached AI insights for a trend.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/AIInsight"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/trends/{trend_id}/ai-insights/generate": {
+      "post": {
+        "operationId": "generate_ai_insights",
+        "summary": "Queue AI insight generation for a trend.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateAIInsightResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trends/ai-insights/status/{task_id}": {
+      "get": {
+        "operationId": "get_ai_insight_status",
+        "summary": "Check the status of an AI insight generation task.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIInsightTaskStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/trends/{trend_id}/analytics": {
+      "get": {
+        "operationId": "get_trend_analytics",
+        "summary": "Retrieve analytics data for a specific trend.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrendAnalyticsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/trends/{trend_id}/analyze": {
+      "post": {
+        "operationId": "analyze_trend",
+        "summary": "Trigger an analysis task for a trend.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/reports/custom": {
+      "post": {
+        "operationId": "generate_custom_report",
+        "summary": "Generate a custom report based on specified dimensions, metrics, and filters.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomReport"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/intelligence/recommendations": {
+      "get": {
+        "operationId": "get_recommendations",
+        "summary": "Get prioritized, evidence-backed recommendations generated for the user.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/intelligence/recommendations/{recommendation_id}/action": {
+      "post": {
+        "operationId": "perform_recommendation_action",
+        "summary": "Update one recommendation workflow state or provide feedback.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Recommendation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "recommendation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/intelligence/crisis-events": {
+      "get": {
+        "operationId": "get_crisis_events",
+        "summary": "Get crisis events detected for the user.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrisisEventListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "acknowledged",
+                "archived"
+              ]
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "low",
+                "medium",
+                "high",
+                "critical"
+              ]
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1h",
+                "24h",
+                "7d",
+                "30d",
+                "custom"
+              ]
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "x",
+                "usgs",
+                "environment_agency"
+              ]
+            }
+          },
+          {
+            "name": "freshness",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "fresh",
+                "stale",
+                "missing"
+              ]
+            }
+          },
+          {
+            "name": "review_status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "unreviewed",
+                "unconfirmed",
+                "supported",
+                "disputed",
+                "needs_review"
+              ]
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "timeRange",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ]
+      }
+    },
+    "/api/intelligence/crisis-events/{id}": {
+      "get": {
+        "operationId": "get_crisis_event",
+        "summary": "Get a single crisis event.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrisisEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/intelligence/crisis-events/{id}/action": {
+      "post": {
+        "operationId": "perform_crisis_event_action",
+        "summary": "Update the status of a crisis event (e.g., \"acknowledge\", \"archive\").",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrisisEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/intelligence/crisis-events/{id}/evidence": {
+      "get": {
+        "operationId": "get_crisis_evidence",
+        "summary": "Read the owner-scoped evidence bundle, including limitations and reviews.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrisisEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/intelligence/crisis-events/{id}/reviews": {
+      "post": {
+        "operationId": "review_crisis_event",
+        "summary": "Append a human assessment; stale evidence versions raise ConflictError.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          },
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrisisEvent"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "assessment",
+                  "rationale",
+                  "evidence_version"
+                ],
+                "properties": {
+                  "assessment": {
+                    "type": "string",
+                    "enum": [
+                      "unconfirmed",
+                      "supported",
+                      "disputed"
+                    ]
+                  },
+                  "rationale": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  },
+                  "evidence_version": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{32}$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/intelligence/crisis-events/{id}/export": {
+      "get": {
+        "operationId": "export_crisis_event",
+        "summary": "Return a JSON dictionary or self-contained HTML text for offline review.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrisisEvent"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "html"
+              ],
+              "default": "json"
+            }
+          }
+        ]
+      }
+    },
+    "/api/intelligence/sources": {
+      "get": {
+        "operationId": "get_resilience_sources",
+        "summary": "get_resilience_sources",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResilienceSourceList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/intelligence/resilience-settings": {
+      "get": {
+        "operationId": "get_resilience_settings",
+        "summary": "get_resilience_settings",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResilienceSettings"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      },
+      "put": {
+        "operationId": "set_resilience_location",
+        "summary": "Set an explicit location; empty disables official-source matching.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResilienceSettings"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "location_query"
+                ],
+                "properties": {
+                  "location_query": {
+                    "type": "string",
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/interests": {
+      "get": {
+        "operationId": "get_topic_interests",
+        "summary": "Retrieve the list of topic interests tracked by the user.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TopicInterest"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_topic_interest",
+        "summary": "Create a new topic interest.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicInterest"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/interests/{interest_id}": {
+      "delete": {
+        "operationId": "delete_topic_interest",
+        "summary": "Delete a specific topic interest.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "interest_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/user/export/settings": {
+      "get": {
+        "operationId": "get_export_settings",
+        "summary": "Get all export configurations.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ExportConfig"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "save_export_settings",
+        "summary": "Save a new export configuration.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/export/settings/{config_id}": {
+      "delete": {
+        "operationId": "delete_export_setting",
+        "summary": "Delete an export configuration.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/user/export/configurations/{config_id}/run-now": {
+      "post": {
+        "operationId": "run_export_now",
+        "summary": "Trigger an immediate run of an export configuration.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportRunResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "config_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/export/history": {
+      "get": {
+        "operationId": "get_export_history",
+        "summary": "Get history of export runs.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportHistoryListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/dashboard/overview": {
+      "get": {
+        "operationId": "get_dashboard_overview",
+        "summary": "Get key statistics, top trends, and recent alerts for the dashboard.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardOverview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/user/notifications/recent": {
+      "get": {
+        "operationId": "get_recent_notifications",
+        "summary": "Get recent notifications for the user.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/user/notifications/mark-read": {
+      "post": {
+        "operationId": "mark_notifications_read",
+        "summary": "Mark specific notifications as read. Returns updated counts.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/session-info": {
+      "get": {
+        "operationId": "get_session_info",
+        "summary": "Get session-specific info like country, derived from request headers.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionInfoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/public/homepage-data": {
+      "get": {
+        "operationId": "get_public_homepage_financial_data",
+        "summary": "Retrieves a curated list of recent financial events for public display.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomepageFinancialDataResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/plans": {
+      "get": {
+        "operationId": "get_available_plans",
+        "summary": "Retrieve a list of all publicly available subscription plans.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriptionPlan"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "operationId": "get_api_status",
+        "summary": "Retrieve the current operational status of the API and its components.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/status/history": {
+      "get": {
+        "operationId": "get_api_status_history",
+        "summary": "Retrieve the 90-day history of API status.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusHistoryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/blog/posts": {
+      "get": {
+        "operationId": "get_blog_posts",
+        "summary": "Get a list of published blog posts.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPostListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/blog/posts/{slug}": {
+      "get": {
+        "operationId": "get_blog_post",
+        "summary": "Get a single blog post by its slug.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlogPost"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/user/profile": {
+      "get": {
+        "operationId": "get_user_profile",
+        "summary": "Get the authenticated user's profile details.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/user/api-keys": {
+      "get": {
+        "operationId": "get_api_keys",
+        "summary": "List all API keys for the current user.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApiKey"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_api_key",
+        "summary": "Create a new API key.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyCreateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/api-keys/{key_id}": {
+      "delete": {
+        "operationId": "delete_api_key",
+        "summary": "Delete an API key.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "key_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/user/api-usage": {
+      "get": {
+        "operationId": "get_api_usage",
+        "summary": "Get API usage statistics for the current user.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiUsageResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/org/members": {
+      "get": {
+        "operationId": "get_organization_members",
+        "summary": "List members of the current user's organization.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrgMember"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/org/invites": {
+      "get": {
+        "operationId": "get_organization_invites",
+        "summary": "List pending invites for the organization.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrgInvite"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/billing/create-portal-session": {
+      "post": {
+        "operationId": "get_billing_portal_url",
+        "summary": "Get a one-time URL for the Stripe Customer Portal.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/integrations/webhooks": {
+      "get": {
+        "operationId": "get_webhooks",
+        "summary": "List configured webhooks.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookSubscription"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/integrations/slack/status": {
+      "get": {
+        "operationId": "get_slack_status",
+        "summary": "Check the status of the Slack integration.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlackStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/events/track": {
+      "post": {
+        "operationId": "track_visitor_event",
+        "summary": "Track a public visitor event (no auth required usually, but key validates quota).",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Permission or entitlement denied"
+          },
+          "404": {
+            "description": "Resource not found or not owned"
+          },
+          "409": {
+            "description": "Current state/evidence conflict"
+          },
+          "429": {
+            "description": "Usage limit reached"
+          },
+          "503": {
+            "description": "Capability or dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/demo-signals": {
+      "get": {
+        "operationId": "get_public_demo_signals",
+        "summary": "Public, cached, dated demonstration projection",
+        "security": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "mode",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "paid-media",
+                "resilience"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public observations; may be empty",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "signals",
+                    "mode",
+                    "fetched_at",
+                    "schema_version"
+                  ],
+                  "properties": {
+                    "mode": {
+                      "type": "string"
+                    },
+                    "schema_version": {
+                      "const": "1"
+                    },
+                    "fetched_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "signals": {
+                      "type": "array",
+                      "maxItems": 3,
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "title",
+                          "source_url",
+                          "source",
+                          "observed_at",
+                          "freshness",
+                          "limitations"
+                        ],
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "source_url": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "observed_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "freshness": {
+                            "enum": [
+                              "fresh",
+                              "stale"
+                            ]
+                          },
+                          "limitations": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Unavailable"
+          }
+        }
+      }
+    }
+  }
+}

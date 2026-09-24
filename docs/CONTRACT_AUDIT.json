@@ -1,0 +1,314 @@
+[
+  {
+    "method": "get_trends",
+    "http_method": "GET",
+    "path": "/api/trends",
+    "state": "registered"
+  },
+  {
+    "method": "get_trend_autocomplete",
+    "http_method": "GET",
+    "path": "/api/trends/autocomplete",
+    "state": "registered"
+  },
+  {
+    "method": "get_trend_categories",
+    "http_method": "GET",
+    "path": "/api/trends/categories",
+    "state": "registered"
+  },
+  {
+    "method": "search_insights",
+    "http_method": "GET",
+    "path": "/api/insights/search",
+    "state": "registered"
+  },
+  {
+    "method": "get_trend",
+    "http_method": "GET",
+    "path": "/api/trends/{trend_id}",
+    "state": "registered"
+  },
+  {
+    "method": "get_ai_insights",
+    "http_method": "GET",
+    "path": "/api/trends/{trend_id}/ai-insights",
+    "state": "registered"
+  },
+  {
+    "method": "generate_ai_insights",
+    "http_method": "POST",
+    "path": "/api/trends/{trend_id}/ai-insights/generate",
+    "state": "registered"
+  },
+  {
+    "method": "get_ai_insight_status",
+    "http_method": "GET",
+    "path": "/api/trends/ai-insights/status/{task_id}",
+    "state": "registered"
+  },
+  {
+    "method": "get_trend_analytics",
+    "http_method": "GET",
+    "path": "/api/trends/{trend_id}/analytics",
+    "state": "registered"
+  },
+  {
+    "method": "analyze_trend",
+    "http_method": "POST",
+    "path": "/api/trends/{trend_id}/analyze",
+    "state": "registered"
+  },
+  {
+    "method": "generate_custom_report",
+    "http_method": "POST",
+    "path": "/api/reports/custom",
+    "state": "registered"
+  },
+  {
+    "method": "get_recommendations",
+    "http_method": "GET",
+    "path": "/api/intelligence/recommendations",
+    "state": "registered"
+  },
+  {
+    "method": "perform_recommendation_action",
+    "http_method": "POST",
+    "path": "/api/intelligence/recommendations/{recommendation_id}/action",
+    "state": "registered"
+  },
+  {
+    "method": "get_crisis_events",
+    "http_method": "GET",
+    "path": "/api/intelligence/crisis-events",
+    "state": "registered"
+  },
+  {
+    "method": "get_crisis_event",
+    "http_method": "GET",
+    "path": "/api/intelligence/crisis-events/{event_id}",
+    "state": "registered"
+  },
+  {
+    "method": "perform_crisis_event_action",
+    "http_method": "POST",
+    "path": "/api/intelligence/crisis-events/{event_id}/action",
+    "state": "registered"
+  },
+  {
+    "method": "get_crisis_evidence",
+    "http_method": "GET",
+    "path": "/api/intelligence/crisis-events/{event_id}/evidence",
+    "state": "registered"
+  },
+  {
+    "method": "review_crisis_event",
+    "http_method": "POST",
+    "path": "/api/intelligence/crisis-events/{event_id}/reviews",
+    "state": "registered"
+  },
+  {
+    "method": "export_crisis_event",
+    "http_method": "GET",
+    "path": "/api/intelligence/crisis-events/{event_id}/export",
+    "state": "registered"
+  },
+  {
+    "method": "get_resilience_sources",
+    "http_method": "GET",
+    "path": "/api/intelligence/sources",
+    "state": "registered"
+  },
+  {
+    "method": "get_resilience_settings",
+    "http_method": "GET",
+    "path": "/api/intelligence/resilience-settings",
+    "state": "registered"
+  },
+  {
+    "method": "set_resilience_location",
+    "http_method": "PUT",
+    "path": "/api/intelligence/resilience-settings",
+    "state": "registered"
+  },
+  {
+    "method": "get_financial_data",
+    "http_method": "GET",
+    "path": "/api/intelligence/financial-data",
+    "state": "unavailable"
+  },
+  {
+    "method": "get_topic_interests",
+    "http_method": "GET",
+    "path": "/api/user/interests",
+    "state": "registered"
+  },
+  {
+    "method": "create_topic_interest",
+    "http_method": "POST",
+    "path": "/api/user/interests",
+    "state": "registered"
+  },
+  {
+    "method": "delete_topic_interest",
+    "http_method": "DELETE",
+    "path": "/api/user/interests/{interest_id}",
+    "state": "registered"
+  },
+  {
+    "method": "get_export_settings",
+    "http_method": "GET",
+    "path": "/api/user/export/settings",
+    "state": "registered"
+  },
+  {
+    "method": "save_export_settings",
+    "http_method": "POST",
+    "path": "/api/user/export/settings",
+    "state": "registered"
+  },
+  {
+    "method": "delete_export_setting",
+    "http_method": "DELETE",
+    "path": "/api/user/export/settings/{config_id}",
+    "state": "registered"
+  },
+  {
+    "method": "run_export_now",
+    "http_method": "POST",
+    "path": "/api/user/export/configurations/{config_id}/run-now",
+    "state": "registered"
+  },
+  {
+    "method": "get_export_history",
+    "http_method": "GET",
+    "path": "/api/user/export/history",
+    "state": "registered"
+  },
+  {
+    "method": "get_dashboard_overview",
+    "http_method": "GET",
+    "path": "/dashboard/overview",
+    "state": "registered"
+  },
+  {
+    "method": "get_recent_notifications",
+    "http_method": "GET",
+    "path": "/api/user/notifications/recent",
+    "state": "registered"
+  },
+  {
+    "method": "mark_notifications_read",
+    "http_method": "POST",
+    "path": "/api/user/notifications/mark-read",
+    "state": "registered"
+  },
+  {
+    "method": "get_session_info",
+    "http_method": "GET",
+    "path": "/api/user/session-info",
+    "state": "registered"
+  },
+  {
+    "method": "get_public_homepage_financial_data",
+    "http_method": "GET",
+    "path": "/api/public/homepage-data",
+    "state": "registered"
+  },
+  {
+    "method": "get_available_plans",
+    "http_method": "GET",
+    "path": "/api/plans",
+    "state": "registered"
+  },
+  {
+    "method": "get_api_status",
+    "http_method": "GET",
+    "path": "/status",
+    "state": "registered"
+  },
+  {
+    "method": "get_api_status_history",
+    "http_method": "GET",
+    "path": "/status/history",
+    "state": "registered"
+  },
+  {
+    "method": "get_blog_posts",
+    "http_method": "GET",
+    "path": "/api/blog/posts",
+    "state": "registered"
+  },
+  {
+    "method": "get_blog_post",
+    "http_method": "GET",
+    "path": "/api/blog/posts/{slug}",
+    "state": "registered"
+  },
+  {
+    "method": "get_user_profile",
+    "http_method": "GET",
+    "path": "/api/user/profile",
+    "state": "registered"
+  },
+  {
+    "method": "get_api_keys",
+    "http_method": "GET",
+    "path": "/api/user/api-keys",
+    "state": "registered"
+  },
+  {
+    "method": "create_api_key",
+    "http_method": "POST",
+    "path": "/api/user/api-keys",
+    "state": "registered"
+  },
+  {
+    "method": "delete_api_key",
+    "http_method": "DELETE",
+    "path": "/api/user/api-keys/{key_id}",
+    "state": "registered"
+  },
+  {
+    "method": "get_api_usage",
+    "http_method": "GET",
+    "path": "/api/user/api-usage",
+    "state": "registered"
+  },
+  {
+    "method": "get_organization_members",
+    "http_method": "GET",
+    "path": "/api/org/members",
+    "state": "registered"
+  },
+  {
+    "method": "get_organization_invites",
+    "http_method": "GET",
+    "path": "/api/org/invites",
+    "state": "registered"
+  },
+  {
+    "method": "get_billing_portal_url",
+    "http_method": "POST",
+    "path": "/api/billing/create-portal-session",
+    "state": "registered"
+  },
+  {
+    "method": "get_webhooks",
+    "http_method": "GET",
+    "path": "/api/integrations/webhooks",
+    "state": "registered"
+  },
+  {
+    "method": "get_slack_status",
+    "http_method": "GET",
+    "path": "/api/integrations/slack/status",
+    "state": "registered"
+  },
+  {
+    "method": "track_visitor_event",
+    "http_method": "POST",
+    "path": "/api/events/track",
+    "state": "registered"
+  }
+]

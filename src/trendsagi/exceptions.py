@@ -38,3 +38,11 @@ class MaintenanceError(APIError):
     def __init__(self, message: str = "TrendsAGI is currently under maintenance. Please try again later."):
         super().__init__(503, message)
         self.message = message
+
+
+class AuthorizationError(APIError):
+    """The principal lacks the required permission or subscription entitlement."""
+
+
+class CapabilityUnavailableError(MaintenanceError):
+    """The requested capability is explicitly unavailable; do not poll indefinitely."""
