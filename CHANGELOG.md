@@ -2,23 +2,22 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
-## [0.10.0] - 2026-09-24 release candidate
+## [0.11.0] - 2026-10-02
 
-- Includes the previously unreleased 0.9.0 recommendation changes below; PyPI's prior release was 0.8.1.
-- Adds typed crisis details, source evidence, append-only reviews, JSON/HTML exports, source health and explicit location preferences.
-- Adds optional evidence/freshness/review models compatible with older payloads.
-- Adds configurable positive HTTP timeouts, malformed-response handling and compatible authorization/capability exceptions.
-- Audits every SDK HTTP call against backend routes and supplies an OpenAPI contract; legacy financial-data is explicitly unavailable.
-- Replaces fixed trend IDs with discovery examples and provides tested server-side JavaScript HTTP examples.
-- Keeps BYOC executors and existing exception base classes. Advertising examples use previews.
-- Correctly identifies a newly created monitoring interest in the backend's unordered list response.
-- Resilience is beta, with limited official-source coverage; completeness is not probability and HTML export is not offline inference.
+- Removes the Sovereign AI resilience beta methods, evidence export, source status,
+  location preferences, and their documentation after the product rollback.
+- Keeps the earlier crisis-event list/action methods and the paid-media
+  recommendation decision briefs introduced before version 0.10.0.
+- Restores a trend-discovery example that previews advertising changes by default.
+- Existing 0.10.0 installations should upgrade before using the current API;
+  the removed resilience beta methods no longer have backend routes.
 
-## [0.9.0] - Unreleased changes included in 0.10.0
+## [0.9.0] - Included in 0.11.0
 
 ### Added
 
-- Typed recommendation decision briefs with supporting evidence, evidence completeness, expected benefit, urgency, data quality, and next steps.
+- Typed recommendation decision briefs with supporting evidence, evidence-completeness
+  confidence, expected benefit, urgency, data quality, and next steps.
 - Explicit recommendation ordering with `priority` (default) and `newest` modes.
 
 ### Changed

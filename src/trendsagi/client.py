@@ -48,14 +48,10 @@ class TrendsAGIClient:
         max_retry_wait: float = 10.0,
         retry_backoff_factor: float = 0.5,
         retry_jitter: float = 0.1,
-        timeout: float = 20.0,
     ):
         if not api_key:
             raise exceptions.AuthenticationError("API key is required.")
         
-        if timeout <= 0:
-            raise ValueError('timeout must be positive')
-        self.timeout = timeout
         self.base_url = base_url.rstrip('/')
         self._session = requests.Session()
         self._session.headers.update({
@@ -92,8 +88,6 @@ class TrendsAGIClient:
     def _request(self, method: str, endpoint: str, **kwargs) -> Any:
         """Internal helper for making API requests."""
         url = f"{self.base_url}{endpoint}"
-        return_text = kwargs.pop("_return_text", False)
-        kwargs.setdefault("timeout", self.timeout)
         try:
             attempts = 0
             while True:
@@ -102,24 +96,15 @@ class TrendsAGIClient:
                 if 200 <= response.status_code < 300:
                     if response.status_code == 204:
                         return None
-                    if return_text:
-                        return response.text
-                    try:
-                        return response.json()
-                    except ValueError as error:
-                        raise exceptions.TrendsAGIError("API returned malformed JSON") from error
+                    return response.json()
 
                 try:
-                    error_payload = response.json()
-                    error_detail = error_payload.get('detail', error_payload.get('error', response.text)) if isinstance(error_payload, dict) else response.text
-                except ValueError:
-                    error_payload = {}
+                    error_detail = response.json().get('detail', response.text)
+                except requests.exceptions.JSONDecodeError:
                     error_detail = _strip_html(response.text)
 
                 if response.status_code == 401:
                     raise exceptions.AuthenticationError(error_detail)
-                if response.status_code == 403:
-                    raise exceptions.AuthorizationError(response.status_code, error_detail)
                 if response.status_code == 404:
                     raise exceptions.NotFoundError(response.status_code, error_detail)
                 if response.status_code == 409:
@@ -134,8 +119,6 @@ class TrendsAGIClient:
                         continue
                     raise exceptions.RateLimitError(response.status_code, error_detail)
                 if response.status_code == 503:
-                    if isinstance(error_payload, dict) and error_payload.get("code") == "CAPABILITY_UNAVAILABLE":
-                        raise exceptions.CapabilityUnavailableError(error_detail)
                     raise exceptions.MaintenanceError(error_detail)
 
                 raise exceptions.APIError(response.status_code, error_detail)
@@ -405,17 +388,14 @@ class TrendsAGIClient:
         self,
         limit: int = 10, offset: int = 0, status: str = 'active', keyword: Optional[str] = None,
         severity: Optional[str] = None, time_range: str = '24h',
-        start_date: Optional[str] = None, end_date: Optional[str] = None,
-        source: Optional[str] = None, location: Optional[str] = None,
-        freshness: Optional[str] = None, review_status: Optional[str] = None
+        start_date: Optional[str] = None, end_date: Optional[str] = None
     ) -> models.CrisisEventListResponse:
         """
         Get crisis events detected for the user.
         """
         params = {
             "limit": limit, "offset": offset, "status": status, "keyword": keyword, 
-            "severity": severity, "period": time_range, "startDate": start_date, "endDate": end_date,
-            "source": source, "location": location, "freshness": freshness, "review_status": review_status
+            "severity": severity, "timeRange": time_range, "startDate": start_date, "endDate": end_date
         }
         params = {k: v for k, v in params.items() if v is not None}
         response_data = self._request('GET', '/api/intelligence/crisis-events', params=params)
@@ -467,35 +447,6 @@ class TrendsAGIClient:
                 return self.get_crisis_event(event_id)
             raise
 
-    def get_crisis_evidence(self, event_id: int) -> models.CrisisEvent:
-        """Read the owner-scoped evidence bundle, including limitations and reviews."""
-        return models.CrisisEvent.model_validate(self._request('GET', f'/api/intelligence/crisis-events/{event_id}/evidence'))
-
-    def review_crisis_event(self, event_id: int, assessment: str, rationale: str, evidence_version: str) -> models.CrisisEvent:
-        """Append a human assessment; stale evidence versions raise ConflictError."""
-        if assessment not in {'unconfirmed', 'supported', 'disputed'}:
-            raise ValueError('Unsupported assessment')
-        if not rationale.strip() or len(rationale) > 2000:
-            raise ValueError('Rationale must contain 1–2000 characters')
-        payload = {'assessment': assessment, 'rationale': rationale, 'evidence_version': evidence_version}
-        return models.CrisisEvent.model_validate(self._request('POST', f'/api/intelligence/crisis-events/{event_id}/reviews', json=payload))
-
-    def export_crisis_event(self, event_id: int, format: str = 'json') -> Any:
-        """Return a JSON dictionary or self-contained HTML text for offline review."""
-        if format not in {'json', 'html'}:
-            raise ValueError('format must be json or html')
-        return self._request('GET', f'/api/intelligence/crisis-events/{event_id}/export', params={'format': format}, _return_text=format == 'html')
-
-    def get_resilience_sources(self) -> models.ResilienceSourceList:
-        return models.ResilienceSourceList.model_validate(self._request('GET', '/api/intelligence/sources'))
-
-    def get_resilience_settings(self) -> models.ResilienceSettings:
-        return models.ResilienceSettings.model_validate(self._request('GET', '/api/intelligence/resilience-settings'))
-
-    def set_resilience_location(self, location_query: str) -> models.ResilienceSettings:
-        """Set an explicit location; empty disables official-source matching."""
-        return models.ResilienceSettings.model_validate(self._request('PUT', '/api/intelligence/resilience-settings', json={'location_query': location_query}))
-
     def get_financial_data(self, timezone: Optional[str] = None) -> models.FinancialDataResponse:
         """
         Retrieves a consolidated report of the latest financial data.
@@ -532,14 +483,9 @@ class TrendsAGIClient:
         }
         payload = {k: v for k, v in payload.items() if v is not None}
         response_data = self._request('POST', '/api/user/interests', json=payload)
-        # The server returns all owned interests, without guaranteed ordering.
-        # Select the newest matching interest rather than an unrelated old row.
+        # Server returns a list; return the first created interest
         if isinstance(response_data, list):
-            matches = [models.TopicInterest.model_validate(item) for item in response_data
-                       if isinstance(item, dict) and item.get('keyword') == keyword]
-            if not matches:
-                raise exceptions.TrendsAGIError('The server response did not include the created topic interest.')
-            return max(matches, key=lambda item: item.id)
+            return models.TopicInterest.model_validate(response_data[0])
         return models.TopicInterest.model_validate(response_data)
         
     def delete_topic_interest(self, interest_id: int) -> None:

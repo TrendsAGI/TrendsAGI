@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.10.0"
+version = "0.11.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
-description = "Official TrendsAGI client for paid-media intelligence and evidence-based operational resilience."
+description = "Official TrendsAGI Python client for trends, insights, recommendations, and BYOC advertising previews."
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
