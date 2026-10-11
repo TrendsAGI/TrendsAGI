@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.11.0"
+version = "0.12.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
-description = "Official TrendsAGI Python client for trends, insights, recommendations, and BYOC advertising previews."
+description = "Official TrendsAGI Python client for real-time trends, insights and recommendations, with AI agent tools and an MCP server."
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
@@ -20,6 +20,12 @@ classifiers = [
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = [
+    "trends", "trend detection", "trending topics", "social listening", "real-time data",
+    "ai agents", "mcp", "model context protocol", "llm tools", "function calling",
+    "marketing", "campaign optimization", "api client",
 ]
 dependencies = [
     "requests>=2.28.0",
@@ -27,11 +33,18 @@ dependencies = [
     "websockets>=10.0"
 ]
 
+[project.optional-dependencies]
+mcp = ["mcp>=1.2,<2; python_version >= '3.10'"]
+langchain = ["langchain-core>=0.2"]
+
 [project.scripts]
 trendsagi = "trendsagi.cli:main"
+trendsagi-mcp = "trendsagi.mcp_server:main"
 
 [project.urls]
-"Homepage" = "https://github.com/TrendsAGI/TrendsAGI"
+"Homepage" = "https://trendsagi.com"
+"Documentation" = "https://trendsagi.com/api-docs"
+"Source" = "https://github.com/TrendsAGI/TrendsAGI"
 "Bug Tracker" = "https://github.com/TrendsAGI/TrendsAGI/issues" 
 
 [tool.setuptools]

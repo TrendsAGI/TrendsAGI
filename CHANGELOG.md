@@ -2,6 +2,18 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.12.0] - 2026-10-11
+
+### Added
+
+- `TrendsAGITools`: twelve agent tools with one JSON-schema contract exported for
+  OpenAI Chat Completions, the OpenAI Responses API, Anthropic tool use, and
+  LangChain. Read-only by default; write tools need `allow_writes=True`.
+  `call()` returns `{"error": ...}` instead of raising so agent loops can recover.
+- MCP server: `trendsagi mcp` / `trendsagi-mcp` (install `trendsagi[mcp]`,
+  Python 3.10+) for Claude Desktop, Claude Code, Cursor, VS Code and other MCP clients.
+- `get_trends(category=..., search=...)` filters, which the API already supported.
+
 ## [0.11.0] - 2026-10-02
 
 - Removes the Sovereign AI resilience beta methods, evidence export, source status,

@@ -65,6 +65,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=".",
         help="Target directory (defaults to current working directory).",
     )
+
+    mcp_parser = subparsers.add_parser(
+        "mcp",
+        help="Run the TrendsAGI MCP server over stdio for AI agents (needs trendsagi[mcp]).",
+    )
+    from .mcp_server import add_arguments
+
+    add_arguments(mcp_parser)
     return parser
 
 
@@ -74,6 +82,12 @@ def main() -> int:
 
     if args.command == "scaffold":
         scaffold(args.template_type, args.output_dir)
+        return 0
+
+    if args.command == "mcp":
+        from .mcp_server import run
+
+        run(api_key=args.api_key, base_url=args.base_url, allow_writes=args.allow_writes)
         return 0
 
     parser.print_help()

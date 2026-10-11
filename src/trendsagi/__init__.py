@@ -1,4 +1,5 @@
 from .client import TrendsAGIClient
+from .agent_tools import TrendsAGITools
 from . import exceptions
 from importlib.metadata import PackageNotFoundError, version
 
@@ -19,6 +20,7 @@ except PackageNotFoundError:
 
 __all__ = [
     "TrendsAGIClient",
+    "TrendsAGITools",
     "__version__",
     "exceptions",
     "AdPlatformExecutor",

@@ -140,10 +140,17 @@ class TrendsAGIClient:
         min_snapshots: Optional[int] = None,
         exclude_sentiment: Optional[str] = None,
         interests: Optional[List[str]] = None,
-        order: Optional[str] = None # Alias for sort_dir
+        order: Optional[str] = None, # Alias for sort_dir
+        category: Optional[str] = None,
+        search: Optional[str] = None,
     ) -> models.TrendListResponse:
         """
         Retrieve a list of currently trending topics.
+
+        :param sort_by: ``volume`` (default), ``velocity``, ``growth``, ``timestamp``,
+                        ``category``, or ``name``.
+        :param category: Only return trends in this category (see ``get_trend_categories``).
+        :param search: Only return trends whose name matches this phrase.
         """
         page = (offset // limit) + 1
         
@@ -160,7 +167,9 @@ class TrendsAGIClient:
             "start_date": start_date,
             "end_date": end_date,
             "min_snapshots": min_snapshots,
-            "exclude_sentiment": exclude_sentiment
+            "exclude_sentiment": exclude_sentiment,
+            "category": category.strip() if category and category.strip() else None,
+            "search": search.strip() if search and search.strip() else None,
         }
         if interests:
             params["interests"] = ",".join(interests)

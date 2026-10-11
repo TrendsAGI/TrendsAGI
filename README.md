@@ -5,9 +5,14 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
 
 ## About
-Connect your paid social and search workflows to live market signals.
+Real-time trend intelligence for your code and your AI agents.
 
-`trendsagi` is a BYOC-first SDK: TrendsAGI provides intelligence (`/api/trends`, `/api/trends/{id}/ai-insights`), and you execute Google/Meta/TikTok/LinkedIn updates from your own infrastructure with runtime credentials.
+`trendsagi` gives Python apps and autonomous agents structured access to what is trending right now on social platforms: measured volume and growth, AI insights explaining why a topic is moving, evidence-backed recommendations, crisis alerts, and watchlists. It ships with:
+
+- A typed REST client (`TrendsAGIClient`).
+- **Agent tools** (`TrendsAGITools`) for OpenAI function calling, Anthropic tool use, and LangChain.
+- An **MCP server** (`trendsagi mcp`) for Claude Desktop, Claude Code, Cursor, VS Code, and any other Model Context Protocol client.
+- BYOC executors that preview or apply Google/Meta/TikTok/LinkedIn ad changes from your own infrastructure.
 
 ## Plan Notes (API Access)
 - Developer plan includes:
@@ -17,6 +22,7 @@ Connect your paid social and search workflows to live market signals.
 - Advantage/Scale unlock higher daily API limits, more keys, and expanded team workflows.
 
 ## Resources
+- Website: [https://trendsagi.com](https://trendsagi.com)
 - API Docs: [https://trendsagi.com/api-docs](https://trendsagi.com/api-docs)
 - Endpoint Reference: [https://trendsagi.com/api-docs#endpoints](https://trendsagi.com/api-docs#endpoints)
 - BYOC Integrations Guide (repo): [`INTEGRATIONS_BYOC.md`](./INTEGRATIONS_BYOC.md)
@@ -24,10 +30,135 @@ Connect your paid social and search workflows to live market signals.
 ## Installation
 
 ```bash
-pip install trendsagi
+pip install trendsagi            # client + agent tools
+pip install "trendsagi[mcp]"     # adds the MCP server (Python 3.10+)
 ```
 
-## Quick Start (BYOC Execution)
+Create an API key in your TrendsAGI profile and export it:
+
+```bash
+export TRENDSAGI_API_KEY="your_api_key"
+```
+
+## Quick Start
+
+```python
+import os
+from trendsagi import TrendsAGIClient
+
+client = TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"])
+
+# Fastest-moving Technology topics right now
+trends = client.get_trends(category="Technology", sort_by="velocity", limit=5)
+for trend in trends.trends:
+    print(trend.id, trend.name, trend.volume)
+
+# Why is the top one moving?
+insight = client.get_ai_insights(trends.trends[0].id)
+if insight:
+    print(insight.sentiment_summary, insight.key_themes)
+```
+
+## Use TrendsAGI from AI agents
+
+Agents need fresh context about what people are paying attention to. The same twelve tools are available in every format below; they are **read-only by default**, and tools that change account state (`add_to_watchlist`, `update_recommendation`) are only exposed when you opt in with `allow_writes=True` / `--allow-writes`.
+
+| Tool | What the agent gets |
+| --- | --- |
+| `list_trends` | Trending topics filtered by category or phrase, sorted by velocity, growth or volume |
+| `list_trend_categories` | Valid category names |
+| `search_trend_insights` | Trends and insights matching a theme |
+| `get_trend` / `get_trend_analytics` | One trend and its volume time series |
+| `get_trend_ai_insights` | Summary, key themes, sentiment, audience, marketing angles |
+| `list_recommendations` | Evidence-backed actions with a decision brief |
+| `list_crisis_events` | Reputation and crisis events for monitored topics |
+| `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
+| `add_to_watchlist` / `update_recommendation` | Write tools (opt-in) |
+
+### MCP server (Claude Desktop, Claude Code, Cursor, VS Code)
+
+```bash
+pip install "trendsagi[mcp]"
+claude mcp add trendsagi --env TRENDSAGI_API_KEY=your_api_key -- trendsagi mcp
+```
+
+Or add it to any MCP client's JSON config (for example `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "trendsagi": {
+      "command": "trendsagi-mcp",
+      "env": { "TRENDSAGI_API_KEY": "your_api_key" }
+    }
+  }
+}
+```
+
+Then ask: *"What is trending in Technology this hour, and which of those topics fit our product launch?"*
+
+### OpenAI function calling
+
+```python
+import json, os
+from openai import OpenAI
+from trendsagi import TrendsAGIClient, TrendsAGITools
+
+tools = TrendsAGITools(TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"]))
+openai = OpenAI()
+messages = [{"role": "user", "content": "Find a fast-rising Technology trend and suggest a campaign angle."}]
+
+while True:
+    reply = openai.chat.completions.create(model="gpt-5-mini", messages=messages, tools=tools.openai())
+    message = reply.choices[0].message
+    messages.append(message)
+    if not message.tool_calls:
+        print(message.content)
+        break
+    for call in message.tool_calls:
+        result = tools.call(call.function.name, call.function.arguments)
+        messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result)})
+```
+
+Use `tools.openai_responses()` for the Responses API.
+
+### Anthropic (Claude) tool use
+
+```python
+import json, os
+import anthropic
+from trendsagi import TrendsAGIClient, TrendsAGITools
+
+tools = TrendsAGITools(TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"]))
+claude = anthropic.Anthropic()
+messages = [{"role": "user", "content": "Which trending topics should our sports brand react to today?"}]
+
+while True:
+    reply = claude.messages.create(model="claude-sonnet-5-5", max_tokens=2048, tools=tools.anthropic(), messages=messages)
+    messages.append({"role": "assistant", "content": reply.content})
+    calls = [block for block in reply.content if block.type == "tool_use"]
+    if not calls:
+        print(next(block.text for block in reply.content if block.type == "text"))
+        break
+    messages.append({"role": "user", "content": [
+        {"type": "tool_result", "tool_use_id": c.id, "content": json.dumps(tools.call(c.name, c.input))}
+        for c in calls
+    ]})
+```
+
+### LangChain
+
+```python
+from trendsagi import TrendsAGIClient, TrendsAGITools
+
+langchain_tools = TrendsAGITools(TrendsAGIClient(api_key="...")).langchain()  # pip install "trendsagi[langchain]"
+```
+
+### Campaign-optimisation loop
+
+A typical agent loop: `list_trends` (category you sell into, sorted by velocity) → `get_trend_analytics` (confirm it is still rising) → `get_trend_ai_insights` (audience and angle) → `list_recommendations` (evidence-backed action) → preview the change with a BYOC executor below → only then apply it. Tool errors come back as `{"error": ...}` instead of exceptions, so the model can read a rate limit or a missing argument and recover.
+
+## BYOC Ad Execution
 
 ```python
 import os
@@ -124,7 +255,13 @@ accounts entitled to the existing crisis feature. The resilience beta's event
 evidence, reviews, exports, source status, and location methods from version
 0.10.0 have been withdrawn and are no longer supported by the current API.
 
-## CLI Scaffolder
+## CLI
+
+```bash
+trendsagi mcp [--allow-writes]   # MCP server over stdio
+```
+
+### Scaffolder
 
 ```bash
 # Docker template
