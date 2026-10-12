@@ -1,0 +1,93 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "trendsagi",
+  "version": "1.0.0",
+  "description": "Read live trend data from your TrendsAGI account - trending topics, trajectories, AI insights and recommendations - to inform paid media targeting and timing.",
+  "author": {
+    "name": "TrendsAGI",
+    "email": "contact@trendsagi.com",
+    "url": "https://trendsagi.com"
+  },
+  "homepage": "https://trendsagi.com/mcp",
+  "repository": "https://github.com/TrendsAGI/TrendsAGI",
+  "license": "MIT",
+  "keywords": ["trendsagi", "trends", "paid media", "marketing"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "TrendsAGI",
+        "shortDescription": "Trend data for paid media",
+        "longDescription": "TrendsAGI connects ChatGPT to your TrendsAGI account so you can ask about what is trending and decide what to target and when.\n\nWhat you can do:\n- See which topics are trending now in a category, or around a brand, product or competitor, with measured volume, velocity and growth.\n- Check whether a trend is still rising, flat or fading over the last 24 hours, 7 days or 30 days before deciding on campaign timing or budget.\n- Read the AI insight for a trend: summary, key themes, sentiment, audience and suggested marketing angles for ad copy and creative briefs.\n- Search insights by theme to find related trends.\n- Review the recommendations TrendsAGI generated for your account, each with a decision brief and its evidence.\n- Check reputation or crisis events on your monitored topics, your watchlist and your API usage.\n\nWho it is for: paid media, growth and marketing teams who already use TrendsAGI.\n\nLimits: all tools are read-only - the plugin cannot change your account, create campaigns or spend money. Calls count toward your TrendsAGI plan's API limits, and some data (insight search, recommendations, crisis monitoring) depends on your plan. TrendsAGI measures trend volume and growth; it does not measure ad performance or conversion lift. A recommendation's confidence score reflects how complete its evidence is, not the chance that it will succeed.\n\nYou sign in with your TrendsAGI account and approve the connection. It appears under Profile > API Keys in TrendsAGI, where you can revoke it at any time.",
+        "developerName": "TrendsAGI",
+        "category": "Productivity",
+        "capabilities": ["Read"],
+        "websiteURL": "https://trendsagi.com",
+        "supportURL": "https://trendsagi.com/contact",
+        "privacyPolicyURL": "https://trendsagi.com/privacy",
+        "termsOfServiceURL": "https://trendsagi.com/terms",
+        "defaultPrompt": [
+          "Which Technology topics are accelerating fastest right now?",
+          "Is this trend still rising, or is it fading this week?",
+          "Show my highest-priority TrendsAGI recommendations."
+        ],
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Find the fastest-rising topics in a category",
+              "prompt": "Which Technology topics are accelerating fastest on TrendsAGI right now?",
+              "tools_triggered": "list_trends",
+              "expected_behavior": "Calls list_trends with category Technology and sort_by velocity, then lists the returned trends with their volume, velocity and growth exactly as returned. No numbers are invented."
+            },
+            {
+              "description": "Check a trend's trajectory before a budget decision",
+              "prompt": "Take the top trend from that list. Is it still rising or fading over the last 7 days?",
+              "tools_triggered": "get_trend_analytics",
+              "expected_behavior": "Calls get_trend_analytics for that trend id with period 7d and describes the direction of the volume series (rising, flat or fading) using the returned data points."
+            },
+            {
+              "description": "Audience and ad angles for a trend",
+              "prompt": "Who is the audience for that trend, and what ad angles would fit it?",
+              "tools_triggered": "get_trend_ai_insights",
+              "expected_behavior": "Calls get_trend_ai_insights and summarises the audience, sentiment, key themes and marketing angles from the stored insight. If no insight exists, says so instead of inventing one."
+            },
+            {
+              "description": "Find trends by theme",
+              "prompt": "Find TrendsAGI trends related to sustainable packaging.",
+              "tools_triggered": "search_trend_insights",
+              "expected_behavior": "Calls search_trend_insights with query 'sustainable packaging' and lists the matching trends, or reports that none matched."
+            },
+            {
+              "description": "Review account recommendations",
+              "prompt": "Show my highest-priority TrendsAGI recommendations and the evidence behind them.",
+              "tools_triggered": "list_recommendations",
+              "expected_behavior": "Calls list_recommendations with priority high (or all) and presents each recommendation with its decision brief, explaining that the confidence score reflects evidence completeness, not the probability of success."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Request to launch or pay for an ad campaign",
+              "prompt": "Launch a $500 Meta ad campaign targeting the top trend."
+            },
+            {
+              "description": "Request to delete account data",
+              "prompt": "Delete my TrendsAGI watchlist."
+            },
+            {
+              "description": "Unrelated request",
+              "prompt": "What will the weather be in Paris tomorrow?"
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "This plugin does not sell products or process payments."
+      },
+      "publication": {
+        "release_notes": "Initial release: read-only access to TrendsAGI trending topics, trend trajectories, AI insights, insight search, recommendations, crisis events, watchlist and API usage, with sign-in through the user's TrendsAGI account."
+      }
+    }
+  }
+}
