@@ -12,7 +12,7 @@ Real-time trend intelligence for your code and your AI agents.
 - A typed REST client (`TrendsAGIClient`).
 - **Agent tools** (`TrendsAGITools`) for OpenAI function calling, Anthropic tool use, and LangChain.
 - An **MCP server** (`trendsagi mcp`) for Claude Desktop, Claude Code, Cursor, VS Code, and any other Model Context Protocol client.
-- A **plugin for Grok, Cursor and Claude** ([`plugins/trendsagi`](./plugins/trendsagi)) backed by the hosted MCP server.
+- A **plugin for Grok, Cursor and Claude** ([`plugins/trendsagi`](https://github.com/TrendsAGI/TrendsAGI/tree/main/plugins/trendsagi)) backed by the hosted MCP server.
 - BYOC executors that preview or apply Google/Meta/TikTok/LinkedIn ad changes from your own infrastructure.
 
 ## Use TrendsAGI in Grok, ChatGPT, Claude or Cursor (no install)
