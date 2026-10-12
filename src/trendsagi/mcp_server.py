@@ -9,6 +9,10 @@ Run it with::
     pip install "trendsagi[mcp]"
     TRENDSAGI_API_KEY=... trendsagi mcp            # read-only tools
     TRENDSAGI_API_KEY=... trendsagi mcp --allow-writes
+
+No install is needed for the read-only tools: the same server is hosted at
+:data:`HOSTED_MCP_URL` with OAuth sign-in, for Grok, ChatGPT, Claude, Cursor
+and any other client that supports remote MCP servers.
 """
 
 from __future__ import annotations
@@ -23,6 +27,25 @@ from .client import TrendsAGIClient
 
 SERVER_NAME = "trendsagi"
 
+#: The hosted Streamable HTTP endpoint (OAuth 2.1 sign-in, read-only tools).
+HOSTED_MCP_URL = "https://api.trendsagi.com/mcp"
+
+#: Sent to clients on initialize; matches the hosted server's instructions.
+SERVER_INSTRUCTIONS = (
+    "TrendsAGI measures what is trending across social platforms in real time (volume, velocity, "
+    "growth) and turns it into evidence-backed recommendations.\n\n"
+    "Use it to help paid media and growth teams decide what to target and when: find topics that "
+    "are accelerating before auctions get crowded, choose audiences, keywords and creative angles "
+    "backed by measured demand, and spot fading trends so spend can move elsewhere.\n\n"
+    "Typical flow: list_trends with sort_by=velocity (optionally a category or search phrase) or "
+    "search_trend_insights for a theme; then get_trend_analytics to check the trajectory and "
+    "get_trend_ai_insights for audience, sentiment and marketing angles; then list_recommendations "
+    "for prioritised actions.\n\n"
+    "Report numbers as measurements. A recommendation's confidence score measures how complete its "
+    "evidence is, not the probability that the action will work, and TrendsAGI does not measure "
+    "conversion lift - never present one as a TrendsAGI figure."
+)
+
 
 def build_server(tools: TrendsAGITools) -> Any:
     """Create an MCP ``Server`` that serves ``tools``."""
@@ -34,7 +57,10 @@ def build_server(tools: TrendsAGITools) -> Any:
             'The MCP server needs the optional dependency: pip install "trendsagi[mcp]" (Python 3.10+)'
         ) from exc
 
-    server = Server(SERVER_NAME)
+    try:
+        server = Server(SERVER_NAME, instructions=SERVER_INSTRUCTIONS)
+    except TypeError:  # pragma: no cover - mcp releases without instructions support
+        server = Server(SERVER_NAME)
 
     @server.list_tools()
     async def list_tools() -> List[types.Tool]:

@@ -1,0 +1,18 @@
+{
+  "name": "trendsagi",
+  "owner": {
+    "name": "TrendsAGI",
+    "email": "contact@trendsagi.com"
+  },
+  "metadata": {
+    "description": "Official TrendsAGI plugins for Grok Bot and Cursor",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "trendsagi",
+      "source": "./plugins/trendsagi",
+      "description": "Live trend intelligence for paid media and growth teams: trend velocity, audiences and evidence-backed recommendations from the hosted TrendsAGI MCP server."
+    }
+  ]
+}

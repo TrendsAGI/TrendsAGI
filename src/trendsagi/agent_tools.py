@@ -115,9 +115,10 @@ class TrendsAGITools:
             AgentTool(
                 name="list_trends",
                 description=(
-                    "List topics that are trending right now on social platforms, with measured "
-                    "volume and growth. Filter by category or a search phrase and sort by "
-                    "velocity to find what is accelerating fastest."
+                    "List topics trending right now on social platforms with measured volume, "
+                    "velocity and growth. Sort by velocity to find what is accelerating fastest - "
+                    "the best moment to target an audience or launch a creative before competitors "
+                    "bid on it. Filter by category or a search phrase."
                 ),
                 parameters=_schema({
                     "category": {"type": "string", "description": "Category name, e.g. 'Technology'. Use list_trend_categories for valid names."},
@@ -144,7 +145,8 @@ class TrendsAGITools:
                 name="search_trend_insights",
                 description=(
                     "Search AI-generated trend insights by theme, e.g. 'AI chips' or 'sustainable "
-                    "packaging', to find related trends and why they are moving."
+                    "packaging', to find related trends, why they are moving and which audiences "
+                    "care - useful for building interest and keyword targeting around a product."
                 ),
                 parameters=_schema({
                     "query": {"type": "string", "description": "Theme or phrase to search for."},
@@ -162,14 +164,18 @@ class TrendsAGITools:
                 name="get_trend_ai_insights",
                 description=(
                     "Get the cached AI insight for a trend: summary, key themes, sentiment, audience "
-                    "and suggested marketing angles. Returns null when no insight exists yet."
+                    "and suggested marketing angles to use in ad copy and creative briefs. Returns "
+                    "null when no insight exists yet."
                 ),
                 parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
                 handler=lambda trend_id: c.get_ai_insights(trend_id),
             ),
             AgentTool(
                 name="get_trend_analytics",
-                description="Get the time series of a trend's volume over a period, to judge whether it is rising or fading.",
+                description=(
+                    "Get the time series of a trend's volume over a period, to judge whether it is "
+                    "still rising (scale spend) or already fading (pull back) before committing budget."
+                ),
                 parameters=_schema({
                     "trend_id": {"type": "integer", "minimum": 1},
                     "period": {"type": "string", "enum": ["24h", "7d", "30d"], "default": "7d"},
@@ -203,7 +209,10 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="list_crisis_events",
-                description="List reputation or crisis events detected for this account's monitored topics.",
+                description=(
+                    "List reputation or crisis events detected for this account's monitored topics - "
+                    "check before scaling spend on a brand or topic."
+                ),
                 parameters=_schema({
                     "status": {"type": "string", "enum": ["active", "resolved", "all"], "default": "active"},
                     "time_range": {"type": "string", "enum": ["24h", "7d", "30d"], "default": "24h"},

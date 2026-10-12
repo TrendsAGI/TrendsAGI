@@ -1,0 +1,17 @@
+{
+  "name": "trendsagi",
+  "version": "1.0.0",
+  "description": "TrendsAGI for Grok Bot and Cursor: live trend velocity, audience insights and evidence-backed recommendations to sharpen paid media targeting and timing. Hosted MCP with TrendsAGI sign-in; read-only.",
+  "author": {
+    "name": "TrendsAGI",
+    "email": "contact@trendsagi.com",
+    "url": "https://trendsagi.com"
+  },
+  "homepage": "https://trendsagi.com/mcp",
+  "repository": "https://github.com/TrendsAGI/TrendsAGI",
+  "license": "MIT",
+  "keywords": ["trendsagi", "trendsagi mcp", "trendsagi trends", "trendsagi paid media"],
+  "logo": "assets/logo.png",
+  "skills": "skills",
+  "mcpServers": "mcp.json"
+}

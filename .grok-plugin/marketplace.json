@@ -1,0 +1,21 @@
+{
+  "name": "trendsagi",
+  "description": "Official TrendsAGI plugins for Grok",
+  "owner": {
+    "name": "TrendsAGI"
+  },
+  "plugins": [
+    {
+      "name": "trendsagi",
+      "description": "Live trend intelligence for paid media and growth teams: trend velocity, audiences and evidence-backed recommendations from the hosted TrendsAGI MCP server.",
+      "category": "productivity",
+      "source": {
+        "type": "local",
+        "path": "./plugins/trendsagi"
+      },
+      "homepage": "https://trendsagi.com/mcp",
+      "keywords": ["trendsagi", "trendsagi mcp", "trendsagi trends", "trendsagi paid media"],
+      "domains": ["trendsagi.com", "api.trendsagi.com", "app.trendsagi.com"]
+    }
+  ]
+}

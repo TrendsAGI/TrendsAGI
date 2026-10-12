@@ -1,0 +1,33 @@
+{
+  "name": "trendsagi",
+  "version": "1.0.0",
+  "description": "Live trend intelligence for paid media and growth teams, via the hosted TrendsAGI MCP server at api.trendsagi.com. Find topics accelerating in your market before auctions get crowded, check whether a trend is still rising before committing budget, pull audience and marketing angles into ad copy, and act on evidence-backed recommendations. Read-only; sign in with your TrendsAGI account on first connect.",
+  "author": {
+    "name": "TrendsAGI",
+    "email": "contact@trendsagi.com",
+    "url": "https://trendsagi.com"
+  },
+  "homepage": "https://trendsagi.com/mcp",
+  "repository": "https://github.com/TrendsAGI/TrendsAGI",
+  "license": "MIT",
+  "keywords": ["trendsagi", "trendsagi mcp", "trendsagi trends", "trendsagi paid media"],
+  "logo": "assets/logo.png",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "TrendsAGI",
+    "shortDescription": "Target rising demand: live trend velocity, audiences and ad angles for paid media teams.",
+    "longDescription": "TrendsAGI measures what is trending across social platforms in real time and turns it into evidence-backed recommendations. Ask Grok what is accelerating in your category, whether a trend is still rising or already fading before you move budget, which audiences and themes sit behind it, and which marketing angles to test - answered with TrendsAGI measurements, not guesses. Tools are read-only, count toward your plan's API limits, and each connection can be revoked from Profile > API Keys.",
+    "developerName": "TrendsAGI",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read"],
+    "websiteURL": "https://trendsagi.com",
+    "privacyPolicyURL": "https://trendsagi.com/privacy",
+    "termsOfServiceURL": "https://trendsagi.com/terms",
+    "defaultPrompt": [
+      "What is accelerating fastest in Technology this week, and who should I target with it?",
+      "Is this trend still rising or already fading? Should I scale spend on it?",
+      "Give me three ad angles for my product based on what is trending now."
+    ]
+  }
+}

@@ -7,12 +7,30 @@
 ## About
 Real-time trend intelligence for your code and your AI agents.
 
-`trendsagi` gives Python apps and autonomous agents structured access to what is trending right now on social platforms: measured volume and growth, AI insights explaining why a topic is moving, evidence-backed recommendations, crisis alerts, and watchlists. It ships with:
+`trendsagi` gives Python apps and autonomous agents structured access to what is trending right now on social platforms: measured volume and growth, AI insights explaining why a topic is moving, evidence-backed recommendations, crisis alerts, and watchlists. Paid media and growth teams use it to target what is rising, time spend to the trend curve, and brief creative on measured demand. It ships with:
 
 - A typed REST client (`TrendsAGIClient`).
 - **Agent tools** (`TrendsAGITools`) for OpenAI function calling, Anthropic tool use, and LangChain.
 - An **MCP server** (`trendsagi mcp`) for Claude Desktop, Claude Code, Cursor, VS Code, and any other Model Context Protocol client.
+- A **plugin for Grok, Cursor and Claude** ([`plugins/trendsagi`](./plugins/trendsagi)) backed by the hosted MCP server.
 - BYOC executors that preview or apply Google/Meta/TikTok/LinkedIn ad changes from your own infrastructure.
+
+## Use TrendsAGI in Grok, ChatGPT, Claude or Cursor (no install)
+
+TrendsAGI runs a hosted MCP server with OAuth sign-in:
+
+```text
+https://api.trendsagi.com/mcp
+```
+
+Add that URL as a remote MCP server, custom connector or plugin in your assistant, sign in to TrendsAGI, and approve the connection. Then ask things like *"What is accelerating fastest in Technology this week, and who should I target with it?"* or *"Is this trend still rising, or should I pull spend?"*
+
+- **Grok:** install the TrendsAGI plugin, or add the URL as a remote MCP server.
+- **Claude Code:** `claude mcp add --transport http trendsagi https://api.trendsagi.com/mcp`, or `/plugin marketplace add TrendsAGI/TrendsAGI` then `/plugin install trendsagi@trendsagi`.
+- **Cursor:** `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }`.
+- **ChatGPT and others:** add the URL as a custom connector.
+
+The hosted tools are read-only and count toward your plan's API limits. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an existing API key as `Authorization: Bearer <key>`. Setup guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
 
 ## Plan Notes (API Access)
 - Developer plan includes:
@@ -75,7 +93,9 @@ Agents need fresh context about what people are paying attention to. The same tw
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
 | `add_to_watchlist` / `update_recommendation` | Write tools (opt-in) |
 
-### MCP server (Claude Desktop, Claude Code, Cursor, VS Code)
+### Local MCP server (Claude Desktop, Claude Code, Cursor, VS Code)
+
+Prefer to run it yourself, or need the opt-in write tools? The SDK ships the same server over stdio:
 
 ```bash
 pip install "trendsagi[mcp]"

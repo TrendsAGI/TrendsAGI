@@ -1,0 +1,15 @@
+<!-- File: frontend/favicon.svg -->
+<svg viewBox="-10 -10 270 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g>
+    <path d="M0,160 Q40,140 60,100 Q80,60 100,40 Q120,20 160,0"
+      stroke="#4ade80" stroke-width="18" fill="none" stroke-linecap="round" />
+    <path d="M20,160 Q60,140 80,100 Q100,60 120,40 Q140,20 180,0"
+      stroke="#4ade80" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.9" />
+    <path d="M40,160 Q80,140 100,100 Q120,60 140,40 Q160,20 200,0"
+      stroke="#4ade80" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.8" />
+    <path d="M60,160 Q100,140 120,100 Q140,60 160,40 Q180,20 220,0"
+      stroke="#4ade80" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.7" />
+    <path d="M80,160 Q120,140 140,100 Q160,60 180,40 Q200,20 240,0"
+      stroke="#4ade80" stroke-width="18" fill="none" stroke-linecap="round" opacity="0.6" />
+  </g>
+</svg>

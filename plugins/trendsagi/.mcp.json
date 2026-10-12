@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "trendsagi": {
+      "type": "http",
+      "url": "https://api.trendsagi.com/mcp"
+    }
+  }
+}

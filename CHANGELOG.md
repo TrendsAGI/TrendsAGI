@@ -2,6 +2,22 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.13.0] - 2026-10-12
+
+### Added
+
+- Hosted MCP server at `https://api.trendsagi.com/mcp` (Streamable HTTP, OAuth 2.1
+  sign-in, read-only tools), exposed as `trendsagi.mcp_server.HOSTED_MCP_URL`.
+- `plugins/trendsagi`: a Grok Build / Grok Bot, Cursor and Claude Code plugin that
+  bundles the hosted server and a paid-media skill, plus self-hosted marketplace
+  catalogs at the repository root (`/plugin marketplace add TrendsAGI/TrendsAGI`).
+- The local MCP server sends the same server instructions as the hosted one.
+
+### Changed
+
+- Tool descriptions now say how each result informs targeting, timing and creative
+  decisions, so assistants reach for the right tool in paid-media conversations.
+
 ## [0.12.0] - 2026-10-11
 
 ### Added
