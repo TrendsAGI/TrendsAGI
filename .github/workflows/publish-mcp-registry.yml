@@ -1,0 +1,31 @@
+name: Publish to MCP Registry
+
+# Lists the hosted TrendsAGI MCP server (server.json) in the official MCP
+# Registry. GitHub OIDC proves ownership of the io.github.TrendsAGI namespace,
+# so no secret is needed. The registry refuses a version it already has, so
+# this runs only when server.json changes; bump "version" to republish.
+on:
+  push:
+    branches: [main]
+    paths: [server.json]
+  workflow_dispatch:
+
+permissions:
+  id-token: write # Required for OIDC authentication
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

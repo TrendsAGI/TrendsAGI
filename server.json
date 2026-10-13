@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.TrendsAGI/trendsagi",
+  "title": "TrendsAGI",
+  "description": "Trending topics, trend trajectories, audience insights and recommendations from TrendsAGI. Read-only.",
+  "websiteUrl": "https://trendsagi.com/mcp",
+  "repository": {
+    "url": "https://github.com/TrendsAGI/TrendsAGI",
+    "source": "github"
+  },
+  "version": "1.1.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.trendsagi.com/mcp"
+    }
+  ]
+}
