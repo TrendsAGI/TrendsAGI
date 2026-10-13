@@ -1,6 +1,6 @@
 {
   "name": "trendsagi",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Live trend intelligence for paid media and growth teams: trending topics, trend trajectories, audience insights and evidence-backed recommendations from your TrendsAGI account, via the hosted TrendsAGI MCP server. Read-only.",
   "author": {
     "name": "TrendsAGI",
@@ -8,6 +8,7 @@
     "url": "https://trendsagi.com"
   },
   "homepage": "https://trendsagi.com/mcp",
+  "privacyPolicyUrl": "https://trendsagi.com/privacy",
   "repository": "https://github.com/TrendsAGI/TrendsAGI",
   "license": "MIT",
   "keywords": [
