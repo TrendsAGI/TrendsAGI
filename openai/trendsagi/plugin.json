@@ -11,7 +11,12 @@
   "homepage": "https://trendsagi.com/mcp",
   "repository": "https://github.com/TrendsAGI/TrendsAGI",
   "license": "MIT",
-  "keywords": ["trendsagi", "trends", "paid media", "marketing"],
+  "keywords": [
+    "trendsagi",
+    "trends",
+    "paid media",
+    "marketing"
+  ],
   "extensions": {
     "com.openai": {
       "interface": {
@@ -20,7 +25,9 @@
         "longDescription": "TrendsAGI connects ChatGPT to your TrendsAGI account so you can ask about what is trending and decide what to target and when.\n\nWhat you can do:\n- See which topics are trending now in a category, or around a brand, product or competitor, with measured volume, velocity and growth.\n- Check whether a trend is still rising, flat or fading over the last 24 hours, 7 days or 30 days before deciding on campaign timing or budget.\n- Read the AI insight for a trend: summary, key themes, sentiment, audience and suggested marketing angles for ad copy and creative briefs.\n- Search insights by theme to find related trends.\n- Review the recommendations TrendsAGI generated for your account, each with a decision brief and its evidence.\n- Check reputation or crisis events on your monitored topics, your watchlist and your API usage.\n\nWho it is for: paid media, growth and marketing teams who already use TrendsAGI.\n\nLimits: all tools are read-only - the plugin cannot change your account, create campaigns or spend money. Calls count toward your TrendsAGI plan's API limits, and some data (insight search, recommendations, crisis monitoring) depends on your plan. TrendsAGI measures trend volume and growth; it does not measure ad performance or conversion lift. A recommendation's confidence score reflects how complete its evidence is, not the chance that it will succeed.\n\nYou sign in with your TrendsAGI account and approve the connection. It appears under Profile > API Keys in TrendsAGI, where you can revoke it at any time.",
         "developerName": "TrendsAGI",
         "category": "Productivity",
-        "capabilities": ["Read"],
+        "capabilities": [
+          "Read"
+        ],
         "websiteURL": "https://trendsagi.com",
         "supportURL": "https://trendsagi.com/contact",
         "privacyPolicyURL": "https://trendsagi.com/privacy",
@@ -37,34 +44,34 @@
         "test_cases": {
           "positive": [
             {
-              "description": "Find the fastest-rising topics in a category",
-              "prompt": "Which Technology topics are accelerating fastest on TrendsAGI right now?",
+              "description": "Find the fastest-rising topics now",
+              "prompt": "Which topics are accelerating fastest on TrendsAGI in the last 24 hours?",
               "tools_triggered": "list_trends",
-              "expected_behavior": "Calls list_trends with category Technology and sort_by velocity, then lists the returned trends with their volume, velocity and growth exactly as returned. No numbers are invented."
+              "expected_behavior": "Calls list_trends with sort_by velocity (period defaults to 24h) and lists the returned trends with their volume and growth figures exactly as returned. No numbers are invented."
+            },
+            {
+              "description": "Rising topics in a category",
+              "prompt": "What is trending in Technology on TrendsAGI this week?",
+              "tools_triggered": "list_trends",
+              "expected_behavior": "Calls list_trends with category Technology and period 7d (list_trend_categories may be called first to confirm the name) and summarises the returned trends with their measured figures."
             },
             {
               "description": "Check a trend's trajectory before a budget decision",
-              "prompt": "Take the top trend from that list. Is it still rising or fading over the last 7 days?",
-              "tools_triggered": "get_trend_analytics",
-              "expected_behavior": "Calls get_trend_analytics for that trend id with period 7d and describes the direction of the volume series (rising, flat or fading) using the returned data points."
+              "prompt": "Is the OpenAI trend on TrendsAGI rising or fading over the last 7 days?",
+              "tools_triggered": "list_trends, get_trend_analytics",
+              "expected_behavior": "Finds the OpenAI trend with list_trends (search 'OpenAI'), then calls get_trend_analytics with period 7d and describes the direction of the volume series from the returned data points. Says so if the series has gaps."
             },
             {
               "description": "Audience and ad angles for a trend",
-              "prompt": "Who is the audience for that trend, and what ad angles would fit it?",
-              "tools_triggered": "get_trend_ai_insights",
-              "expected_behavior": "Calls get_trend_ai_insights and summarises the audience, sentiment, key themes and marketing angles from the stored insight. If no insight exists, says so instead of inventing one."
+              "prompt": "What audience and ad angles does TrendsAGI's insight suggest for the OpenAI trend?",
+              "tools_triggered": "list_trends, get_trend_ai_insights",
+              "expected_behavior": "Finds the OpenAI trend, calls get_trend_ai_insights and summarises the audience, sentiment, key themes and marketing angles from the stored insight without inventing details."
             },
             {
-              "description": "Find trends by theme",
-              "prompt": "Find TrendsAGI trends related to sustainable packaging.",
-              "tools_triggered": "search_trend_insights",
-              "expected_behavior": "Calls search_trend_insights with query 'sustainable packaging' and lists the matching trends, or reports that none matched."
-            },
-            {
-              "description": "Review account recommendations",
-              "prompt": "Show my highest-priority TrendsAGI recommendations and the evidence behind them.",
-              "tools_triggered": "list_recommendations",
-              "expected_behavior": "Calls list_recommendations with priority high (or all) and presents each recommendation with its decision brief, explaining that the confidence score reflects evidence completeness, not the probability of success."
+              "description": "Review account recommendations and watchlist",
+              "prompt": "What topics am I watching on TrendsAGI, and do I have any recommendations?",
+              "tools_triggered": "list_watchlist, list_recommendations",
+              "expected_behavior": "Calls list_watchlist and lists the watched topics with their alert conditions, then calls list_recommendations and presents any recommendations with their decision brief, or states that there are none yet. Explains that confidence reflects evidence completeness, not the chance of success."
             }
           ],
           "negative": [
