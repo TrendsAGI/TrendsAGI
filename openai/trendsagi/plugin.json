@@ -90,7 +90,8 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "This plugin does not sell products or process payments."
+        "commerce_description": "This plugin does not sell products or process payments.",
+        "demo_recording_url": "https://drive.google.com/file/d/1dDC-hqEIQ_R6dxYhrwzrXRu25eUv8b5H/view?usp=sharing"
       },
       "publication": {
         "release_notes": "Initial release: read-only access to TrendsAGI trending topics, trend trajectories, AI insights, insight search, recommendations, crisis events, watchlist and API usage, with sign-in through the user's TrendsAGI account."
