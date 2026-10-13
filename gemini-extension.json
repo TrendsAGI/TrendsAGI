@@ -1,0 +1,12 @@
+{
+  "name": "trendsagi",
+  "version": "1.1.2",
+  "description": "Live trend intelligence for paid media and growth teams: trending topics, trajectories, audience insights and recommendations from your TrendsAGI account. Read-only.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "trendsagi": {
+      "httpUrl": "https://api.trendsagi.com/mcp",
+      "timeout": 60000
+    }
+  }
+}

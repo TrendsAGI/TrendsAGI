@@ -28,6 +28,7 @@ Add that URL as a remote MCP server, custom connector or plugin in your assistan
 - **Grok:** install the TrendsAGI plugin, or add the URL as a remote MCP server.
 - **Claude Code:** `claude mcp add --transport http trendsagi https://api.trendsagi.com/mcp`, or `/plugin marketplace add TrendsAGI/TrendsAGI` then `/plugin install trendsagi@trendsagi`.
 - **Cursor:** `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }`.
+- **Gemini CLI:** `gemini extensions install https://github.com/TrendsAGI/TrendsAGI` (the first TrendsAGI tool call opens the sign-in).
 - **ChatGPT and others:** add the URL as a custom connector.
 
 The hosted tools are read-only and count toward your plan's API limits. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an existing API key as `Authorization: Bearer <key>`. Setup guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
