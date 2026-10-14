@@ -123,3 +123,20 @@ def test_mcp_server_end_to_end():
         assert result["result"]["trends"][0]["name"] == "AI chips"
     finally:
         api.shutdown()
+
+
+def test_find_capability_is_read_only_and_calls_the_api():
+    client, tools = _tools()
+    assert "find_capability" in tools.names
+    client._request = MagicMock(return_value={"goal": "export trends", "matches": [{"capability": "Export data"}]})
+
+    result = tools.call("find_capability", {"goal": "export trends"})
+
+    client._request.assert_called_once_with("GET", "/api/agent/capabilities", params={"goal": "export trends"})
+    assert result["result"]["matches"][0]["capability"] == "Export data"
+    assert "error" in tools.call("find_capability", {})
+
+
+def test_requests_identify_the_sdk():
+    client = TrendsAGIClient(api_key="test-key", base_url="http://unused.invalid")
+    assert client._session.headers["User-Agent"].startswith("trendsagi-python/")

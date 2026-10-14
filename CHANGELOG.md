@@ -2,6 +2,21 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.14.0] - 2026-10-14
+
+### Added
+
+- `find_capability` agent tool (read-only) and `TrendsAGIClient.find_capability(goal)`:
+  ask whether TrendsAGI can do a task and get the covering tools or the app page,
+  best match first. Available in every tool format and in `trendsagi mcp`; the
+  hosted MCP server has it too.
+- Requests now send a `User-Agent: trendsagi-python/<version>` header.
+
+### Changed
+
+- The local MCP server's instructions tell assistants to use `find_capability`
+  when no other tool fits, matching the hosted server.
+
 ## [0.13.0] - 2026-10-12
 
 ### Added

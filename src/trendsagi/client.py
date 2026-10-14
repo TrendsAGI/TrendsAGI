@@ -13,6 +13,14 @@ from pydantic import ValidationError
 from . import models
 from . import exceptions
 
+
+def _package_version() -> str:
+    try:
+        from importlib.metadata import PackageNotFoundError, version
+        return version("trendsagi")
+    except PackageNotFoundError:
+        return "0.0.0"
+
 try:
     import certifi
 except ImportError:
@@ -57,7 +65,8 @@ class TrendsAGIClient:
         self._session.headers.update({
             "X-API-Key": api_key,
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "User-Agent": f"trendsagi-python/{_package_version()}",
         })
         self._enable_retry_on_rate_limit = enable_retry_on_rate_limit
         self._max_retries = max_retries
@@ -778,6 +787,17 @@ class TrendsAGIClient:
         """
         response_data = self._request('GET', '/api/user/api-usage')
         return models.ApiUsageResponse.model_validate(response_data)
+
+    def find_capability(self, goal: str) -> Dict[str, Any]:
+        """
+        Ask whether TrendsAGI can do a task, and where.
+
+        :param goal: The task in a few words, e.g. "alert me when a topic spikes".
+        :return: ``{"goal": ..., "matches": [...], "result": ...}``. Each match names a
+            capability, the agent tools that cover it (if any) and its URL in the
+            TrendsAGI app, best first. ``matches`` is empty when nothing fits.
+        """
+        return self._request('GET', '/api/agent/capabilities', params={'goal': goal})
 
 
     # --- Organization Methods ---

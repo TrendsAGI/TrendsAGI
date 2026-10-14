@@ -41,6 +41,8 @@ SERVER_INSTRUCTIONS = (
     "search_trend_insights for a theme; then get_trend_analytics to check the trajectory and "
     "get_trend_ai_insights for audience, sentiment and marketing angles; then list_recommendations "
     "for prioritised actions.\n\n"
+    "When no tool fits what the user wants, call find_capability with a short description of the "
+    "task to learn whether TrendsAGI supports it and where in the app it is done.\n\n"
     "Report numbers as measurements. A recommendation's confidence score measures how complete its "
     "evidence is, not the probability that the action will work, and TrendsAGI does not measure "
     "conversion lift - never present one as a TrendsAGI figure."

@@ -80,7 +80,7 @@ if insight:
 
 ## Use TrendsAGI from AI agents
 
-Agents need fresh context about what people are paying attention to. The same twelve tools are available in every format below; they are **read-only by default**, and tools that change account state (`add_to_watchlist`, `update_recommendation`) are only exposed when you opt in with `allow_writes=True` / `--allow-writes`.
+Agents need fresh context about what people are paying attention to. The same thirteen tools are available in every format below; they are **read-only by default**, and tools that change account state (`add_to_watchlist`, `update_recommendation`) are only exposed when you opt in with `allow_writes=True` / `--allow-writes`.
 
 | Tool | What the agent gets |
 | --- | --- |
@@ -92,6 +92,7 @@ Agents need fresh context about what people are paying attention to. The same tw
 | `list_recommendations` | Evidence-backed actions with a decision brief |
 | `list_crisis_events` | Reputation and crisis events for monitored topics |
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
+| `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |
 | `add_to_watchlist` / `update_recommendation` | Write tools (opt-in) |
 
 ### Local MCP server (Claude Desktop, Claude Code, Cursor, VS Code)

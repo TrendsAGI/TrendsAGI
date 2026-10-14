@@ -235,6 +235,24 @@ class TrendsAGITools:
                 handler=lambda: c.get_api_usage(),
             ),
             AgentTool(
+                name="find_capability",
+                description=(
+                    "Check whether TrendsAGI can do a task and how: returns the tools that cover it, "
+                    "or the page in the TrendsAGI app where the user does it. Use when no other tool "
+                    "fits the user's request, for example setting up an alert, exporting data or "
+                    "connecting an ad account. Describe the task in a few words; do not include "
+                    "personal details."
+                ),
+                parameters=_schema({
+                    "goal": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "description": "The task in a few words, e.g. 'alert me when a topic spikes'.",
+                    },
+                }, ["goal"]),
+                handler=lambda goal: c.find_capability(goal),
+            ),
+            AgentTool(
                 name="add_to_watchlist",
                 description=(
                     "Start watching a topic and alert when it crosses a volume threshold or a "
