@@ -80,7 +80,7 @@ if insight:
 
 ## Use TrendsAGI from AI agents
 
-Agents need fresh context about what people are paying attention to. The same thirteen tools are available in every format below; they are **read-only by default**, and tools that change account state (`add_to_watchlist`, `update_recommendation`) are only exposed when you opt in with `allow_writes=True` / `--allow-writes`.
+Agents need fresh context about what people are paying attention to. The same fifteen tools are available in every format below; they are **read-only by default**, and tools that change account state (`add_to_watchlist`, `update_recommendation`) are only exposed when you opt in with `allow_writes=True` / `--allow-writes`.
 
 | Tool | What the agent gets |
 | --- | --- |
@@ -92,6 +92,7 @@ Agents need fresh context about what people are paying attention to. The same th
 | `list_recommendations` | Evidence-backed actions with a decision brief |
 | `list_crisis_events` | Reputation and crisis events for monitored topics |
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
+| `read_data_schema` / `execute_sql` | Read-only PostgreSQL over your trends, readings, insights, watchlist, recommendations and crisis events, for questions that need filters, joins or aggregation |
 | `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |
 | `add_to_watchlist` / `update_recommendation` | Write tools (opt-in) |
 
@@ -292,6 +293,26 @@ trendsagi scaffold --type docker --output ./runner
 # Terraform template
 trendsagi scaffold --type terraform --output ./infra
 ```
+
+## Query with SQL
+
+Agents (and analysts) often want an answer no single endpoint returns: growth by category, the trends that match a watchlist, an hourly series. `execute_sql` runs one read-only PostgreSQL `SELECT` over documented tables, and `get_data_schema` describes them with column meanings and example queries.
+
+```python
+schema = client.get_data_schema()          # tables, columns, rules, examples
+result = client.execute_sql(
+    """
+    SELECT category, count(*) AS trends, round(avg(growth_pct)::numeric, 1) AS avg_growth_pct
+    FROM trends
+    WHERE last_seen_at > now() - interval '7 days' AND growth_pct IS NOT NULL
+    GROUP BY category ORDER BY avg_growth_pct DESC
+    """,
+    max_rows=20,
+)
+print(result["columns"], result["rows"])
+```
+
+Tables: `trends`, `trend_snapshots` (90 days of readings), `trend_categories`, `trend_insights`, `watchlist`, `recommendations` and `crisis_events`; the last three only ever contain your own account's rows. Queries are validated before they run (one `SELECT`, the documented tables, common aggregate, window, date/time, string, math and jsonb functions), run read-only for at most 5 seconds, and count as one API request. A refused or failed query raises `exceptions.QueryError` with a `code` such as `unknown_table`, `function_not_allowed`, `timeout` or `plan_required`, plus `hint` and `position` when known.
 
 ## Error Handling
 

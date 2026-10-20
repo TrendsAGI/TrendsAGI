@@ -9,11 +9,30 @@ class AuthenticationError(TrendsAGIError):
     pass
 
 class APIError(TrendsAGIError):
-    """Raised for non-2xx API responses."""
-    def __init__(self, status_code, error_detail):
+    """Raised for non-2xx API responses.
+
+    ``body`` holds the decoded JSON error response when there was one.
+    """
+    def __init__(self, status_code, error_detail, body=None):
         self.status_code = status_code
         self.error_detail = error_detail
+        self.body = body
         super().__init__(f"API request failed with status {status_code}: {error_detail}")
+
+class QueryError(APIError):
+    """
+    Raised by ``execute_sql`` when a query is refused or fails.
+
+    :ivar code: Why, e.g. ``unknown_table``, ``function_not_allowed``,
+        ``query_error``, ``timeout`` or ``plan_required``.
+    :ivar hint: A suggested fix, when the server has one.
+    :ivar position: 1-based character offset of the problem in the query, when known.
+    """
+    def __init__(self, status_code, body):
+        self.code = body.get("error")
+        self.hint = body.get("hint")
+        self.position = body.get("position")
+        super().__init__(status_code, body.get("detail"), body=body)
 
 class NotFoundError(APIError):
     """Raised for 404 Not Found errors."""

@@ -2,6 +2,26 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.15.0] - 2026-10-20
+
+### Added
+
+- `execute_sql` and `read_data_schema` agent tools (read-only), and
+  `TrendsAGIClient.execute_sql(query, max_rows=None, max_result_bytes=None)` /
+  `TrendsAGIClient.get_data_schema()`: run one read-only PostgreSQL SELECT over
+  trends, trend readings, AI insights, the watchlist, recommendations and crisis
+  events, for questions that need filters, joins or aggregation. Available in every
+  tool format and in `trendsagi mcp`; the hosted MCP server has them too.
+- `exceptions.QueryError` (a subclass of `APIError`) with `code`, `hint` and
+  `position` for refused or failed queries. Agent tools return these fields to the
+  model so it can fix its SQL.
+- `APIError.body` holds the decoded JSON error response.
+
+### Changed
+
+- The local MCP server's instructions point assistants at SQL for questions that
+  need filtering, joins or aggregation, matching the hosted server.
+
 ## [0.14.0] - 2026-10-14
 
 ### Added

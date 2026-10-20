@@ -140,3 +140,42 @@ def test_find_capability_is_read_only_and_calls_the_api():
 def test_requests_identify_the_sdk():
     client = TrendsAGIClient(api_key="test-key", base_url="http://unused.invalid")
     assert client._session.headers["User-Agent"].startswith("trendsagi-python/")
+
+
+def test_execute_sql_posts_the_query_with_a_result_budget():
+    client, tools = _tools()
+    client._request.return_value = {"columns": [{"name": "n", "type": "int8"}], "rows": [[3]], "row_count": 1, "truncated": False}
+    result = tools.call("execute_sql", {"query": "SELECT count(*) AS n FROM trends", "max_rows": 5000})
+
+    assert result["result"]["rows"] == [[3]]
+    method, path = client._request.call_args.args
+    body = client._request.call_args.kwargs["json"]
+    assert (method, path) == ("POST", "/api/agent/sql")
+    assert body["query"] == "SELECT count(*) AS n FROM trends"
+    assert body["max_rows"] == 200  # clamped to the agent-safe maximum
+    assert body["max_result_bytes"] < 20000  # stays inside the tool-result cap
+
+
+def test_execute_sql_returns_the_servers_reason_to_the_model():
+    client, tools = _tools()
+    client._request.side_effect = exceptions.APIError(400, "Unknown table", body={
+        "error": "unknown_table", "detail": "Unknown table \"users\".", "hint": "Call read_data_schema.", "position": 15,
+    })
+    result = tools.call("execute_sql", {"query": "SELECT * FROM users"})
+    assert result == {"error": "unknown_table", "detail": "Unknown table \"users\".", "hint": "Call read_data_schema.", "position": 15}
+
+    client._request.side_effect = exceptions.APIError(500, "boom", body={"detail": "boom"})
+    assert tools.call("execute_sql", {"query": "SELECT 1"})["error"] == "APIError"
+
+
+def test_read_data_schema_is_a_get():
+    client, tools = _tools()
+    client._request.return_value = {"tables": [{"name": "trends", "columns": []}]}
+    assert tools.call("read_data_schema")["result"]["tables"][0]["name"] == "trends"
+    assert client._request.call_args.args == ("GET", "/api/agent/schema")
+
+
+def test_sql_tools_are_read_only_and_listed():
+    _, tools = _tools()
+    assert {"read_data_schema", "execute_sql"} <= set(tools.names)
+    assert tools.names.index("execute_sql") < tools.names.index("find_capability")

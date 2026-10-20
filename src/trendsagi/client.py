@@ -108,16 +108,22 @@ class TrendsAGIClient:
                     return response.json()
 
                 try:
-                    error_detail = response.json().get('detail', response.text)
+                    error_body = response.json()
                 except requests.exceptions.JSONDecodeError:
+                    error_body = None
+                if isinstance(error_body, dict):
+                    error_detail = error_body.get('detail', response.text)
+                elif error_body is not None:
+                    error_detail = response.text
+                else:
                     error_detail = _strip_html(response.text)
 
                 if response.status_code == 401:
                     raise exceptions.AuthenticationError(error_detail)
                 if response.status_code == 404:
-                    raise exceptions.NotFoundError(response.status_code, error_detail)
+                    raise exceptions.NotFoundError(response.status_code, error_detail, body=error_body)
                 if response.status_code == 409:
-                    raise exceptions.ConflictError(response.status_code, error_detail)
+                    raise exceptions.ConflictError(response.status_code, error_detail, body=error_body)
                 if response.status_code == 429:
                     retry_after = self._get_retry_after(response)
                     if self._enable_retry_on_rate_limit and attempts < self._max_retries:
@@ -126,11 +132,11 @@ class TrendsAGIClient:
                         if delay > 0:
                             time.sleep(delay)
                         continue
-                    raise exceptions.RateLimitError(response.status_code, error_detail)
+                    raise exceptions.RateLimitError(response.status_code, error_detail, body=error_body)
                 if response.status_code == 503:
                     raise exceptions.MaintenanceError(error_detail)
 
-                raise exceptions.APIError(response.status_code, error_detail)
+                raise exceptions.APIError(response.status_code, error_detail, body=error_body)
 
         except requests.exceptions.RequestException as e:
             raise exceptions.TrendsAGIError(f"Network error communicating with API: {e}")
@@ -798,6 +804,51 @@ class TrendsAGIClient:
             TrendsAGI app, best first. ``matches`` is empty when nothing fits.
         """
         return self._request('GET', '/api/agent/capabilities', params={'goal': goal})
+
+    def get_data_schema(self) -> Dict[str, Any]:
+        """
+        Describe the tables :meth:`execute_sql` can query.
+
+        :return: ``{"dialect", "rules", "limits", "tables", "examples"}``. Each table
+            lists its columns with type and meaning; tables a plan does not include
+            say so in ``requires``.
+        """
+        return self._request('GET', '/api/agent/schema')
+
+    def execute_sql(
+        self,
+        query: str,
+        max_rows: Optional[int] = None,
+        max_result_bytes: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Run one read-only PostgreSQL SELECT over your TrendsAGI data.
+
+        Tables: ``trends``, ``trend_snapshots``, ``trend_categories``,
+        ``trend_insights``, ``watchlist``, ``recommendations`` and
+        ``crisis_events`` (see :meth:`get_data_schema`). Queries are read-only,
+        run for at most 5 seconds and count as one API request.
+
+        :param query: One SELECT, e.g. ``"SELECT category, count(*) FROM trends GROUP BY 1"``.
+        :param max_rows: Rows to return, 1-1000 (server default 100).
+        :param max_result_bytes: Stop adding rows once the encoded rows reach this size.
+        :return: ``{"columns": [{"name", "type"}], "rows": [[...]], "row_count",
+            "truncated", "truncated_reason", "tables", "elapsed_ms"}``.
+        :raises exceptions.QueryError: The query was refused or failed; ``code``
+            says why (``unknown_table``, ``function_not_allowed``, ``timeout``,
+            ``plan_required``, ...).
+        """
+        body: Dict[str, Any] = {"query": query}
+        if max_rows is not None:
+            body["max_rows"] = max_rows
+        if max_result_bytes is not None:
+            body["max_result_bytes"] = max_result_bytes
+        try:
+            return self._request('POST', '/api/agent/sql', json=body)
+        except exceptions.APIError as exc:
+            if exc.status_code in (400, 403) and isinstance(exc.body, dict) and exc.body.get("error"):
+                raise exceptions.QueryError(exc.status_code, exc.body) from None
+            raise
 
 
     # --- Organization Methods ---

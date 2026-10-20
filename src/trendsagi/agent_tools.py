@@ -39,6 +39,7 @@ __all__ = ["AgentTool", "TrendsAGITools"]
 
 # Keep tool results small enough to fit comfortably in a model context window.
 _MAX_LIST_ITEMS = 25
+_MAX_SQL_ROWS = 200
 _MAX_RESULT_CHARS = 20000
 
 
@@ -235,6 +236,48 @@ class TrendsAGITools:
                 handler=lambda: c.get_api_usage(),
             ),
             AgentTool(
+                name="read_data_schema",
+                description=(
+                    "List the tables execute_sql can query, with every column's type and meaning, "
+                    "the query rules and example queries. Call once before writing SQL."
+                ),
+                parameters=_schema({}),
+                handler=lambda: c.get_data_schema(),
+            ),
+            AgentTool(
+                name="execute_sql",
+                description=(
+                    "Run one read-only PostgreSQL SELECT over the account's TrendsAGI data (tables from "
+                    "read_data_schema: trends, trend_snapshots, trend_categories, trend_insights, "
+                    "watchlist, recommendations, crisis_events). Use for questions that need filtering, "
+                    "joins or aggregation. Returns columns and rows; results stop at max_rows."
+                ),
+                parameters=_schema({
+                    "query": {
+                        "type": "string",
+                        "maxLength": 10000,
+                        "description": (
+                            "One SELECT (WITH ... SELECT is fine), e.g. SELECT name, volume, growth_pct "
+                            "FROM trends WHERE last_seen_at > now() - interval '24 hours' "
+                            "ORDER BY velocity_per_hour DESC NULLS LAST LIMIT 20."
+                        ),
+                    },
+                    "max_rows": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": _MAX_SQL_ROWS,
+                        "default": 50,
+                        "description": f"Most rows to return (1-{_MAX_SQL_ROWS}).",
+                    },
+                }, ["query"]),
+                # The server stops adding rows below the result cap, so a large
+                # result arrives as valid JSON marked truncated, not as a preview.
+                handler=lambda query, max_rows=50: c.execute_sql(
+                    query, max_rows=max(1, min(int(max_rows), _MAX_SQL_ROWS)),
+                    max_result_bytes=_MAX_RESULT_CHARS - 2000,
+                ),
+            ),
+            AgentTool(
                 name="find_capability",
                 description=(
                     "Check whether TrendsAGI can do a task and how: returns the tools that cover it, "
@@ -357,6 +400,14 @@ class TrendsAGITools:
 
         try:
             result = _to_jsonable(tool.handler(**arguments))
+        except exceptions.QueryError as exc:
+            # The model fixes its SQL from these, so pass them through whole.
+            error = {"error": exc.code, "detail": exc.error_detail}
+            if exc.hint:
+                error["hint"] = exc.hint
+            if exc.position:
+                error["position"] = exc.position
+            return error
         except exceptions.RateLimitError as exc:
             return {"error": "rate_limited", "detail": str(exc), "hint": "Call get_api_usage and wait before retrying."}
         except exceptions.AuthenticationError as exc:
