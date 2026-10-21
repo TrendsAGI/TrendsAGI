@@ -1,6 +1,7 @@
 # TrendsAGI
 
 [![PyPI Version](https://img.shields.io/pypi/v/trendsagi.svg)](https://pypi.org/project/trendsagi/)
+[![npm Version](https://img.shields.io/npm/v/trendsagi.svg)](https://www.npmjs.com/package/trendsagi)
 [![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -23,6 +24,7 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 pip install trendsagi            # client, agent tools and the trendsagi command
 pip install "trendsagi[mcp]"     # adds the local MCP server (Python 3.10+)
 pipx install trendsagi           # just the command line, in its own environment
+npx trendsagi --help             # or the same command line from npm (Node.js 18+)
 ```
 
 Create an API key under Profile > API Keys at [app.trendsagi.com](https://app.trendsagi.com) and export it:
@@ -80,7 +82,7 @@ trendsagi api /api/integrations/delivery/health -q lookback_hours=24   # any end
 
 Every command has `--help`. In a terminal, lists print as tables; piped or with `--json` they print JSON, so `trendsagi trends list | jq` works. The key comes from `--api-key`, then `TRENDSAGI_API_KEY`, then the saved login. Commands that delete something or change live ads ask first; pass `--yes` in scripts. Exit codes: 0 success, 1 API error, 2 invalid usage, 4 missing or rejected key.
 
-The commands are declared once in [`src/trendsagi/cli_spec.json`](src/trendsagi/cli_spec.json); a dependency-free Node.js build of the same CLI lives in [`npm/`](npm/). Guide: [trendsagi.com/api-docs/integrations/cli](https://trendsagi.com/api-docs/integrations/cli).
+The commands are declared once in [`src/trendsagi/cli_spec.json`](src/trendsagi/cli_spec.json); a dependency-free Node.js build of the same CLI lives in [`npm/`](npm/) and is published as [`trendsagi` on npm](https://www.npmjs.com/package/trendsagi). Guide: [trendsagi.com/api-docs/integrations/cli](https://trendsagi.com/api-docs/integrations/cli).
 
 The client calls any endpoint too: `client.request("GET", "/api/integrations/delivery/health", params={"lookback_hours": 24})`.
 
