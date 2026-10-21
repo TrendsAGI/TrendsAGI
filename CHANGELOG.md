@@ -2,6 +2,26 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.16.0] - 2026-10-21
+
+### Added
+
+- `TrendsAGITools.webmcp()`: the tools as WebMCP descriptors (`name`, `description`,
+  `inputSchema`, `annotations`) for a web page to register with
+  `document.modelContext.registerTool()`, while your server runs each call with
+  `tools.call()` and keeps the API key. `readOnlyHint` is false only for the opt-in
+  write tools; tools whose results quote social posts or generated insights carry
+  `untrustedContentHint`.
+- `AgentTool.untrusted_output` marks those tools in the registry.
+- [`webmcp/`](webmcp/) in the repository: a dependency-free browser module and a
+  FastAPI example that put TrendsAGI tools on your own site.
+
+### Notes
+
+- The TrendsAGI app (app.trendsagi.com) now registers the same read-only tools with
+  WebMCP for signed-in users, and the API serves them at `GET /api/agent/tools` and
+  `POST /api/agent/tools/{name}`. See <https://trendsagi.com/webmcp>.
+
 ## [0.15.0] - 2026-10-20
 
 ### Added

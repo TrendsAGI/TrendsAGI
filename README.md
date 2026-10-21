@@ -1,65 +1,35 @@
-# TrendsAGI Official Python Client
+# TrendsAGI
 
 [![PyPI Version](https://img.shields.io/pypi/v/trendsagi.svg)](https://pypi.org/project/trendsagi/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## About
-Real-time trend intelligence for your code and your AI agents.
+Real-time trend intelligence for your code and your AI agents: what is trending on social platforms right now, with measured volume, velocity and growth, AI insights on why each topic is moving, evidence-backed recommendations, crisis alerts and watchlists. Paid media and growth teams use it to target what is rising, time spend to the trend curve and brief creative on measured demand.
 
-`trendsagi` gives Python apps and autonomous agents structured access to what is trending right now on social platforms: measured volume and growth, AI insights explaining why a topic is moving, evidence-backed recommendations, crisis alerts, and watchlists. Paid media and growth teams use it to target what is rising, time spend to the trend curve, and brief creative on measured demand. It ships with:
+| | |
+| --- | --- |
+| **Python client** | `TrendsAGIClient`, a typed REST client |
+| **Agent tools** | `TrendsAGITools` for OpenAI, Claude, LangChain and WebMCP |
+| **Hosted MCP server** | `https://api.trendsagi.com/mcp` for Claude, ChatGPT, Grok, Cursor and Gemini CLI |
+| **Browser agents (WebMCP)** | Signed in to app.trendsagi.com, your browser's agent gets the same tools ([`webmcp/`](webmcp/)) |
+| **Local MCP server** | `trendsagi mcp`, the same tools over stdio |
+| **Plugins** | Claude, Grok and Cursor plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
+| **Ad execution** | Executors that preview, then apply, Google, Meta, TikTok and LinkedIn ad changes from your own infrastructure |
 
-- A typed REST client (`TrendsAGIClient`).
-- **Agent tools** (`TrendsAGITools`) for OpenAI function calling, Anthropic tool use, and LangChain.
-- An **MCP server** (`trendsagi mcp`) for Claude Desktop, Claude Code, Cursor, VS Code, and any other Model Context Protocol client.
-- A **plugin for Grok, Cursor and Claude** ([`plugins/trendsagi`](https://github.com/TrendsAGI/TrendsAGI/tree/main/plugins/trendsagi)) backed by the hosted MCP server.
-- BYOC executors that preview or apply Google/Meta/TikTok/LinkedIn ad changes from your own infrastructure.
-
-## Use TrendsAGI in Grok, ChatGPT, Claude or Cursor (no install)
-
-TrendsAGI runs a hosted MCP server with OAuth sign-in:
-
-```text
-https://api.trendsagi.com/mcp
-```
-
-Add that URL as a remote MCP server, custom connector or plugin in your assistant, sign in to TrendsAGI, and approve the connection. Then ask things like *"What is accelerating fastest in Technology this week, and who should I target with it?"* or *"Is this trend still rising, or should I pull spend?"*
-
-- **Grok:** install the TrendsAGI plugin, or add the URL as a remote MCP server.
-- **Claude Code:** `claude mcp add --transport http trendsagi https://api.trendsagi.com/mcp`, or `/plugin marketplace add TrendsAGI/TrendsAGI` then `/plugin install trendsagi@trendsagi`.
-- **Cursor:** `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }`.
-- **Gemini CLI:** `gemini extensions install https://github.com/TrendsAGI/TrendsAGI` (the first TrendsAGI tool call opens the sign-in).
-- **ChatGPT and others:** add the URL as a custom connector.
-
-The hosted tools are read-only and count toward your plan's API limits. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an existing API key as `Authorization: Bearer <key>`. Setup guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
-
-## Plan Notes (API Access)
-- Developer plan includes:
-  - 1 API integration connection
-  - 100 API calls/day included
-  - Overage billing above included daily usage
-- Advantage/Scale unlock higher daily API limits, more keys, and expanded team workflows.
-
-## Resources
-- Website: [https://trendsagi.com](https://trendsagi.com)
-- API Docs: [https://trendsagi.com/api-docs](https://trendsagi.com/api-docs)
-- Endpoint Reference: [https://trendsagi.com/api-docs#endpoints](https://trendsagi.com/api-docs#endpoints)
-- BYOC Integrations Guide (repo): [`INTEGRATIONS_BYOC.md`](./INTEGRATIONS_BYOC.md)
-
-## Installation
+## Install
 
 ```bash
 pip install trendsagi            # client + agent tools
-pip install "trendsagi[mcp]"     # adds the MCP server (Python 3.10+)
+pip install "trendsagi[mcp]"     # adds the local MCP server (Python 3.10+)
 ```
 
-Create an API key in your TrendsAGI profile and export it:
+Create an API key under Profile > API Keys at [app.trendsagi.com](https://app.trendsagi.com) and export it:
 
 ```bash
 export TRENDSAGI_API_KEY="your_api_key"
 ```
 
-## Quick Start
+## Quickstart
 
 ```python
 import os
@@ -78,13 +48,47 @@ if insight:
     print(insight.sentiment_summary, insight.key_themes)
 ```
 
-## Use TrendsAGI from AI agents
+## Use TrendsAGI in your AI assistant (no install)
 
-Agents need fresh context about what people are paying attention to. The same fifteen tools are available in every format below; they are **read-only by default**, and tools that change account state (`add_to_watchlist`, `update_recommendation`) are only exposed when you opt in with `allow_writes=True` / `--allow-writes`.
+Add the hosted MCP server, sign in to TrendsAGI and approve the connection:
+
+| Assistant | Setup |
+| --- | --- |
+| Claude | Open [TrendsAGI in the Claude directory](https://claude.ai/directory/trendsagi), or Settings > Connectors > Add custom connector with the URL below |
+| Claude Code | `claude mcp add --transport http trendsagi https://api.trendsagi.com/mcp`, or `/plugin marketplace add TrendsAGI/TrendsAGI` then `/plugin install trendsagi@trendsagi` |
+| ChatGPT | Add a custom connector with the URL below |
+| Grok | Install the TrendsAGI plugin, or add the URL as a remote MCP server |
+| Cursor | `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }` |
+| Gemini CLI | `gemini extensions install https://github.com/TrendsAGI/TrendsAGI` |
+
+```text
+https://api.trendsagi.com/mcp
+```
+
+Then ask *"What is accelerating fastest in Technology this week, and who should I target with it?"* The hosted tools are read-only, and each call counts as one API request. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an API key as `Authorization: Bearer <key>`. Guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
+
+## Use TrendsAGI from your browser's agent (WebMCP)
+
+[WebMCP](https://webmachinelearning.github.io/webmcp/) lets a web page hand tools to the AI agent built into the browser (Chrome and Edge in origin trials, ChatGPT desktop, Brave Leo). While you are signed in to [app.trendsagi.com](https://app.trendsagi.com), the app registers TrendsAGI's read-only tools with `document.modelContext`, so the agent uses them with your session: no connector or API key, and calls count as app use rather than API usage. trendsagi.com offers public tools (docs search, trend reports, plans and the free calculators) to every visitor.
+
+To put TrendsAGI tools on **your own** site, register them in your page and run them on your server, which keeps the API key:
+
+```python
+tools = TrendsAGITools(TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"]))
+
+tools.webmcp()                     # serve to your page: name, description, inputSchema, annotations
+tools.call("list_trends", args)    # run the call your page forwards
+```
+
+[`webmcp/`](webmcp/) has the browser module and a FastAPI server. Guide: [trendsagi.com/webmcp](https://trendsagi.com/webmcp).
+
+## Agent tools
+
+One registry, every format. The tools are **read-only by default**; `add_to_watchlist` and `update_recommendation` appear only with `allow_writes=True` (or `trendsagi mcp --allow-writes`).
 
 | Tool | What the agent gets |
 | --- | --- |
-| `list_trends` | Trending topics filtered by category or phrase, sorted by velocity, growth or volume |
+| `list_trends` | Trending topics by category or phrase, sorted by velocity, growth or volume |
 | `list_trend_categories` | Valid category names |
 | `search_trend_insights` | Trends and insights matching a theme |
 | `get_trend` / `get_trend_analytics` | One trend and its volume time series |
@@ -92,35 +96,10 @@ Agents need fresh context about what people are paying attention to. The same fi
 | `list_recommendations` | Evidence-backed actions with a decision brief |
 | `list_crisis_events` | Reputation and crisis events for monitored topics |
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
-| `read_data_schema` / `execute_sql` | Read-only PostgreSQL over your trends, readings, insights, watchlist, recommendations and crisis events, for questions that need filters, joins or aggregation |
+| `read_data_schema` / `execute_sql` | Read-only SQL for questions that need filters, joins or aggregation |
 | `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |
-| `add_to_watchlist` / `update_recommendation` | Write tools (opt-in) |
 
-### Local MCP server (Claude Desktop, Claude Code, Cursor, VS Code)
-
-Prefer to run it yourself, or need the opt-in write tools? The SDK ships the same server over stdio:
-
-```bash
-pip install "trendsagi[mcp]"
-claude mcp add trendsagi --env TRENDSAGI_API_KEY=your_api_key -- trendsagi mcp
-```
-
-Or add it to any MCP client's JSON config (for example `claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "trendsagi": {
-      "command": "trendsagi-mcp",
-      "env": { "TRENDSAGI_API_KEY": "your_api_key" }
-    }
-  }
-}
-```
-
-Then ask: *"What is trending in Technology this hour, and which of those topics fit our product launch?"*
-
-### OpenAI function calling
+### OpenAI
 
 ```python
 import json, os
@@ -143,163 +122,36 @@ while True:
         messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(result)})
 ```
 
-Use `tools.openai_responses()` for the Responses API.
-
-### Anthropic (Claude) tool use
+### Claude, LangChain and others
 
 ```python
-import json, os
-import anthropic
-from trendsagi import TrendsAGIClient, TrendsAGITools
-
-tools = TrendsAGITools(TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"]))
-claude = anthropic.Anthropic()
-messages = [{"role": "user", "content": "Which trending topics should our sports brand react to today?"}]
-
-while True:
-    reply = claude.messages.create(model="claude-sonnet-5-5", max_tokens=2048, tools=tools.anthropic(), messages=messages)
-    messages.append({"role": "assistant", "content": reply.content})
-    calls = [block for block in reply.content if block.type == "tool_use"]
-    if not calls:
-        print(next(block.text for block in reply.content if block.type == "text"))
-        break
-    messages.append({"role": "user", "content": [
-        {"type": "tool_result", "tool_use_id": c.id, "content": json.dumps(tools.call(c.name, c.input))}
-        for c in calls
-    ]})
+tools.anthropic()         # Anthropic Messages API tools=
+tools.openai_responses()  # OpenAI Responses API tools=
+tools.langchain()         # LangChain StructuredTools (pip install "trendsagi[langchain]")
+tools.webmcp()            # WebMCP descriptors for document.modelContext.registerTool
 ```
 
-### LangChain
+With Claude, pass `tools=tools.anthropic()` and answer each `tool_use` block with `{"type": "tool_result", "tool_use_id": block.id, "content": json.dumps(tools.call(block.name, block.input))}`. `tools.call` never raises: errors come back as `{"error": ...}` so the model can read a rate limit or a bad argument and recover.
 
-```python
-from trendsagi import TrendsAGIClient, TrendsAGITools
-
-langchain_tools = TrendsAGITools(TrendsAGIClient(api_key="...")).langchain()  # pip install "trendsagi[langchain]"
-```
-
-### Campaign-optimisation loop
-
-A typical agent loop: `list_trends` (category you sell into, sorted by velocity) → `get_trend_analytics` (confirm it is still rising) → `get_trend_ai_insights` (audience and angle) → `list_recommendations` (evidence-backed action) → preview the change with a BYOC executor below → only then apply it. Tool errors come back as `{"error": ...}` instead of exceptions, so the model can read a rate limit or a missing argument and recover.
-
-## BYOC Ad Execution
-
-```python
-import os
-from trendsagi import TrendsAGIClient
-from trendsagi.integrations import GoogleAdsExecutor
-
-client = TrendsAGIClient(api_key=os.getenv("TRENDSAGI_API_KEY"))
-
-# 1) Discover a real trend and read its cached insight
-trends = client.get_trends(limit=5)
-trend = next((item for item in trends.trends if item.id is not None), None)
-if trend is None:
-    raise RuntimeError("No trend is available in this window")
-insight = client.get_ai_insights(trend_id=trend.id)
-if not insight:
-    raise RuntimeError("AI insight not ready yet")
-
-# 2) Execute in your own runtime (credentials stay with you)
-google = GoogleAdsExecutor(
-    {
-        "access_token": os.environ["GOOGLE_ADS_ACCESS_TOKEN"],
-        "developer_token": os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"],
-    }
-)
-
-# 3) Preview only; inspect the result before any explicit execution
-preview = google.apply_targeting(
-    insight,
-    customer_id="1234567890",
-    campaign_id="9876543210",
-    dry_run=True,
-    strict_mode=True,
-)
-print(preview.response)
-```
-
-## Evidence-backed recommendations
-
-Recommendations include an optional decision brief that explains why an action is
-timely, the measured signals behind it, expected benefit, urgency, and concrete next
-steps. The confidence score measures evidence completeness; it is not a prediction of
-business outcomes.
-
-```python
-recommendations = client.get_recommendations(
-    match_user_interests=True,
-    priority="high",
-    sort="priority",
-    limit=10,
-)
-
-for recommendation in recommendations.recommendations:
-    brief = recommendation.decision_brief
-    if brief is None:
-        # Compatible with API deployments that predate decision briefs.
-        continue
-
-    print(recommendation.title, brief.confidence.score, brief.why_now)
-    if brief.actionable and brief.next_steps:
-        print("Next step:", brief.next_steps[0])
-    else:
-        print("Verify first; missing:", ", ".join(brief.data_quality.missing_signals))
-```
-
-Use `actionable` and `data_quality` to degrade honestly when a trend is stale or
-supporting signals are incomplete. The API returns HTTP 409 if a client attempts to
-mark a recommendation `actioned` while its current brief is not actionable.
-
-## Supported Integrations
-
-- `GoogleAdsExecutor`
-- `MetaAdsExecutor`
-- `TikTokAdsExecutor`
-- `LinkedInAdsExecutor`
-
-All integrations support:
-- runtime-supplied credentials
-- deterministic idempotency keys
-- dry-run previews (`dry_run=True`)
-- strict validation (`strict_mode=True`)
-
-## Core Endpoints Used by Integrations
-
-- `GET /api/trends`
-- `GET /api/trends/{trend_id}/ai-insights`
-- `POST /api/trends/{trend_id}/ai-insights/generate`
-- `GET /api/trends/ai-insights/status/{task_id}`
-- `GET /api/intelligence/recommendations`
-
-For full request/response contracts and all other endpoints, use the API docs link above.
-
-The legacy crisis-event list and acknowledge/archive methods remain available for
-accounts entitled to the existing crisis feature. The resilience beta's event
-evidence, reviews, exports, source status, and location methods from version
-0.10.0 have been withdrawn and are no longer supported by the current API.
-
-## CLI
+### Local MCP server
 
 ```bash
-trendsagi mcp [--allow-writes]   # MCP server over stdio
+pip install "trendsagi[mcp]"
+claude mcp add trendsagi --env TRENDSAGI_API_KEY=your_api_key -- trendsagi mcp
 ```
 
-### Scaffolder
+Or in any MCP client's JSON config (Claude Desktop, Cursor, VS Code):
 
-```bash
-# Docker template
-trendsagi scaffold --type docker --output ./runner
-
-# Terraform template
-trendsagi scaffold --type terraform --output ./infra
+```json
+{ "mcpServers": { "trendsagi": { "command": "trendsagi-mcp", "env": { "TRENDSAGI_API_KEY": "your_api_key" } } } }
 ```
 
 ## Query with SQL
 
-Agents (and analysts) often want an answer no single endpoint returns: growth by category, the trends that match a watchlist, an hourly series. `execute_sql` runs one read-only PostgreSQL `SELECT` over documented tables, and `get_data_schema` describes them with column meanings and example queries.
+For answers no single endpoint returns, such as growth by category or the trends that match a watchlist:
 
 ```python
-schema = client.get_data_schema()          # tables, columns, rules, examples
+schema = client.get_data_schema()   # tables, columns, rules, examples
 result = client.execute_sql(
     """
     SELECT category, count(*) AS trends, round(avg(growth_pct)::numeric, 1) AS avg_growth_pct
@@ -312,9 +164,39 @@ result = client.execute_sql(
 print(result["columns"], result["rows"])
 ```
 
-Tables: `trends`, `trend_snapshots` (90 days of readings), `trend_categories`, `trend_insights`, `watchlist`, `recommendations` and `crisis_events`; the last three only ever contain your own account's rows. Queries are validated before they run (one `SELECT`, the documented tables, common aggregate, window, date/time, string, math and jsonb functions), run read-only for at most 5 seconds, and count as one API request. A refused or failed query raises `exceptions.QueryError` with a `code` such as `unknown_table`, `function_not_allowed`, `timeout` or `plan_required`, plus `hint` and `position` when known.
+Tables: `trends`, `trend_snapshots` (90 days of readings), `trend_categories`, `trend_insights`, `watchlist`, `recommendations` and `crisis_events`; the last three only contain your own account's rows. Queries are one validated `SELECT`, run read-only for at most 5 seconds, and count as one API request. A refused query raises `exceptions.QueryError` with a `code` (such as `unknown_table` or `timeout`), plus `hint` and `position` when known.
 
-## Error Handling
+## Recommendations with decision briefs
+
+```python
+recommendations = client.get_recommendations(match_user_interests=True, priority="high", sort="priority", limit=10)
+for rec in recommendations.recommendations:
+    brief = rec.decision_brief
+    if brief and brief.actionable:
+        print(rec.title, brief.why_now, brief.next_steps[:1])
+```
+
+Each brief explains why an action is timely, the measured signals behind it and concrete next steps. Its confidence score measures evidence completeness, not the chance of success; use `actionable` and `data_quality` to hold back when signals are stale or incomplete.
+
+## Ad execution in your own infrastructure
+
+`GoogleAdsExecutor`, `MetaAdsExecutor`, `TikTokAdsExecutor` and `LinkedInAdsExecutor` take credentials at runtime, use deterministic idempotency keys, and support dry-run previews and strict validation:
+
+```python
+from trendsagi.integrations import GoogleAdsExecutor
+
+insight = client.get_ai_insights(trend_id)  # the trend you decided to act on
+google = GoogleAdsExecutor({
+    "access_token": os.environ["GOOGLE_ADS_ACCESS_TOKEN"],
+    "developer_token": os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"],
+})
+preview = google.apply_targeting(insight, customer_id="1234567890", campaign_id="9876543210", dry_run=True, strict_mode=True)
+print(preview.response)  # inspect before any real change
+```
+
+See [`INTEGRATIONS_BYOC.md`](INTEGRATIONS_BYOC.md) for every executor.
+
+## Errors
 
 ```python
 from trendsagi import exceptions
@@ -322,7 +204,30 @@ from trendsagi import exceptions
 try:
     client.get_trends(limit=5)
 except exceptions.RateLimitError:
-    print("Rate limited; retry with backoff")
+    ...  # back off and retry
 except exceptions.AuthenticationError:
-    print("Invalid API key")
+    ...  # invalid or revoked key
 ```
+
+## CLI
+
+```bash
+trendsagi mcp [--allow-writes]                          # MCP server over stdio
+trendsagi scaffold --type docker --output ./runner      # executor runner template
+trendsagi scaffold --type terraform --output ./infra    # infrastructure template
+```
+
+## Plans and limits
+
+The free Developer plan includes one API key and 100 API calls a day; Advantage, Scale and Enterprise raise the daily limit and add keys and team features. Calls above the daily allowance are billed as overage. See [pricing](https://trendsagi.com/subscription).
+
+## Links
+
+- [API documentation](https://trendsagi.com/api-docs) and [endpoint reference](https://trendsagi.com/api-docs/reference)
+- [MCP server guide](https://trendsagi.com/mcp) and [WebMCP guide](https://trendsagi.com/webmcp)
+- [Changelog](CHANGELOG.md)
+- Support: [trendsagi.com/contact](https://trendsagi.com/contact) or contact@trendsagi.com
+
+## License
+
+MIT. See [LICENSE](LICENSE).

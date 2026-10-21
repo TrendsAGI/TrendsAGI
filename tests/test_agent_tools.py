@@ -179,3 +179,21 @@ def test_sql_tools_are_read_only_and_listed():
     _, tools = _tools()
     assert {"read_data_schema", "execute_sql"} <= set(tools.names)
     assert tools.names.index("execute_sql") < tools.names.index("find_capability")
+
+
+def test_webmcp_format_shares_the_contract_and_marks_hints():
+    _, tools = _tools()
+    webmcp = {t["name"]: t for t in tools.webmcp()}
+    assert {name: t["inputSchema"] for name, t in webmcp.items()} == {t["name"]: t["input_schema"] for t in tools.anthropic()}
+    assert all(t["annotations"]["readOnlyHint"] for t in webmcp.values())
+    # Results quoting social posts or generated insights are untrusted text;
+    # the account's own settings are not.
+    assert webmcp["list_trends"]["annotations"]["untrustedContentHint"] is True
+    assert webmcp["execute_sql"]["annotations"]["untrustedContentHint"] is True
+    assert webmcp["list_watchlist"]["annotations"]["untrustedContentHint"] is False
+    json.dumps(tools.webmcp())  # served to the page as JSON
+
+    _, writable = _tools(allow_writes=True)
+    read_only = {t["name"]: t["annotations"]["readOnlyHint"] for t in writable.webmcp()}
+    assert read_only["add_to_watchlist"] is False
+    assert read_only["update_recommendation"] is False

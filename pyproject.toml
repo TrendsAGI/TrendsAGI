@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.15.0"
+version = "0.16.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
-description = "Official TrendsAGI Python client: real-time trend intelligence for paid media targeting and timing, with AI agent tools, an MCP server, and a Grok/Claude/Cursor plugin."
+description = "Official TrendsAGI Python client: real-time trend intelligence for paid media targeting and timing, with AI agent tools, an MCP server, WebMCP support, and a Grok/Claude/Cursor plugin."
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
@@ -27,6 +27,7 @@ keywords = [
     "ai agents", "mcp", "model context protocol", "llm tools", "function calling",
     "marketing", "campaign optimization", "paid media", "ad targeting", "api client",
     "grok", "grok plugin", "chatgpt connector", "claude plugin",
+    "webmcp", "browser agents",
 ]
 dependencies = [
     "requests>=2.28.0",

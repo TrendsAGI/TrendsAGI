@@ -2,9 +2,9 @@
 
 One registry, several wire formats. The same tool names, descriptions, and
 JSON schemas are exported for OpenAI function calling, Anthropic tool use,
-LangChain, and the bundled MCP server (``trendsagi mcp``), so an agent built
-on any of them sees an identical surface and :meth:`TrendsAGITools.call`
-executes the request.
+LangChain, WebMCP (browser agents), and the bundled MCP server
+(``trendsagi mcp``), so an agent built on any of them sees an identical
+surface and :meth:`TrendsAGITools.call` executes the request.
 
 Read-only by default. Tools that change account state (adding a watchlist
 topic, moving a recommendation through its workflow) are only exposed when
@@ -52,6 +52,10 @@ class AgentTool:
     parameters: Dict[str, Any]
     handler: Callable[..., Any]
     writes: bool = False
+    # The result quotes text TrendsAGI did not write (social posts, trend
+    # names, insights generated from them). WebMCP passes this to the agent
+    # as untrustedContentHint.
+    untrusted_output: bool = False
 
 
 def _schema(properties: Dict[str, Any], required: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -135,6 +139,7 @@ class TrendsAGITools:
                 handler=lambda category=None, search=None, sort_by="velocity", period=None, limit=10: c.get_trends(
                     category=category, search=search, sort_by=sort_by, period=period, limit=limit
                 ),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="list_trend_categories",
@@ -154,12 +159,14 @@ class TrendsAGITools:
                     "limit": _limit(),
                 }, ["query"]),
                 handler=lambda query, limit=10: c.search_insights(key_theme_contains=query, limit=limit),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="get_trend",
                 description="Get one trend by its numeric id, including volume, growth and category.",
                 parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
                 handler=lambda trend_id: c.get_trend(trend_id),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="get_trend_ai_insights",
@@ -170,6 +177,7 @@ class TrendsAGITools:
                 ),
                 parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
                 handler=lambda trend_id: c.get_ai_insights(trend_id),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="get_trend_analytics",
@@ -182,6 +190,7 @@ class TrendsAGITools:
                     "period": {"type": "string", "enum": ["24h", "7d", "30d"], "default": "7d"},
                 }, ["trend_id"]),
                 handler=lambda trend_id, period="7d": c.get_trend_analytics(trend_id, period=period),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="list_recommendations",
@@ -207,6 +216,7 @@ class TrendsAGITools:
                     limit=limit, priority=priority, status=status,
                     recommendation_type=recommendation_type, match_user_interests=match_user_interests,
                 ),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="list_crisis_events",
@@ -222,6 +232,7 @@ class TrendsAGITools:
                 handler=lambda status="active", time_range="24h", limit=10: c.get_crisis_events(
                     limit=limit, status=status, time_range=time_range
                 ),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="list_watchlist",
@@ -276,6 +287,7 @@ class TrendsAGITools:
                     query, max_rows=max(1, min(int(max_rows), _MAX_SQL_ROWS)),
                     max_result_bytes=_MAX_RESULT_CHARS - 2000,
                 ),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="find_capability",
@@ -350,6 +362,23 @@ class TrendsAGITools:
     def anthropic(self) -> List[Dict[str, Any]]:
         """Tools for the Anthropic Messages API ``tools=``."""
         return [{"name": t.name, "description": t.description, "input_schema": t.parameters} for t in self.tools]
+
+    def webmcp(self) -> List[Dict[str, Any]]:
+        """Tool descriptions for WebMCP (``document.modelContext.registerTool``).
+
+        Serve this list to your web page, register each entry with an
+        ``execute`` callback that posts the arguments to your server, and run
+        the call there with :meth:`call`. The API key stays on the server.
+        """
+        return [
+            {
+                "name": t.name,
+                "description": t.description,
+                "inputSchema": t.parameters,
+                "annotations": {"readOnlyHint": not t.writes, "untrustedContentHint": t.untrusted_output},
+            }
+            for t in self.tools
+        ]
 
     def langchain(self) -> List[Any]:
         """LangChain ``StructuredTool`` objects (requires ``langchain-core``)."""
