@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.16.0"
+version = "0.17.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
-description = "Official TrendsAGI Python client: real-time trend intelligence for paid media targeting and timing, with AI agent tools, an MCP server, WebMCP support, and a Grok/Claude/Cursor plugin."
+description = "Official TrendsAGI Python client and CLI: real-time trend intelligence for paid media targeting and timing, with a command line, AI agent tools, an MCP server, WebMCP support, and a Grok/Claude/Cursor plugin."
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
@@ -28,6 +28,7 @@ keywords = [
     "marketing", "campaign optimization", "paid media", "ad targeting", "api client",
     "grok", "grok plugin", "chatgpt connector", "claude plugin",
     "webmcp", "browser agents",
+    "cli", "command line", "terminal",
 ]
 dependencies = [
     "requests>=2.28.0",
@@ -46,6 +47,7 @@ trendsagi-mcp = "trendsagi.mcp_server:main"
 [project.urls]
 "Homepage" = "https://trendsagi.com"
 "Documentation" = "https://trendsagi.com/api-docs"
+"CLI" = "https://trendsagi.com/api-docs/integrations/cli"
 "Source" = "https://github.com/TrendsAGI/TrendsAGI"
 "Bug Tracker" = "https://github.com/TrendsAGI/TrendsAGI/issues" 
 
@@ -57,4 +59,4 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-trendsagi = ["templates/Dockerfile", "templates/terraform/*.tf"]
+trendsagi = ["cli_spec.json", "templates/Dockerfile", "templates/terraform/*.tf"]

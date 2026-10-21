@@ -1,0 +1,674 @@
+{
+  "spec_version": 1,
+  "description": "TrendsAGI command line: trending topics with measured volume, velocity and growth, AI insights, recommendations, crisis events, your watchlist, read-only SQL, webhooks, exports and ads integrations.",
+  "api_keys_url": "https://app.trendsagi.com/profile?tab=api",
+  "docs_url": "https://trendsagi.com/api-docs/integrations/cli",
+  "commands": [
+    {
+      "name": "login",
+      "handler": "login",
+      "help": "Save an API key for later commands.",
+      "options": [
+        {"flag": "with-token", "type": "flag", "help": "Read the API key from standard input instead of prompting."}
+      ]
+    },
+    {
+      "name": "logout",
+      "handler": "logout",
+      "help": "Forget the saved API key. The key itself keeps working until you delete it in the app."
+    },
+    {
+      "name": "whoami",
+      "handler": "whoami",
+      "help": "Show the account and plan the API key belongs to, and today's API usage."
+    },
+    {
+      "name": "trends",
+      "help": "Trending topics with measured volume, velocity and growth.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List trending topics.",
+          "method": "GET",
+          "path": "/api/trends",
+          "options": [
+            {"flag": "search", "help": "Only trends whose name matches this phrase."},
+            {"flag": "category", "help": "Only trends in this category (see 'trends categories')."},
+            {"flag": "sort", "param": "sort_by", "default": "volume", "choices": ["volume", "velocity", "growth", "timestamp", "category", "name"], "help": "Sort field."},
+            {"flag": "order", "param": "sort_dir", "choices": ["desc", "asc"], "help": "Sort direction (default desc)."},
+            {"flag": "period", "choices": ["1h", "4h", "24h", "7d", "30d", "90d", "all"], "help": "Only trends seen in this window."},
+            {"flag": "min-snapshots", "type": "int", "help": "Only trends with at least this many readings."},
+            {"flag": "has-volume", "type": "flag", "help": "Only trends with a measured volume."},
+            {"flag": "watchlist", "param": "for_user_interests", "type": "flag", "help": "Only trends that match your watchlist."},
+            {"flag": "limit", "type": "int", "default": 20, "help": "Rows to return, 1-1000."},
+            {"flag": "offset", "type": "int", "help": "Rows to skip."}
+          ],
+          "table": {"rows": "trends", "columns": ["id", "name", "category", "volume", "growth", "average_velocity", "overall_trend"]}
+        },
+        {
+          "name": "get",
+          "help": "Show one trend.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "table": {"kind": "object"}
+        },
+        {
+          "name": "analytics",
+          "help": "Show a trend's readings over time.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}/analytics",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "options": [
+            {"flag": "period", "help": "History window, e.g. 24h, 7d, 30d, 90d (plan dependent; default 7d)."}
+          ],
+          "table": {"rows": "data", "columns": ["timestamp", "volume", "velocity"]}
+        },
+        {
+          "name": "categories",
+          "help": "List trend categories.",
+          "method": "GET",
+          "path": "/api/trends/categories",
+          "table": {"rows": "categories", "columns": ["name", "trend_count"]}
+        },
+        {
+          "name": "autocomplete",
+          "help": "Suggest trend names that start with a phrase.",
+          "method": "GET",
+          "path": "/api/trends/autocomplete",
+          "args": [{"name": "query", "param": "q", "in": "query", "help": "Phrase to complete."}]
+        }
+      ]
+    },
+    {
+      "name": "insights",
+      "help": "AI insights: audience, sentiment and marketing angles for a trend.",
+      "commands": [
+        {
+          "name": "get",
+          "help": "Show the cached AI insights for a trend.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}/ai-insights",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}]
+        },
+        {
+          "name": "generate",
+          "help": "Queue AI insight generation for a trend (counts against your daily generation limit).",
+          "method": "POST",
+          "path": "/api/trends/{trend_id}/ai-insights/generate",
+          "handler": "insights_generate",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "options": [
+            {"flag": "force-refresh", "type": "flag", "help": "Rebuild insights that are already cached."},
+            {"flag": "wait", "type": "flag", "local": true, "help": "Wait for the task to finish, then print the insights."},
+            {"flag": "timeout", "type": "int", "local": true, "default": 180, "help": "Seconds to wait with --wait."}
+          ]
+        },
+        {
+          "name": "status",
+          "help": "Show the status of an insight generation task.",
+          "method": "GET",
+          "path": "/api/trends/ai-insights/status/{task_id}",
+          "args": [{"name": "task_id", "help": "Task ID returned by 'insights generate'."}]
+        },
+        {
+          "name": "search",
+          "help": "Search trends by the content of their AI insights.",
+          "method": "GET",
+          "path": "/api/insights/search",
+          "args": [{"name": "query", "param": "q", "in": "query", "optional": true, "help": "Free text across names, categories and insight content."}],
+          "options": [
+            {"flag": "theme", "param": "keyThemeContains", "help": "Key theme contains this phrase."},
+            {"flag": "sentiment", "param": "sentimentCategory", "help": "Sentiment, e.g. positive or negative."},
+            {"flag": "audience", "param": "audienceKeyword", "help": "Target audience contains this phrase."},
+            {"flag": "limit", "type": "int", "help": "Rows to return, 1-100 (default 20)."}
+          ],
+          "table": {"rows": "results", "columns": ["trend_id", "id", "name", "trend_name", "category", "sentiment_category", "key_theme"]}
+        }
+      ]
+    },
+    {
+      "name": "recommendations",
+      "aliases": ["recs"],
+      "help": "Prioritised, evidence-backed recommendations.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List recommendations. Confidence measures how complete the evidence is, not the chance an action succeeds.",
+          "method": "GET",
+          "path": "/api/intelligence/recommendations",
+          "options": [
+            {"flag": "status", "choices": ["new", "viewed", "actioned", "dismissed", "all"], "help": "Workflow status (default new)."},
+            {"flag": "priority", "choices": ["critical", "high", "medium", "low", "all"], "help": "Priority."},
+            {"flag": "type", "choices": ["pr_response", "content_idea", "marketing_angle", "seo_optimization", "influencer_collab", "product_improvement", "crm_strategy", "monitoring", "other", "all"], "help": "Recommendation type."},
+            {"flag": "trend", "param": "sourceTrendQ", "help": "Source trend name contains this phrase."},
+            {"flag": "watchlist", "param": "match_user_interests", "type": "flag", "help": "Only recommendations that match your watchlist."},
+            {"flag": "sort", "choices": ["priority", "newest"], "help": "Sort order (default priority)."},
+            {"flag": "limit", "type": "int", "help": "Rows to return, 1-100 (default 10)."},
+            {"flag": "offset", "type": "int", "help": "Rows to skip."}
+          ],
+          "table": {"rows": "recommendations", "columns": ["id", "priority", "status", "type", "title", "source_trend_name"]}
+        },
+        {
+          "name": "action",
+          "help": "Move a recommendation to a workflow status.",
+          "method": "POST",
+          "path": "/api/intelligence/recommendations/{recommendation_id}/action",
+          "args": [
+            {"name": "recommendation_id", "type": "int", "help": "Recommendation ID."},
+            {"name": "action", "in": "body", "choices": ["new", "viewed", "actioned", "dismissed"], "help": "New status."}
+          ]
+        },
+        {
+          "name": "feedback",
+          "help": "Send feedback on a recommendation (500 characters at most).",
+          "method": "POST",
+          "path": "/api/intelligence/recommendations/{recommendation_id}/action",
+          "args": [
+            {"name": "recommendation_id", "type": "int", "help": "Recommendation ID."},
+            {"name": "feedback", "in": "body", "help": "Your feedback."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "crisis",
+      "help": "Crisis events detected for your brand and watchlist.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List crisis events.",
+          "method": "GET",
+          "path": "/api/intelligence/crisis-events",
+          "options": [
+            {"flag": "status", "help": "Event status, e.g. active, acknowledged or archived."},
+            {"flag": "severity", "help": "Severity, e.g. low, medium, high or critical."},
+            {"flag": "keyword", "help": "Title or keyword contains this phrase."},
+            {"flag": "range", "param": "timeRange", "help": "Time window, e.g. 24h (default), 7d, 30d."},
+            {"flag": "start", "param": "startDate", "metavar": "DATE", "help": "Start date (YYYY-MM-DD)."},
+            {"flag": "end", "param": "endDate", "metavar": "DATE", "help": "End date (YYYY-MM-DD)."},
+            {"flag": "limit", "type": "int", "help": "Rows to return (default 10)."},
+            {"flag": "offset", "type": "int", "help": "Rows to skip."}
+          ],
+          "table": {"rows": "events", "columns": ["id", "severity", "status", "title", "detected_at"]}
+        },
+        {
+          "name": "action",
+          "help": "Acknowledge, archive or reopen a crisis event.",
+          "method": "POST",
+          "path": "/api/intelligence/crisis-events/{event_id}/action",
+          "args": [
+            {"name": "event_id", "type": "int", "help": "Crisis event ID."},
+            {"name": "action", "in": "body", "choices": ["acknowledge", "archive", "reopen"], "help": "What to do."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "watchlist",
+      "help": "Topics you track, with optional alerts.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List your watchlist.",
+          "method": "GET",
+          "path": "/api/user/interests",
+          "table": {"rows": "", "columns": ["id", "keyword", "category", "alert_condition_type", "volume_threshold_value", "percentage_growth_value", "status"]}
+        },
+        {
+          "name": "add",
+          "help": "Track a keyword or a category.",
+          "method": "POST",
+          "path": "/api/user/interests",
+          "args": [{"name": "keyword", "in": "body", "optional": true, "help": "Keyword to track. Omit it and pass --category to track a category."}],
+          "options": [
+            {"flag": "category", "help": "Track a whole category instead of a keyword."},
+            {"flag": "alert", "param": "alert_condition_type", "choices": ["volume_threshold", "percentage_growth"], "help": "Alert condition (default volume_threshold)."},
+            {"flag": "threshold", "param": "volume_threshold_value", "type": "int", "help": "Alert when volume reaches this value."},
+            {"flag": "growth", "param": "percentage_growth_value", "type": "float", "help": "Alert when growth reaches this percentage."},
+            {"flag": "min-volume", "param": "min_volume_for_growth_alert", "type": "int", "help": "Minimum volume before a growth alert fires."},
+            {"flag": "repeat", "param": "alert_behavior", "type": "flag", "value": "notify_repeating", "help": "Alert every time the condition holds, not just once."},
+            {"flag": "email", "param": "send_email_alerts", "type": "flag", "help": "Send alerts by email."},
+            {"flag": "slack", "param": "send_slack_alerts", "type": "flag", "help": "Send alerts to Slack."}
+          ],
+          "require_one_of": ["keyword", "category"]
+        },
+        {
+          "name": "remove",
+          "aliases": ["rm"],
+          "help": "Stop tracking a watchlist item.",
+          "method": "DELETE",
+          "path": "/api/user/interests/{interest_id}",
+          "args": [{"name": "interest_id", "type": "int", "help": "Watchlist item ID (see 'watchlist list')."}]
+        }
+      ]
+    },
+    {
+      "name": "sql",
+      "help": "Run one read-only PostgreSQL SELECT over your TrendsAGI data (see 'schema').",
+      "method": "POST",
+      "path": "/api/agent/sql",
+      "handler": "sql",
+      "args": [{"name": "query", "in": "body", "stdin": true, "help": "The SELECT to run, or - to read it from standard input."}],
+      "options": [
+        {"flag": "max-rows", "param": "max_rows", "type": "int", "help": "Rows to return, 1-1000 (default 100)."}
+      ]
+    },
+    {
+      "name": "schema",
+      "help": "Describe the tables 'sql' can query, with example questions.",
+      "method": "GET",
+      "path": "/api/agent/schema",
+      "table": {"rows": "tables", "columns": ["name", "description", "requires"]}
+    },
+    {
+      "name": "find",
+      "help": "Ask whether TrendsAGI can do a task, and where.",
+      "method": "GET",
+      "path": "/api/agent/capabilities",
+      "args": [{"name": "goal", "in": "query", "help": "The task in a few words, e.g. \"alert me when a topic spikes\"."}],
+      "table": {"rows": "matches", "columns": ["capability", "summary", "url"]}
+    },
+    {
+      "name": "tools",
+      "help": "The agent tools the TrendsAGI MCP server exposes.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List the agent tools.",
+          "method": "GET",
+          "path": "/api/agent/tools",
+          "auth": false,
+          "table": {"rows": "tools", "columns": ["name", "description"]}
+        },
+        {
+          "name": "call",
+          "help": "Call an agent tool and print its result.",
+          "method": "POST",
+          "path": "/api/agent/tools/{name}",
+          "handler": "tools_call",
+          "args": [{"name": "name", "help": "Tool name from 'tools list', e.g. list_trends."}],
+          "options": [
+            {"flag": "args", "type": "json", "local": true, "metavar": "JSON", "help": "Tool arguments as a JSON object."},
+            {"flag": "arg", "short": "a", "type": "pairs", "local": true, "metavar": "KEY=VALUE", "help": "One tool argument; repeat for more. Values are parsed as JSON when they can be."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "usage",
+      "help": "Show your API usage for the last 30 days.",
+      "method": "GET",
+      "path": "/api/user/api-usage",
+      "table": {"summary": "summary", "rows": "daily_data", "columns": ["date", "request_count"]}
+    },
+    {
+      "name": "status",
+      "help": "Show the operational status of the TrendsAGI API.",
+      "method": "GET",
+      "path": "/status",
+      "auth": false
+    },
+    {
+      "name": "webhooks",
+      "help": "Webhooks that POST trend events to your URL.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List webhooks.",
+          "method": "GET",
+          "path": "/api/integrations/webhooks",
+          "table": {"rows": "", "columns": ["id", "url", "trigger_type", "delivery_mode", "threshold_value", "is_active"]}
+        },
+        {
+          "name": "create",
+          "help": "Create a webhook.",
+          "method": "POST",
+          "path": "/api/integrations/webhooks",
+          "data": true,
+          "options": [
+            {"flag": "url", "required": true, "help": "Destination URL."},
+            {"flag": "trigger", "param": "trigger_type", "required": true, "choices": ["trend_velocity", "trend_category"], "help": "What fires the webhook."},
+            {"flag": "mode", "param": "delivery_mode", "choices": ["threshold", "instant_stream"], "help": "Delivery mode; trend_category needs instant_stream."},
+            {"flag": "threshold", "param": "threshold_value", "type": "float", "help": "Threshold for threshold delivery."},
+            {"flag": "keywords", "type": "list", "metavar": "A,B", "help": "Comma-separated keywords (category names for trend_category)."},
+            {"flag": "cooldown", "param": "cooldown_seconds", "type": "int", "help": "Seconds between deliveries (default 60)."}
+          ]
+        },
+        {
+          "name": "update",
+          "help": "Change a webhook.",
+          "method": "PATCH",
+          "path": "/api/integrations/webhooks/{id}",
+          "data": true,
+          "args": [{"name": "id", "type": "int", "help": "Webhook ID."}],
+          "options": [
+            {"flag": "url", "help": "Destination URL."},
+            {"flag": "trigger", "param": "trigger_type", "choices": ["trend_velocity", "trend_category"], "help": "What fires the webhook."},
+            {"flag": "mode", "param": "delivery_mode", "choices": ["threshold", "instant_stream"], "help": "Delivery mode."},
+            {"flag": "threshold", "param": "threshold_value", "type": "float", "help": "Threshold for threshold delivery."},
+            {"flag": "keywords", "type": "list", "metavar": "A,B", "help": "Comma-separated keywords."},
+            {"flag": "cooldown", "param": "cooldown_seconds", "type": "int", "help": "Seconds between deliveries."},
+            {"flag": "active", "param": "is_active", "type": "bool", "help": "true to enable, false to pause."}
+          ]
+        },
+        {
+          "name": "delete",
+          "aliases": ["rm"],
+          "help": "Delete a webhook.",
+          "method": "DELETE",
+          "path": "/api/integrations/webhooks/{id}",
+          "args": [{"name": "id", "type": "int", "help": "Webhook ID."}],
+          "confirm": "Delete webhook {id}?"
+        },
+        {
+          "name": "test",
+          "help": "Send a test delivery to a webhook.",
+          "method": "POST",
+          "path": "/api/integrations/webhooks/{id}/test",
+          "args": [{"name": "id", "type": "int", "help": "Webhook ID."}]
+        },
+        {
+          "name": "rotate-secret",
+          "help": "Issue a new signing secret. Receivers that verify the old secret fail until updated.",
+          "method": "POST",
+          "path": "/api/integrations/webhooks/{id}/rotate-secret",
+          "args": [{"name": "id", "type": "int", "help": "Webhook ID."}],
+          "confirm": "Rotate the signing secret of webhook {id}? Receivers using the old secret will reject deliveries."
+        },
+        {
+          "name": "executions",
+          "help": "Show recent deliveries of a webhook.",
+          "method": "GET",
+          "path": "/api/integrations/webhooks/{id}/executions",
+          "args": [{"name": "id", "type": "int", "help": "Webhook ID."}],
+          "options": [{"flag": "limit", "type": "int", "help": "Rows to return, 1-200 (default 50)."}],
+          "table": {"rows": "", "columns": ["id", "success", "status_code", "duration_ms", "executed_at", "error_message"]}
+        }
+      ]
+    },
+    {
+      "name": "exports",
+      "help": "Exports of TrendsAGI data to your cloud storage or warehouse.",
+      "commands": [
+        {
+          "name": "list",
+          "aliases": ["ls"],
+          "help": "List export configurations.",
+          "method": "GET",
+          "path": "/api/user/export/settings",
+          "table": {"rows": "", "columns": ["id", "destination", "schedule", "is_active", "report_kind"]}
+        },
+        {
+          "name": "get",
+          "help": "Show one export configuration.",
+          "method": "GET",
+          "path": "/api/user/export/configurations/{config_id}",
+          "args": [{"name": "config_id", "type": "int", "help": "Export configuration ID."}]
+        },
+        {
+          "name": "create",
+          "help": "Create an export configuration.",
+          "method": "POST",
+          "path": "/api/user/export/settings",
+          "data": true,
+          "options": [
+            {"flag": "destination", "help": "Destination, e.g. aws, azure, gcp or snowflake."},
+            {"flag": "config", "type": "json", "metavar": "JSON", "help": "Destination settings as JSON (or @file.json)."},
+            {"flag": "fields", "param": "selected_fields", "type": "list", "metavar": "A,B", "help": "Comma-separated field IDs to export."},
+            {"flag": "schedule", "help": "manual (exports run with 'exports run')."}
+          ]
+        },
+        {
+          "name": "update",
+          "help": "Replace an export configuration's settings.",
+          "method": "PUT",
+          "path": "/api/user/export/configurations/{config_id}",
+          "data": true,
+          "args": [{"name": "config_id", "type": "int", "help": "Export configuration ID."}],
+          "options": [
+            {"flag": "destination", "help": "Destination."},
+            {"flag": "config", "type": "json", "metavar": "JSON", "help": "Destination settings as JSON; unchanged secrets may be omitted."},
+            {"flag": "fields", "param": "selected_fields", "type": "list", "metavar": "A,B", "help": "Comma-separated field IDs."},
+            {"flag": "schedule", "help": "manual"},
+            {"flag": "active", "param": "is_active", "type": "bool", "help": "true or false."}
+          ]
+        },
+        {
+          "name": "delete",
+          "aliases": ["rm"],
+          "help": "Delete an export configuration.",
+          "method": "DELETE",
+          "path": "/api/user/export/settings/{config_id}",
+          "args": [{"name": "config_id", "type": "int", "help": "Export configuration ID."}],
+          "confirm": "Delete export configuration {config_id}?"
+        },
+        {
+          "name": "run",
+          "help": "Run an export now.",
+          "method": "POST",
+          "path": "/api/user/export/configurations/{config_id}/run-now",
+          "args": [{"name": "config_id", "type": "int", "help": "Export configuration ID."}]
+        },
+        {
+          "name": "history",
+          "help": "Show past export runs.",
+          "method": "GET",
+          "path": "/api/user/export/history",
+          "options": [
+            {"flag": "limit", "type": "int", "help": "Rows to return, 1-100 (default 20)."},
+            {"flag": "offset", "type": "int", "help": "Rows to skip."}
+          ],
+          "table": {"rows": "history", "columns": ["id", "execution_time", "destination", "status", "records_exported", "message"]}
+        },
+        {
+          "name": "usage",
+          "help": "Show export usage against your plan.",
+          "method": "GET",
+          "path": "/api/user/export/usage"
+        }
+      ]
+    },
+    {
+      "name": "ads",
+      "help": "Connected ad accounts: resources, trend-based previews and changes, and reports.",
+      "commands": [
+        {
+          "name": "providers",
+          "help": "List ad platforms and their connection status.",
+          "method": "GET",
+          "path": "/api/integrations/ads/providers",
+          "table": {"rows": "providers", "columns": ["platform", "display_name", "configured", "is_connected", "last_synced_at"]}
+        },
+        {
+          "name": "resources",
+          "help": "List accounts, campaigns, ad groups and ads on a connected platform.",
+          "method": "GET",
+          "path": "/api/integrations/ads/{platform}/resources",
+          "args": [{"name": "platform", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [
+            {"flag": "account", "param": "account_id", "help": "Scope to an account."},
+            {"flag": "campaign", "param": "campaign_id", "help": "Scope to a campaign."},
+            {"flag": "ad-group", "param": "ad_group_id", "help": "Scope to an ad group or ad set."},
+            {"flag": "client", "param": "client_id", "help": "Scope to a client mapping."}
+          ]
+        },
+        {
+          "name": "preview",
+          "help": "Preview trend-based changes to a campaign, ad group or ad. Changes nothing.",
+          "method": "POST",
+          "path": "/api/integrations/ads/{platform}/preview",
+          "data": true,
+          "args": [{"name": "platform", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [
+            {"flag": "trend", "param": "trend_id", "type": "int", "required": true, "help": "Trend ID to build the change from."},
+            {"flag": "level", "param": "apply_level", "choices": ["campaign", "ad_group", "ad"], "help": "Level to change."},
+            {"flag": "account", "param": "account_id", "help": "Account ID."},
+            {"flag": "campaign", "param": "campaign_id", "help": "Campaign ID."},
+            {"flag": "ad-group", "param": "ad_group_id", "help": "Ad group or ad set ID."},
+            {"flag": "ad", "param": "ad_id", "help": "Ad ID."},
+            {"flag": "strict-safety", "param": "strict_safety", "type": "bool", "help": "Guardrails (default true)."}
+          ]
+        },
+        {
+          "name": "apply",
+          "help": "Apply trend-based changes to live ads. Run 'ads preview' with the same options first.",
+          "method": "POST",
+          "path": "/api/integrations/ads/{platform}/apply",
+          "data": true,
+          "args": [{"name": "platform", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [
+            {"flag": "trend", "param": "trend_id", "type": "int", "required": true, "help": "Trend ID to build the change from."},
+            {"flag": "level", "param": "apply_level", "choices": ["campaign", "ad_group", "ad"], "help": "Level to change."},
+            {"flag": "account", "param": "account_id", "help": "Account ID."},
+            {"flag": "campaign", "param": "campaign_id", "help": "Campaign ID."},
+            {"flag": "ad-group", "param": "ad_group_id", "help": "Ad group or ad set ID."},
+            {"flag": "ad", "param": "ad_id", "help": "Ad ID."},
+            {"flag": "strict-safety", "param": "strict_safety", "type": "bool", "help": "Guardrails (default true)."}
+          ],
+          "confirm": "Apply changes to live ads in your {platform} account?"
+        },
+        {
+          "name": "streams",
+          "help": "List the trend-to-ads stream configurations for a platform.",
+          "method": "GET",
+          "path": "/api/integrations/ads/{platform}/stream-configs",
+          "args": [{"name": "platform", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [{"flag": "client", "param": "client_id", "help": "Scope to a client mapping."}]
+        },
+        {
+          "name": "update-stream",
+          "help": "Change a trend-to-ads stream configuration.",
+          "method": "PUT",
+          "path": "/api/integrations/ads/{platform}/stream-configs/{stream_id}",
+          "data": true,
+          "args": [
+            {"name": "platform", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."},
+            {"name": "stream_id", "type": "int", "help": "Stream ID (see 'ads streams')."}
+          ],
+          "options": [
+            {"flag": "mode", "choices": ["preview", "apply"], "help": "preview proposes changes; apply makes them."},
+            {"flag": "level", "param": "apply_level", "choices": ["campaign", "ad_group", "ad"], "help": "Level to change."},
+            {"flag": "account", "param": "account_id", "help": "Account ID."},
+            {"flag": "campaign", "param": "campaign_id", "help": "Campaign ID."},
+            {"flag": "ad-group", "param": "ad_group_id", "help": "Ad group or ad set ID."},
+            {"flag": "category", "param": "trend_category", "help": "Trend category that feeds the stream."},
+            {"flag": "client", "param": "client_id", "help": "Client mapping."},
+            {"flag": "strict-safety", "param": "strict_safety", "type": "bool", "help": "Guardrails (recommended true)."}
+          ]
+        },
+        {
+          "name": "report-catalog",
+          "help": "List report templates and fields for a platform.",
+          "method": "GET",
+          "path": "/api/integrations/ads/reporting/catalog",
+          "args": [{"name": "platform", "in": "query", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [{"flag": "client", "param": "client_id", "help": "Client mapping."}]
+        },
+        {
+          "name": "report",
+          "help": "Preview a performance report.",
+          "method": "POST",
+          "path": "/api/integrations/ads/reporting/preview",
+          "data": true,
+          "args": [{"name": "platform", "in": "body", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [
+            {"flag": "level", "required": true, "choices": ["campaign", "ad_group", "ad"], "help": "Report level."},
+            {"flag": "start", "param": "date_range.start_date", "required": true, "metavar": "DATE", "help": "Start date (YYYY-MM-DD)."},
+            {"flag": "end", "param": "date_range.end_date", "required": true, "metavar": "DATE", "help": "End date (YYYY-MM-DD)."},
+            {"flag": "account", "param": "scope.account_id", "required": true, "help": "Account ID."},
+            {"flag": "client", "param": "scope.client_id", "help": "Client mapping."},
+            {"flag": "template", "param": "template_id", "help": "Template (default performance_overview)."},
+            {"flag": "fields", "type": "list", "metavar": "A,B", "help": "Comma-separated fields instead of the template's."}
+          ]
+        },
+        {
+          "name": "report-export",
+          "help": "Download a performance report as CSV.",
+          "method": "POST",
+          "path": "/api/integrations/ads/reporting/export",
+          "data": true,
+          "output": "raw",
+          "args": [{"name": "platform", "in": "body", "choices": ["google_ads", "meta_ads", "tiktok_ads", "linkedin_ads", "microsoft_ads", "snapchat_ads", "pinterest_ads"], "help": "Ad platform."}],
+          "options": [
+            {"flag": "level", "required": true, "choices": ["campaign", "ad_group", "ad"], "help": "Report level."},
+            {"flag": "start", "param": "date_range.start_date", "required": true, "metavar": "DATE", "help": "Start date (YYYY-MM-DD)."},
+            {"flag": "end", "param": "date_range.end_date", "required": true, "metavar": "DATE", "help": "End date (YYYY-MM-DD)."},
+            {"flag": "account", "param": "scope.account_id", "required": true, "help": "Account ID."},
+            {"flag": "client", "param": "scope.client_id", "help": "Client mapping."},
+            {"flag": "template", "param": "template_id", "help": "Template (default performance_overview)."},
+            {"flag": "fields", "type": "list", "metavar": "A,B", "help": "Comma-separated fields instead of the template's."},
+            {"flag": "out", "short": "o", "local": true, "metavar": "FILE", "help": "Write the CSV to this file instead of standard output."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "integrations",
+      "help": "Connected integrations: availability, status and delivery health.",
+      "commands": [
+        {
+          "name": "availability",
+          "help": "Show which integrations your plan includes.",
+          "method": "GET",
+          "path": "/api/integrations/availability"
+        },
+        {
+          "name": "status",
+          "help": "Show the connection status of an integration.",
+          "method": "GET",
+          "path": "/api/integrations/{provider}/status",
+          "args": [{"name": "provider", "choices": ["slack", "shopify", "meta-capi", "reddit-ads", "bigquery", "google-sheets", "n8n"], "help": "Integration."}]
+        },
+        {
+          "name": "health",
+          "help": "Show delivery health across integrations.",
+          "method": "GET",
+          "path": "/api/integrations/delivery/health",
+          "options": [
+            {"flag": "hours", "param": "lookback_hours", "type": "int", "help": "Lookback window in hours (default 168)."},
+            {"flag": "provider", "help": "One provider, e.g. meta_capi, shopify or n8n."}
+          ]
+        },
+        {
+          "name": "value",
+          "help": "Summarise what integrations delivered.",
+          "method": "GET",
+          "path": "/api/integrations/value/summary",
+          "options": [
+            {"flag": "hours", "param": "lookback_hours", "type": "int", "help": "Lookback window in hours (default 168)."},
+            {"flag": "provider", "help": "One provider."}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stream",
+      "handler": "stream",
+      "help": "Print live trend updates as JSON lines until interrupted.",
+      "options": [
+        {"flag": "follow", "type": "list", "metavar": "A,B", "help": "Only these trend names."},
+        {"flag": "category", "help": "Only trends in this category."}
+      ]
+    },
+    {
+      "name": "api",
+      "handler": "api",
+      "help": "Call any API endpoint, like 'trendsagi api /api/trends -q limit=5'.",
+      "args": [{"name": "path", "help": "Endpoint path, e.g. /api/trends."}],
+      "options": [
+        {"flag": "method", "short": "X", "metavar": "METHOD", "help": "HTTP method (default GET, or POST when a body is given)."},
+        {"flag": "query", "short": "q", "type": "pairs", "metavar": "KEY=VALUE", "help": "Query parameter; repeat for more."},
+        {"flag": "field", "short": "f", "type": "pairs", "metavar": "KEY=VALUE", "help": "JSON body field; repeat for more. Values are parsed as JSON when they can be."},
+        {"flag": "data", "short": "d", "type": "json", "metavar": "JSON", "help": "JSON body, @file.json, or - for standard input."},
+        {"flag": "no-auth", "type": "flag", "help": "Send the request without the API key."}
+      ]
+    }
+  ]
+}

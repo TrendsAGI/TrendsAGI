@@ -1,0 +1,49 @@
+{
+  "name": "trendsagi",
+  "version": "0.17.0",
+  "description": "TrendsAGI CLI: real-time trending topics with measured volume, velocity and growth, AI insights, recommendations, crisis alerts and read-only SQL from your terminal. For paid media, growth and AI agent workflows.",
+  "keywords": [
+    "trendsagi",
+    "cli",
+    "trends",
+    "trending topics",
+    "trend detection",
+    "social listening",
+    "real-time data",
+    "paid media",
+    "ad targeting",
+    "marketing",
+    "ai agents",
+    "mcp",
+    "api client"
+  ],
+  "homepage": "https://trendsagi.com/api-docs/integrations/cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrendsAGI/TrendsAGI.git",
+    "directory": "npm"
+  },
+  "bugs": {
+    "url": "https://github.com/TrendsAGI/TrendsAGI/issues"
+  },
+  "author": "TrendsAGI <contact@trendsagi.com>",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "trendsagi": "bin/trendsagi.js"
+  },
+  "exports": "./src/cli.js",
+  "files": [
+    "bin",
+    "src",
+    "cli_spec.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}

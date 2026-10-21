@@ -94,7 +94,7 @@ class TrendsAGIClient:
             delay = self._max_retry_wait
         return max(0.0, delay)
 
-    def _request(self, method: str, endpoint: str, **kwargs) -> Any:
+    def _request(self, method: str, endpoint: str, raw: bool = False, **kwargs) -> Any:
         """Internal helper for making API requests."""
         url = f"{self.base_url}{endpoint}"
         try:
@@ -103,7 +103,9 @@ class TrendsAGIClient:
                 response = self._session.request(method, url, **kwargs)
 
                 if 200 <= response.status_code < 300:
-                    if response.status_code == 204:
+                    if raw:
+                        return response.content
+                    if response.status_code == 204 or not response.content:
                         return None
                     return response.json()
 
@@ -140,6 +142,39 @@ class TrendsAGIClient:
 
         except requests.exceptions.RequestException as e:
             raise exceptions.TrendsAGIError(f"Network error communicating with API: {e}")
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        params: Optional[Dict[str, Any]] = None,
+        json: Any = None,
+        auth: bool = True,
+        raw: bool = False,
+    ) -> Any:
+        """
+        Call any TrendsAGI API endpoint, including ones without a dedicated method.
+
+        :param method: HTTP method, e.g. ``"GET"`` or ``"POST"``.
+        :param path: Endpoint path, e.g. ``"/api/trends"``.
+        :param params: Query parameters.
+        :param json: JSON request body.
+        :param auth: ``False`` sends the request without the API key (public endpoints).
+        :param raw: ``True`` returns the response body as bytes instead of decoded JSON.
+        :return: The decoded JSON response, ``None`` for an empty response, or bytes with ``raw``.
+        :raises exceptions.APIError: For non-2xx responses, as for every other method.
+        """
+        kwargs: Dict[str, Any] = {}
+        if params:
+            kwargs["params"] = params
+        if json is not None:
+            kwargs["json"] = json
+        if not auth:
+            # requests drops a session header whose per-request value is None.
+            kwargs["headers"] = {"X-API-Key": None}
+        if not path.startswith("/"):
+            path = "/" + path
+        return self._request(method.upper(), path, raw=raw, **kwargs)
 
     # --- Trends & Insights Methods ---
 

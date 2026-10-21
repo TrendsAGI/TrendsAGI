@@ -9,6 +9,7 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 | | |
 | --- | --- |
 | **Python client** | `TrendsAGIClient`, a typed REST client |
+| **Command line** | `trendsagi`, one command per API action, tables in a terminal and JSON in a pipe |
 | **Agent tools** | `TrendsAGITools` for OpenAI, Claude, LangChain and WebMCP |
 | **Hosted MCP server** | `https://api.trendsagi.com/mcp` for Claude, ChatGPT, Grok, Cursor and Gemini CLI |
 | **Browser agents (WebMCP)** | Signed in to app.trendsagi.com, your browser's agent gets the same tools ([`webmcp/`](webmcp/)) |
@@ -19,8 +20,9 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 ## Install
 
 ```bash
-pip install trendsagi            # client + agent tools
+pip install trendsagi            # client, agent tools and the trendsagi command
 pip install "trendsagi[mcp]"     # adds the local MCP server (Python 3.10+)
+pipx install trendsagi           # just the command line, in its own environment
 ```
 
 Create an API key under Profile > API Keys at [app.trendsagi.com](https://app.trendsagi.com) and export it:
@@ -47,6 +49,40 @@ insight = client.get_ai_insights(trends.trends[0].id)
 if insight:
     print(insight.sentiment_summary, insight.key_themes)
 ```
+
+## Command line
+
+```bash
+trendsagi login                  # paste an API key; saved to ~/.config/trendsagi/config.json
+trendsagi trends list --category Technology --sort velocity --limit 10
+trendsagi insights get 123       # audience, sentiment and marketing angles
+trendsagi sql "SELECT category, count(*) FROM trends GROUP BY 1 ORDER BY 2 DESC"
+trendsagi recommendations list --priority high
+trendsagi watchlist add "oat milk" --threshold 50000 --email
+trendsagi api /api/integrations/delivery/health -q lookback_hours=24   # any endpoint
+```
+
+| Commands | What they do |
+| --- | --- |
+| `login`, `logout`, `whoami` | Save, forget and check the API key |
+| `trends` `list` `get` `analytics` `categories` `autocomplete` | Trending topics with measured volume, velocity and growth |
+| `insights` `get` `generate [--wait]` `status` `search` | AI insights per trend |
+| `recommendations` `list` `action` `feedback` | Evidence-backed recommendations and their workflow status |
+| `crisis` `list` `action` | Crisis events: acknowledge, archive, reopen |
+| `watchlist` `list` `add` `remove` | Tracked keywords and categories, with alerts |
+| `sql`, `schema` | One read-only PostgreSQL SELECT over your data, and the tables it can read |
+| `tools` `list` `call`, `find` | The agent tools, and whether TrendsAGI can do a task |
+| `webhooks`, `exports` | Create, change, test and run webhooks and data exports |
+| `ads` `providers` `resources` `preview` `apply` `report` `report-export` | Connected ad platforms: trend-based changes and reports |
+| `integrations` `availability` `status` `health` `value` | Integration status and delivery health |
+| `stream` | Live trend updates as JSON lines |
+| `usage`, `status`, `api` | API usage, service status, and any endpoint without its own command |
+
+Every command has `--help`. In a terminal, lists print as tables; piped or with `--json` they print JSON, so `trendsagi trends list | jq` works. The key comes from `--api-key`, then `TRENDSAGI_API_KEY`, then the saved login. Commands that delete something or change live ads ask first; pass `--yes` in scripts. Exit codes: 0 success, 1 API error, 2 invalid usage, 4 missing or rejected key.
+
+The commands are declared once in [`src/trendsagi/cli_spec.json`](src/trendsagi/cli_spec.json); a dependency-free Node.js build of the same CLI lives in [`npm/`](npm/). Guide: [trendsagi.com/api-docs/integrations/cli](https://trendsagi.com/api-docs/integrations/cli).
+
+The client calls any endpoint too: `client.request("GET", "/api/integrations/delivery/health", params={"lookback_hours": 24})`.
 
 ## Use TrendsAGI in your AI assistant (no install)
 
@@ -209,12 +245,12 @@ except exceptions.AuthenticationError:
     ...  # invalid or revoked key
 ```
 
-## CLI
+## Other commands
 
 ```bash
-trendsagi mcp [--allow-writes]                          # MCP server over stdio
-trendsagi scaffold --type docker --output ./runner      # executor runner template
-trendsagi scaffold --type terraform --output ./infra    # infrastructure template
+trendsagi mcp [--allow-writes]                              # MCP server over stdio
+trendsagi scaffold --type docker --output-dir ./runner      # executor runner template
+trendsagi scaffold --type terraform --output-dir ./infra    # infrastructure template
 ```
 
 ## Plans and limits
@@ -224,6 +260,7 @@ The free Developer plan includes one API key and 100 API calls a day; Advantage,
 ## Links
 
 - [API documentation](https://trendsagi.com/api-docs) and [endpoint reference](https://trendsagi.com/api-docs/reference)
+- [CLI guide](https://trendsagi.com/api-docs/integrations/cli)
 - [MCP server guide](https://trendsagi.com/mcp) and [WebMCP guide](https://trendsagi.com/webmcp)
 - [Changelog](CHANGELOG.md)
 - Support: [trendsagi.com/contact](https://trendsagi.com/contact) or contact@trendsagi.com

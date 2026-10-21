@@ -2,6 +2,34 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.17.0] - 2026-10-21
+
+### Added
+
+- A command line for the whole API. `trendsagi login` checks an API key and saves it
+  to `~/.config/trendsagi/config.json` (owner-only on macOS and Linux; `%APPDATA%` on
+  Windows), then one command per action: `trends`, `insights`, `recommendations`,
+  `crisis`, `watchlist`, `sql`, `schema`, `tools`, `find`, `usage`, `status`,
+  `webhooks`, `exports`, `ads`, `integrations` and `stream`, plus `whoami`, `logout`
+  and `api` for any endpoint without its own command. Lists print as tables in a
+  terminal and as JSON when piped or with `--json`. Commands that delete something or
+  change live ads ask first (`--yes` skips the question). Exit code 4 means a missing
+  or rejected key.
+- `src/trendsagi/cli_spec.json` declares every command; the Node.js build of the same
+  CLI in [`npm/`](npm/) reads the same file, and a test keeps the copies identical.
+- `TrendsAGIClient.request(method, path, params=None, json=None, auth=True, raw=False)`
+  calls any endpoint, including ones without a dedicated method.
+
+### Changed
+
+- `trendsagi mcp` falls back to the key saved by `trendsagi login`.
+- The CLI sends `User-Agent: trendsagi-cli/<version> python/<version>`.
+- A successful response with an empty body returns `None` instead of raising.
+
+### Fixed
+
+- The README showed `trendsagi scaffold --output`; the flag is `--output-dir`.
+
 ## [0.16.0] - 2026-10-21
 
 ### Added
