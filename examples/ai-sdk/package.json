@@ -1,0 +1,17 @@
+{
+  "name": "@trendsagi/example-ai-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Vercel AI SDK generateText with @trendsagi/ai tools.",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.136",
+    "@trendsagi/ai": "^0.1.0",
+    "@trendsagi/core": "^0.1.0",
+    "ai": "^5.0.281",
+    "zod": "^3.25.76"
+  }
+}

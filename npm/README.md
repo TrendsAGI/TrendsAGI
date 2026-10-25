@@ -61,6 +61,8 @@ Run `trendsagi <command> --help` for every option. Guide: [trendsagi.com/api-doc
 ## Also from TrendsAGI
 
 - Python client, agent tools and a local MCP server: `pip install trendsagi`
+- TypeScript client: `npm install @trendsagi/core`
+- Framework adapters: `@trendsagi/openai`, `@trendsagi/langchain`, `@trendsagi/ai`, `@trendsagi/anthropic`
 - Hosted MCP server for Claude, ChatGPT, Grok and Cursor: `https://api.trendsagi.com/mcp` ([setup](https://trendsagi.com/mcp))
 
 Source: [github.com/TrendsAGI/TrendsAGI](https://github.com/TrendsAGI/TrendsAGI/tree/main/npm). MIT licensed.

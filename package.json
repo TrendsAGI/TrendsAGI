@@ -1,0 +1,33 @@
+{
+  "name": "trendsagi-sdk-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TrendsAGI JavaScript/TypeScript SDKs: core client plus OpenAI, LangChain, Vercel AI SDK and Anthropic adapters.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @trendsagi/core && npm run build -w @trendsagi/openai && npm run build -w @trendsagi/langchain && npm run build -w @trendsagi/ai && npm run build -w @trendsagi/anthropic",
+    "typecheck": "npm run build -w @trendsagi/core && npm run typecheck -w @trendsagi/core && npm run typecheck -w @trendsagi/openai && npm run typecheck -w @trendsagi/langchain && npm run typecheck -w @trendsagi/ai && npm run typecheck -w @trendsagi/anthropic",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "codegen": "node scripts/generate-schema.mjs",
+    "pack:all": "npm pack --workspace @trendsagi/core --workspace @trendsagi/openai --workspace @trendsagi/langchain --workspace @trendsagi/ai --workspace @trendsagi/anthropic"
+  },
+  "devDependencies": {
+    "@langchain/core": "^0.3.80",
+    "@types/node": "^22.20.5",
+    "ai": "^5.0.281",
+    "openapi-typescript": "^7.13.0",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5",
+    "zod": "^3.25.76"
+  }
+}

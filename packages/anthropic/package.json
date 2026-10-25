@@ -1,0 +1,70 @@
+{
+  "name": "@trendsagi/anthropic",
+  "version": "0.1.0",
+  "description": "Anthropic tool definitions for TrendsAGI: live trends, AI insights, recommendations and ads previews as Claude tool schemas, with a dispatcher.",
+  "keywords": [
+    "trendsagi",
+    "anthropic",
+    "claude",
+    "tools",
+    "agents",
+    "trends",
+    "sdk"
+  ],
+  "license": "MIT",
+  "author": "TrendsAGI <contact@trendsagi.com>",
+  "homepage": "https://trendsagi.com/api-docs/integrations/anthropic-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrendsAGI/TrendsAGI.git",
+    "directory": "packages/anthropic"
+  },
+  "bugs": {
+    "url": "https://github.com/TrendsAGI/TrendsAGI/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@trendsagi/core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": ">=0.30"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

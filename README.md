@@ -10,6 +10,7 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 | | |
 | --- | --- |
 | **Python client** | `TrendsAGIClient`, a typed REST client |
+| **JavaScript/TypeScript SDK** | `@trendsagi/core`, plus OpenAI, LangChain, Vercel AI SDK and Anthropic adapters |
 | **Command line** | `trendsagi`, one command per API action, tables in a terminal and JSON in a pipe |
 | **Agent tools** | `TrendsAGITools` for OpenAI, Claude, LangChain and WebMCP |
 | **Hosted MCP server** | `https://api.trendsagi.com/mcp` for Claude, ChatGPT, Grok, Cursor and Gemini CLI |
@@ -25,6 +26,7 @@ pip install trendsagi            # client, agent tools and the trendsagi command
 pip install "trendsagi[mcp]"     # adds the local MCP server (Python 3.10+)
 pipx install trendsagi           # just the command line, in its own environment
 npx trendsagi --help             # or the same command line from npm (Node.js 18+)
+npm install @trendsagi/core      # JavaScript/TypeScript REST client
 ```
 
 Create an API key under Profile > API Keys at [app.trendsagi.com](https://app.trendsagi.com) and export it:
@@ -136,6 +138,37 @@ One registry, every format. The tools are **read-only by default**; `add_to_watc
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
 | `read_data_schema` / `execute_sql` | Read-only SQL for questions that need filters, joins or aggregation |
 | `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |
+
+### JavaScript and TypeScript
+
+The npm scope carries the same API surface: one typed core client plus adapters that return plain tool objects. The provider SDKs are optional peers and are never imported at runtime.
+
+```bash
+npm install @trendsagi/core
+npm install @trendsagi/openai openai
+npm install @trendsagi/langchain @langchain/core zod
+npm install @trendsagi/ai ai zod
+npm install @trendsagi/anthropic @anthropic-ai/sdk
+```
+
+```ts
+import { TrendsAGI } from "@trendsagi/core";
+
+const trendsagi = new TrendsAGI(); // reads TRENDSAGI_API_KEY
+const { trends } = await trendsagi.trends.list({ category: "Technology", limit: 5 });
+
+console.log(trends.map((trend) => trend.name));
+```
+
+| Package | Tools |
+| --- | --- |
+| `@trendsagi/core` | `trends`, `insights`, `recommendations`, `ads`, `request<T>` |
+| `@trendsagi/openai` | `createOpenAITools(client, { format: "responses" \| "chat" })`, `runTrendsAGITool(client, name, args)` |
+| `@trendsagi/langchain` | `createTrendsAGITools(client)` using `@langchain/core` `tool()` |
+| `@trendsagi/ai` | `createTrendsAGITools(client)` using the Vercel AI SDK `tool()` with `inputSchema` |
+| `@trendsagi/anthropic` | `createAnthropicTools(client)`, `runAnthropicTool(client, name, input)` |
+
+`@trendsagi/*` adapters expose `list_trends`, `get_trend`, `get_trend_insights`, `list_recommendations` and `preview_ads` (the exact names differ per framework). `preview_ads` only previews targeting changes; applying them stays in the app.
 
 ### OpenAI
 
@@ -262,6 +295,7 @@ The free Developer plan includes one API key and 100 API calls a day; Advantage,
 ## Links
 
 - [API documentation](https://trendsagi.com/api-docs) and [endpoint reference](https://trendsagi.com/api-docs/reference)
+- [JavaScript/TypeScript SDK](https://trendsagi.com/api-docs/integrations/js-sdk)
 - [CLI guide](https://trendsagi.com/api-docs/integrations/cli)
 - [MCP server guide](https://trendsagi.com/mcp) and [WebMCP guide](https://trendsagi.com/webmcp)
 - [Changelog](CHANGELOG.md)

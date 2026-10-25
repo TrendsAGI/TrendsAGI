@@ -1,0 +1,66 @@
+{
+  "name": "@trendsagi/ai",
+  "version": "0.1.0",
+  "description": "Vercel AI SDK tools for TrendsAGI: live trends, AI insights, recommendations and ads previews with zod input schemas.",
+  "keywords": [
+    "trendsagi",
+    "ai sdk",
+    "vercel",
+    "tools",
+    "agents",
+    "trends",
+    "sdk"
+  ],
+  "license": "MIT",
+  "author": "TrendsAGI <contact@trendsagi.com>",
+  "homepage": "https://trendsagi.com/api-docs/integrations/vercel-ai-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrendsAGI/TrendsAGI.git",
+    "directory": "packages/ai"
+  },
+  "bugs": {
+    "url": "https://github.com/TrendsAGI/TrendsAGI/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@trendsagi/core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "ai": ">=5",
+    "zod": ">=3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

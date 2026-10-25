@@ -1,0 +1,16 @@
+{
+  "name": "@trendsagi/example-langchain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LangChain agent tools with @trendsagi/langchain.",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@langchain/openai": "^0.3.17",
+    "@trendsagi/core": "^0.1.0",
+    "@trendsagi/langchain": "^0.1.0",
+    "zod": "^3.25.76"
+  }
+}

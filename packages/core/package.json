@@ -1,0 +1,61 @@
+{
+  "name": "@trendsagi/core",
+  "version": "0.1.0",
+  "description": "Typed JavaScript/TypeScript client for the TrendsAGI REST API: live trend volume, velocity, AI insights, recommendations and ads previews.",
+  "keywords": [
+    "trendsagi",
+    "trends",
+    "trending topics",
+    "real-time data",
+    "market intelligence",
+    "social listening",
+    "sdk",
+    "typescript",
+    "api client"
+  ],
+  "license": "MIT",
+  "author": "TrendsAGI <contact@trendsagi.com>",
+  "homepage": "https://trendsagi.com/api-docs/integrations/js-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrendsAGI/TrendsAGI.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/TrendsAGI/TrendsAGI/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

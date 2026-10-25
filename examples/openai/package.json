@@ -1,0 +1,15 @@
+{
+  "name": "@trendsagi/example-openai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenAI tool-calling loop with @trendsagi/openai.",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "@trendsagi/core": "^0.1.0",
+    "@trendsagi/openai": "^0.1.0",
+    "openai": "^7.0.0"
+  }
+}

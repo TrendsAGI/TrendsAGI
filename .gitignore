@@ -31,6 +31,11 @@ venv/
 my-test-env/
 .env
 
+# Node.js workspace
+node_modules/
+.npm/
+*.tgz
+
 # OS-specific files
 .DS_Store
 
