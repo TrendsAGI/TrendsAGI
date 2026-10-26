@@ -64,6 +64,21 @@ def make_empty_insight():
     )
 
 
+def make_negative_only_insight():
+    return models.AIInsight.model_validate(
+        {
+            "trend_id": 456,
+            "key_themes": [],
+            "ad_platform_targeting": {},
+            "audience_injection": {
+                "interest_keywords": [],
+                "negative_keywords": ["cheap"],
+                "demographics": {},
+            },
+        }
+    )
+
+
 class IntegrationTests(unittest.TestCase):
     def test_google_executor_dry_run_and_apply(self):
         session = FakeSession()
@@ -76,25 +91,74 @@ class IntegrationTests(unittest.TestCase):
             insight,
             customer_id="123456",
             campaign_id="987654",
+            ad_group_id="555666",
             dry_run=True,
         )
         self.assertTrue(dry_result.dry_run)
         self.assertIn("operations", dry_result.response)
         self.assertIn("partialFailure", dry_result.response)
-        self.assertIn("validateOnly", dry_result.response)
+        self.assertIn("campaign", dry_result.response)
+        self.assertIn("ad_group", dry_result.response)
+        self.assertIn("partialFailure", dry_result.response["campaign"])
+        self.assertIn("validateOnly", dry_result.response["campaign"])
+        self.assertEqual(len(dry_result.response["campaign"]["operations"]), 1)
+        self.assertEqual(len(dry_result.response["ad_group"]["operations"]), 1)
 
         live_result = executor.apply_targeting(
             insight,
             customer_id="123456",
             campaign_id="987654",
+            ad_group_id="555666",
         )
         self.assertTrue(live_result.success)
+        self.assertEqual(len(session.calls), 2)
+        first_method, first_url, first_kwargs = session.calls[0]
+        self.assertEqual(first_method, "POST")
+        self.assertTrue(first_url.endswith("/v26/customers/123456/adGroupCriteria:mutate"))
+        self.assertIn("developer-token", first_kwargs["headers"])
+        self.assertNotIn("x-idempotency-key", first_kwargs["headers"])
+        positive = first_kwargs["json"]["operations"][0]["create"]
+        self.assertEqual(positive["adGroup"], "customers/123456/adGroups/555666")
+        self.assertNotIn("negative", positive)
+
+        second_method, second_url, second_kwargs = session.calls[1]
+        self.assertEqual(second_method, "POST")
+        self.assertTrue(second_url.endswith("/v26/customers/123456/campaignCriteria:mutate"))
+        negative = second_kwargs["json"]["operations"][0]["create"]
+        self.assertEqual(negative["campaign"], "customers/123456/campaigns/987654")
+        self.assertTrue(negative["negative"])
+
+    def test_google_executor_requires_ad_group_for_positive_keywords(self):
+        session = FakeSession()
+        executor = GoogleAdsExecutor(
+            {"access_token": "tok", "developer_token": "dev"},
+            session=session,
+        )
+        with self.assertRaises(ValueError):
+            executor.apply_targeting(
+                make_insight(),
+                customer_id="123456",
+                campaign_id="987654",
+            )
+        self.assertEqual(session.calls, [])
+
+    def test_google_executor_negative_only_does_not_need_ad_group(self):
+        session = FakeSession()
+        executor = GoogleAdsExecutor(
+            {"access_token": "tok", "developer_token": "dev"},
+            session=session,
+        )
+        result = executor.apply_targeting(
+            make_negative_only_insight(),
+            customer_id="123456",
+            campaign_id="987654",
+        )
+        self.assertTrue(result.success)
         self.assertEqual(len(session.calls), 1)
         method, url, kwargs = session.calls[0]
         self.assertEqual(method, "POST")
-        self.assertTrue(url.endswith("/v23/customers/123456/campaignCriteria:mutate"))
-        self.assertIn("developer-token", kwargs["headers"])
-        self.assertNotIn("x-idempotency-key", kwargs["headers"])
+        self.assertTrue(url.endswith("/v26/customers/123456/campaignCriteria:mutate"))
+        self.assertTrue(kwargs["json"]["operations"][0]["create"]["negative"])
 
     def test_meta_executor_builds_targeting(self):
         session = FakeSession()

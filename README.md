@@ -228,7 +228,15 @@ google = GoogleAdsExecutor({
     "access_token": os.environ["GOOGLE_ADS_ACCESS_TOKEN"],
     "developer_token": os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"],
 })
-preview = google.apply_targeting(insight, customer_id="1234567890", campaign_id="9876543210", dry_run=True, strict_mode=True)
+# Positive keywords target an ad group; campaign criteria can only exclude.
+preview = google.apply_targeting(
+    insight,
+    customer_id="1234567890",
+    campaign_id="9876543210",
+    ad_group_id="1122334455",
+    dry_run=True,
+    strict_mode=True,
+)
 print(preview.response)  # inspect before any real change
 ```
 

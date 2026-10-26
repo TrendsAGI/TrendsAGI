@@ -2,6 +2,22 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.17.1] - 2026-10-26
+
+### Fixed
+
+- `GoogleAdsExecutor` now calls Google Ads API v26, the current major. Google
+  retires older majors on a rolling schedule (v22 went away in October 2026),
+  and a retired major makes every read and mutate fail with a bare "Request
+  contains an invalid argument."
+- Positive Google Ads keywords are written through `adGroupCriteria:mutate`
+  with an `ad_group_id`. Campaign criteria only support negative keywords, so
+  sending positive keywords there was rejected by Google. The executor now
+  raises a clear `ValueError` when positive keywords are supplied without an
+  ad group instead of sending an invalid request.
+- Negative keywords still go to `campaignCriteria:mutate` and do not require an
+  ad group.
+
 ## [0.17.0] - 2026-10-21
 
 ### Added
