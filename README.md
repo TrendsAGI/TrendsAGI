@@ -13,6 +13,7 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 | **Command line** | `trendsagi`, one command per API action, tables in a terminal and JSON in a pipe |
 | **Agent tools** | `TrendsAGITools` for OpenAI, Claude, LangChain and WebMCP |
 | **Hosted MCP server** | `https://api.trendsagi.com/mcp` for Claude, ChatGPT, Grok, Cursor and Gemini CLI |
+| **Cursor Agent SDK** | A ready agent project in [`agent-sdk/`](agent-sdk/): one connection file gives an Agent SDK agent every hosted tool |
 | **Browser agents (WebMCP)** | Signed in to app.trendsagi.com, your browser's agent gets the same tools ([`webmcp/`](webmcp/)) |
 | **Local MCP server** | `trendsagi mcp`, the same tools over stdio |
 | **Plugins** | Claude, Grok and Cursor plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
@@ -104,6 +105,28 @@ https://api.trendsagi.com/mcp
 ```
 
 Then ask *"What is accelerating fastest in Technology this week, and who should I target with it?"* The hosted tools are read-only, and each call counts as one API request. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an API key as `Authorization: Bearer <key>`. Guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
+
+## Build an agent with Cursor Agent SDK
+
+[Agent SDK](https://cursor.com/docs/agent-sdk) defines agents as a folder of Markdown and TypeScript. Add TrendsAGI with one file and the agent gets the hosted MCP server's read-only tools by name:
+
+```ts
+// bot/mcp-connections/trendsagi.ts
+import { defineConnection } from "@grok/agent-sdk/connections";
+
+export default defineConnection({
+  url: "https://api.trendsagi.com/mcp",
+  headers: { authorization: "Bearer ${TRENDSAGI_API_KEY}" },  // filled by Agent SDK, not JavaScript
+  advertiseTools: true,
+  effects: "read",
+});
+```
+
+```bash
+agent-sdk run --dir . --message "What is rising fastest in Technology this week?"
+```
+
+[`agent-sdk/`](agent-sdk/) is a complete project to copy: instructions, a trend-brief skill, hosting settings (egress to `api.trendsagi.com`, a `TRENDSAGI_API_KEY` secret) and smoke evals. Guide: [trendsagi.com/api-docs/integrations/agent-sdk](https://trendsagi.com/api-docs/integrations/agent-sdk).
 
 ## Use TrendsAGI from your browser's agent (WebMCP)
 

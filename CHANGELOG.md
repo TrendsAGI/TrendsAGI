@@ -2,7 +2,14 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
-## [0.17.1] - 2026-10-26
+## [0.17.1] - 2026-10-27
+
+### Added
+
+- [`agent-sdk/`](agent-sdk/): a Cursor Agent SDK project that reaches the hosted MCP
+  server through one connection file (`bot/mcp-connections/trendsagi.ts`), with
+  instructions, a trend-brief skill, hosting settings and smoke evals. The README has a
+  "Build an agent with Cursor Agent SDK" section.
 
 ### Fixed
 

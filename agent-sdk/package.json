@@ -1,0 +1,19 @@
+{
+  "name": "trendsagi-agent",
+  "private": true,
+  "type": "module",
+  "description": "A Cursor Agent SDK agent that researches rising trends with TrendsAGI's hosted MCP tools.",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "dev": "agent-sdk dev",
+    "validate": "agent-sdk validate --dir ."
+  },
+  "dependencies": {
+    "@grok/agent-sdk": "^0.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "6.0.3"
+  }
+}
