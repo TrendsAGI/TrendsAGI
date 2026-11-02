@@ -27,7 +27,7 @@ export async function registerTrendsAGITools({ endpoint = "/trendsagi/tools" } =
       await modelContext.registerTool(
         {
           ...tool,
-          async execute(input) {
+          async execute(input, options) {
             // Older Chrome builds pass the arguments as JSON text.
             const args = typeof input === "string" ? JSON.parse(input || "{}") : input ?? {};
             const result = await fetch(`${endpoint}/${encodeURIComponent(tool.name)}`, {
@@ -35,12 +35,16 @@ export async function registerTrendsAGITools({ endpoint = "/trendsagi/tools" } =
               credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(args),
+              // Aborted when the agent cancels the call.
+              signal: options?.signal,
             });
+            // The browser serializes what execute returns as JSON, so return
+            // the object itself; JSON text would reach the agent as a string.
             if (!result.ok) {
-              return JSON.stringify({ error: `http_${result.status}`, detail: "The tool call was refused; check that the user is signed in." });
+              return { error: `http_${result.status}`, detail: "The tool call was refused; check that the user is signed in." };
             }
             // {"result": ...} on success, {"error": ..., "detail": ...} otherwise.
-            return JSON.stringify(await result.json());
+            return result.json();
           },
         },
         { signal: controller.signal },
