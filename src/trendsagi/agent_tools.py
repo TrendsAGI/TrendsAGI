@@ -56,6 +56,9 @@ class AgentTool:
     # names, insights generated from them). WebMCP passes this to the agent
     # as untrustedContentHint.
     untrusted_output: bool = False
+    # A short label for user interfaces, such as the browser's list of tools
+    # a page offers over WebMCP. Matches the hosted server's tool titles.
+    title: str = ""
 
 
 def _schema(properties: Dict[str, Any], required: Optional[List[str]] = None) -> Dict[str, Any]:
@@ -119,6 +122,7 @@ class TrendsAGITools:
         return [
             AgentTool(
                 name="list_trends",
+                title="List trending topics",
                 description=(
                     "List topics trending right now on social platforms with measured volume, "
                     "velocity and growth. Sort by velocity to find what is accelerating fastest - "
@@ -143,12 +147,14 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="list_trend_categories",
+                title="List trend categories",
                 description="List the trend category names that list_trends accepts.",
                 parameters=_schema({}),
                 handler=lambda: c.get_trend_categories(),
             ),
             AgentTool(
                 name="search_trend_insights",
+                title="Search trend insights",
                 description=(
                     "Search AI-generated trend insights by theme, e.g. 'AI chips' or 'sustainable "
                     "packaging', to find related trends, why they are moving and which audiences "
@@ -163,6 +169,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="get_trend",
+                title="Get a trend",
                 description="Get one trend by its numeric id, including volume, growth and category.",
                 parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
                 handler=lambda trend_id: c.get_trend(trend_id),
@@ -170,6 +177,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="get_trend_ai_insights",
+                title="Get trend insight",
                 description=(
                     "Get the cached AI insight for a trend: summary, key themes, sentiment, audience "
                     "and suggested marketing angles to use in ad copy and creative briefs. Returns "
@@ -181,6 +189,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="get_trend_analytics",
+                title="Get trend trajectory",
                 description=(
                     "Get the time series of a trend's volume over a period, to judge whether it is "
                     "still rising (scale spend) or already fading (pull back) before committing budget."
@@ -194,6 +203,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="list_recommendations",
+                title="List recommendations",
                 description=(
                     "List evidence-backed recommendations for this account (content ideas, marketing "
                     "angles, PR responses, SEO actions) with a decision brief. The confidence score "
@@ -220,6 +230,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="list_crisis_events",
+                title="List crisis events",
                 description=(
                     "List reputation or crisis events detected for this account's monitored topics - "
                     "check before scaling spend on a brand or topic."
@@ -236,18 +247,21 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="list_watchlist",
+                title="List watchlist",
                 description="List the topics this account is watching, with their alert conditions.",
                 parameters=_schema({}),
                 handler=lambda: c.get_topic_interests(),
             ),
             AgentTool(
                 name="get_api_usage",
+                title="Get API usage",
                 description="Get this API key's usage against its daily limit, so the agent can pace itself.",
                 parameters=_schema({}),
                 handler=lambda: c.get_api_usage(),
             ),
             AgentTool(
                 name="read_data_schema",
+                title="Read the SQL data schema",
                 description=(
                     "List the tables execute_sql can query, with every column's type and meaning, "
                     "the query rules and example queries. Call once before writing SQL."
@@ -257,6 +271,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="execute_sql",
+                title="Run a read-only SQL query",
                 description=(
                     "Run one read-only PostgreSQL SELECT over the account's TrendsAGI data (tables from "
                     "read_data_schema: trends, trend_snapshots, trend_categories, trend_insights, "
@@ -291,6 +306,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="find_capability",
+                title="Find a TrendsAGI capability",
                 description=(
                     "Check whether TrendsAGI can do a task and how: returns the tools that cover it, "
                     "or the page in the TrendsAGI app where the user does it. Use when no other tool "
@@ -309,6 +325,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="add_to_watchlist",
+                title="Add a topic to the watchlist",
                 description=(
                     "Start watching a topic and alert when it crosses a volume threshold or a "
                     "percentage growth. Changes account state."
@@ -327,6 +344,7 @@ class TrendsAGITools:
             ),
             AgentTool(
                 name="update_recommendation",
+                title="Update a recommendation",
                 description=(
                     "Move a recommendation through its workflow (viewed, actioned, dismissed) or "
                     "leave feedback. Provide exactly one of action or feedback. Changes account state."
@@ -373,6 +391,7 @@ class TrendsAGITools:
         return [
             {
                 "name": t.name,
+                **({"title": t.title} if t.title else {}),
                 "description": t.description,
                 "inputSchema": t.parameters,
                 "annotations": {"readOnlyHint": not t.writes, "untrustedContentHint": t.untrusted_output},

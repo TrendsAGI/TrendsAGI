@@ -2,6 +2,20 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.17.2] - 2026-11-02
+
+### Added
+
+- `TrendsAGITools.webmcp()` descriptors carry a `title`, the short label WebMCP
+  browsers show in their tool lists. The titles match the hosted MCP server's.
+
+### Fixed
+
+- [`webmcp/trendsagi-webmcp.js`](webmcp/trendsagi-webmcp.js) returns each tool
+  result as an object. The WebMCP draft JSON-serializes whatever `execute`
+  resolves to, so the JSON text it returned before reached the agent as one
+  escaped string. A cancelled call now also aborts its request.
+
 ## [0.17.1] - 2026-10-27
 
 ### Added

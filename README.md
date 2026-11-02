@@ -137,7 +137,7 @@ To put TrendsAGI tools on **your own** site, register them in your page and run 
 ```python
 tools = TrendsAGITools(TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"]))
 
-tools.webmcp()                     # serve to your page: name, description, inputSchema, annotations
+tools.webmcp()                     # serve to your page: name, title, description, inputSchema, annotations
 tools.call("list_trends", args)    # run the call your page forwards
 ```
 

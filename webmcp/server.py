@@ -30,7 +30,7 @@ def require_user(request: Request) -> None:
 
 @app.get("/trendsagi/tools")
 def list_tools(_: None = Depends(require_user)) -> List[Dict[str, Any]]:
-    # name, description, inputSchema and annotations, ready for registerTool.
+    # name, title, description, inputSchema and annotations, ready for registerTool.
     return tools.webmcp()
 
 
