@@ -1,10 +1,10 @@
 # TrendsAGI
 
 Live trend intelligence for paid media and growth teams, inside Claude, Claude
-Code, Grok and Cursor. Ask what is accelerating in your market, whether a trend
-is still rising before you move budget, which audiences and themes sit behind
-it, and which ad angles to test. Answers come from TrendsAGI's measured trend
-data, read from your own TrendsAGI account.
+Code, Grok, Cursor and Snowflake Cortex Code. Ask what is accelerating in your
+market, whether a trend is still rising before you move budget, which audiences
+and themes sit behind it, and which ad angles to test. Answers come from
+TrendsAGI's measured trend data, read from your own TrendsAGI account.
 
 ## What it contains
 
@@ -12,7 +12,7 @@ data, read from your own TrendsAGI account.
 | --- | --- | --- |
 | Hosted MCP server | `.mcp.json` | `https://api.trendsagi.com/mcp` (Streamable HTTP, OAuth 2.1 sign-in) |
 | Skill | `skills/trendsagi/SKILL.md` | Paid-media workflows and reporting rules for the tools |
-| Manifests | `.claude-plugin/`, `.grok-plugin/`, `.cursor-plugin/` (with `mcp.json`) | Claude, Grok Build / Grok Bot, Cursor |
+| Manifests | `.claude-plugin/`, `.grok-plugin/`, `.cursor-plugin/`, `.cortex-plugin/` | Claude, Grok Build / Grok Bot, Cursor, Snowflake Cortex Code |
 
 No code runs on your machine. The plugin only points your assistant at the
 hosted server and adds a skill that explains when to use each tool.
@@ -32,6 +32,11 @@ All read-only: `list_trends`, `list_trend_categories`, `search_trend_insights`,
   paste `https://api.trendsagi.com/mcp`, then sign in to TrendsAGI.
 - **Grok:** add the TrendsAGI plugin, or add the URL as a remote MCP server.
 - **Cursor:** add `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }`.
+- **Snowflake Cortex Code (CoCo):** `cortex plugin install github:TrendsAGI/TrendsAGI/plugins/trendsagi`,
+  then `/mcp` in a session to sign in. Or add only the server:
+  `cortex mcp add trendsagi https://api.trendsagi.com/mcp --type http`.
+  There is no public Cortex Code MCP directory, so the plugin installs straight
+  from this repository.
 
 Setup guide, plans and example prompts: <https://trendsagi.com/mcp>
 

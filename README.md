@@ -16,7 +16,7 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 | **Cursor Agent SDK** | A ready agent project in [`agent-sdk/`](agent-sdk/): one connection file gives an Agent SDK agent every hosted tool |
 | **Browser agents (WebMCP)** | Signed in to app.trendsagi.com, your browser's agent gets the same tools ([`webmcp/`](webmcp/)) |
 | **Local MCP server** | `trendsagi mcp`, the same tools over stdio |
-| **Plugins** | Claude, Grok and Cursor plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
+| **Plugins** | Claude, Grok, Cursor and Snowflake Cortex Code plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
 | **Ad execution** | Executors that preview, then apply, Google, Meta, TikTok and LinkedIn ad changes from your own infrastructure |
 
 ## Install
@@ -98,6 +98,7 @@ Add the hosted MCP server, sign in to TrendsAGI and approve the connection:
 | ChatGPT | Add a custom connector with the URL below |
 | Grok | Install the TrendsAGI plugin, or add the URL as a remote MCP server |
 | Cursor | `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }` |
+| Snowflake Cortex Code | `cortex mcp add trendsagi https://api.trendsagi.com/mcp --type http`, or `cortex plugin install github:TrendsAGI/TrendsAGI/plugins/trendsagi` |
 | Gemini CLI | `gemini extensions install https://github.com/TrendsAGI/TrendsAGI` |
 
 ```text
