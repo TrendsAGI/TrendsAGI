@@ -17,6 +17,13 @@ TrendsAGI's measured trend data, read from your own TrendsAGI account.
 No code runs on your machine. The plugin only points your assistant at the
 hosted server and adds a skill that explains when to use each tool.
 
+The hosted server also publishes the same paid-media workflow as an Agent Skill
+over MCP (SEP-2640) at `skill://trendsagi/SKILL.md`. An assistant that supports
+the `io.modelcontextprotocol/skills` extension discovers it automatically, so a
+server-side skill update does not need a plugin release. The bundled
+`skills/trendsagi/SKILL.md` remains the fallback for assistants that do not
+support the extension.
+
 ## Tools
 
 All read-only: `list_trends`, `list_trend_categories`, `search_trend_insights`,

@@ -107,6 +107,8 @@ https://api.trendsagi.com/mcp
 
 Then ask *"What is accelerating fastest in Technology this week, and who should I target with it?"* The hosted tools are read-only, and each call counts as one API request. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an API key as `Authorization: Bearer <key>`. Guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
 
+The hosted server also publishes the TrendsAGI paid-media skill over MCP (SEP-2640) at `skill://trendsagi/SKILL.md`. Clients that support the `io.modelcontextprotocol/skills` extension discover it with `skills/list` and load it with `resources/read`; the manifest carries a SHA-256 digest and byte size for every file. Clients without the extension still receive the server instructions and tool descriptions, and the plugin distributions keep a bundled copy of the skill.
+
 ## Build an agent with Cursor Agent SDK
 
 [Agent SDK](https://cursor.com/docs/agent-sdk) defines agents as a folder of Markdown and TypeScript. Add TrendsAGI with one file and the agent gets the hosted MCP server's read-only tools by name:
@@ -207,6 +209,12 @@ Or in any MCP client's JSON config (Claude Desktop, Cursor, VS Code):
 ```json
 { "mcpServers": { "trendsagi": { "command": "trendsagi-mcp", "env": { "TRENDSAGI_API_KEY": "your_api_key" } } } }
 ```
+
+The local server publishes the same skill as the hosted endpoint, at
+`skill://trendsagi/SKILL.md`, and declares the `io.modelcontextprotocol/skills`
+extension. It is read from the installed package, so it stays in step with the
+version of `trendsagi` you installed. Supporting references cover the tool
+surface, paid-media workflow, read-only SQL and error handling.
 
 ## Query with SQL
 
