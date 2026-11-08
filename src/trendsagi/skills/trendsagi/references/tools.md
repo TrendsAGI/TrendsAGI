@@ -15,6 +15,8 @@ schemas in `tools/list` are authoritative for the connected account.
 | `get_trend` | One trend's current snapshot | `trend_id` (required) | Volume, velocity, growth, category. |
 | `get_trend_analytics` | Is the trend rising, flat or fading? | `trend_id` (required), `period` (`24h`, `7d`, `30d`; default `7d`) | Returns a time series. Plan-gated: needs trend analytics. |
 | `get_trend_ai_insights` | Audience, sentiment, themes and marketing angles | `trend_id` (required) | Plan-gated: needs trend insights. Returns `not_found` or null when no insight exists yet. |
+| `get_trend_dossier` | The source-backed story behind a label: subject, timeline, channels, content landscape, brands and products | `trend_id` (required) | Plan-gated: needs insights access. Returns `not_found` when no dossier has been generated yet. Evidence, not a measurement. |
+| `list_web_trends` | Labels found in an external trend list that may not be in the measured table yet | `limit` (1-25; default 10) | Discovery evidence only: no measured volume or velocity. `matched_trend_id` links to a measured trend when one exists. |
 
 ## Account intelligence
 
@@ -50,8 +52,25 @@ schemas in `tools/list` are authoritative for the connected account.
 - Large results are replaced with `result_truncated`, `result_preview` and a
   `hint`. Narrow the request; do not ask for the same result again unchanged.
 
+## Local SDK-only read tools
+
+These exist in the Python SDK's `TrendsAGITools` registry and its local stdio
+server. They are not part of the hosted connection.
+
+| Tool | Use it for | Key arguments | Notes |
+| --- | --- | --- | --- |
+| `get_search_demand` | Relative search-interest series and related queries | `trend_id` (required), `geo` (default `US`) | Interest is a 0-100 index, not absolute search volume. |
+| `get_brand_momentum` | Brands visible in the coverage and their movement | `trend_id` (required), `window` (`24h`, `7d`, `30d`; default `7d`) | Share of coverage, not market share. |
+| `get_trend_creators` | Accounts posting most about the trend | `trend_id` (required) | Posting activity, not influence. |
+| `ask_trend` | A grounded answer about one trend | `trend_id`, `question` | Returns citations; `grounded=false` when evidence is insufficient. |
+| `get_social_evidence` | The stored Social Evidence report | `trend_id` (required) | Free to read; `not_found` when no report exists yet. |
+| `get_social_evidence_credits` | The Social Evidence credit balance | none | Free; does not consume a credit. |
+
 ## Local SDK-only write tools
 
-`add_to_watchlist` and `update_recommendation` exist only in the local Python
-SDK's stdio server when it is started with `--allow-writes`. They are not part
-of the hosted connection and must never be described as available here.
+`add_to_watchlist`, `update_recommendation`, `enrich_trend`,
+`run_social_evidence` and `create_social_evidence_checkout` exist only in the
+local Python SDK's stdio server when it is started with `--allow-writes`. They
+are not part of the hosted connection and must never be described as available
+here. `enrich_trend` and `run_social_evidence` reserve credits; the checkout
+tool only returns a Stripe URL the user must open.

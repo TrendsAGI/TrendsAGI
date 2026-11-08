@@ -2,10 +2,11 @@
 
 A ready-to-run [Cursor Agent SDK](https://cursor.com/docs/agent-sdk) project that
 researches rising trends with TrendsAGI. The agent reaches TrendsAGI's hosted MCP
-server through one connection file, so it gets the same 13 read-only tools as Claude,
+server through one connection file, so it gets the same 15 read-only tools as Claude,
 ChatGPT and Cursor: `list_trends`, `get_trend_analytics`, `get_trend_ai_insights`,
-`search_trend_insights`, `list_recommendations`, `list_crisis_events`,
-`list_watchlist`, `execute_sql` and the rest. Nothing to install from TrendsAGI.
+`get_trend_dossier`, `list_web_trends`, `search_trend_insights`,
+`list_recommendations`, `list_crisis_events`, `list_watchlist`, `execute_sql` and
+the rest. Nothing to install from TrendsAGI.
 
 ```text
 agent-sdk/

@@ -2,6 +2,42 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.19.0] - 2026-11-08
+
+### Added
+
+- **Social Evidence.** `get_social_evidence()` reads the stored report for a
+  trend (free), `run_social_evidence()` runs or refreshes it (one credit per
+  run), and `get_social_evidence_credits()` /
+  `create_social_evidence_checkout()` cover the balance and one-time packs.
+  `SocialEvidenceReport` and its section, quality and credit models are
+  exported from `trendsagi.models`.
+- **Deep Dive, dossier and discovery.** `get_trend_dossier()`,
+  `get_trend_discoveries()`, `enrich_trend()`, `get_search_demand()`,
+  `get_brand_momentum()`, `get_trend_creators()` and `ask_trend()` map the
+  on-demand enrichment and grounded-answer endpoints. `get_trends()` accepts
+  `include="dossier"` to attach the compact resolved entity to list rows.
+- **CLI.** `trends dossier`, `trends discoveries`, `trends enrich`,
+  `trends search-demand`, `trends brand-momentum`, `trends creators`,
+  `trends ask`, `trends social-evidence get|run`, and
+  `credits social-evidence` / `credits buy-social-evidence`.
+- **Agent tools.** The local MCP surface adds `get_trend_dossier`,
+  `list_web_trends`, `get_search_demand`, `get_brand_momentum`,
+  `get_trend_creators`, `ask_trend`, `get_social_evidence` and
+  `get_social_evidence_credits`. `enrich_trend`, `run_social_evidence` and
+  `create_social_evidence_checkout` are exposed only with
+  `--allow-writes` because they reserve credits or start a purchase flow.
+- **OpenAPI.** `openapi.json` is regenerated from the current public API
+  catalog, including the Social Evidence, Deep Dive, dossier and discovery
+  endpoints and without the retired n8n connector.
+
+### Changed
+
+- The hosted MCP server keeps its curated 15-tool read-only surface. The new
+  credit-spending tools stay in the local SDK behind `--allow-writes`, and
+  free Social Evidence reads stay in the SDK because a report is trend-scoped
+  and may have been paid for by another customer.
+
 ## [0.18.0] - 2026-11-06
 
 ### Added

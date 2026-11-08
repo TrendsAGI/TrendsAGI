@@ -359,6 +359,175 @@ class TrendsAGITools:
                 ),
                 writes=True,
             ),
+            AgentTool(
+                name="get_trend_dossier",
+                title="Get a trend dossier",
+                description=(
+                    "Read the source-backed dossier for a trend: the resolved subject, evidence "
+                    "coverage, dated timeline, channels, content landscape, brands and products. "
+                    "Returns not_found when no dossier exists yet."
+                ),
+                parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
+                handler=lambda trend_id: c.get_trend_dossier(trend_id),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="list_web_trends",
+                title="List external web trends",
+                description=(
+                    "List labels found in an external trend list, deduplicated and cached. "
+                    "Discovery evidence only: no measured volume or velocity. matched_trend_id "
+                    "points at the measured trend when one already exists."
+                ),
+                parameters=_schema({"limit": _limit(default=20)}),
+                handler=lambda limit=20: c.get_trend_discoveries(limit=limit),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="get_search_demand",
+                title="Get search demand",
+                description=(
+                    "Read the stored relative search-interest series and related queries for a "
+                    "trend. Interest is a 0-100 index, not an absolute search volume."
+                ),
+                parameters=_schema({
+                    "trend_id": {"type": "integer", "minimum": 1},
+                    "geo": {"type": "string", "description": "Two-letter market code. Default: US."},
+                }, ["trend_id"]),
+                handler=lambda trend_id, geo="US": c.get_search_demand(trend_id, geo=geo),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="get_brand_momentum",
+                title="Get brand momentum",
+                description=(
+                    "Read which brands are visible in a trend's coverage and how their share of "
+                    "that coverage moved. Share of coverage, not market share."
+                ),
+                parameters=_schema({
+                    "trend_id": {"type": "integer", "minimum": 1},
+                    "window": {"type": "string", "enum": ["24h", "7d", "30d"], "default": "7d"},
+                }, ["trend_id"]),
+                handler=lambda trend_id, window="7d": c.get_brand_momentum(trend_id, window=window),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="get_trend_creators",
+                title="Get trend creators",
+                description=(
+                    "List the accounts posting most about a trend. Posting activity, not influence."
+                ),
+                parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
+                handler=lambda trend_id: c.get_trend_creators(trend_id),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="ask_trend",
+                title="Ask about a trend",
+                description=(
+                    "Ask a question about one trend. The answer is grounded in the evidence "
+                    "TrendsAGI captured for that trend and returns numbered citations. When the "
+                    "evidence is insufficient, grounded is false and the response says why."
+                ),
+                parameters=_schema({
+                    "trend_id": {"type": "integer", "minimum": 1},
+                    "question": {"type": "string", "maxLength": 500},
+                }, ["trend_id", "question"]),
+                handler=lambda trend_id, question: c.ask_trend(trend_id, question),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="get_social_evidence",
+                title="Get Social Evidence",
+                description=(
+                    "Read the stored Social Evidence report for a trend: posts, transcripts, "
+                    "creators, comments, ads, sponsors, hashtags and brand mentions. Reading is "
+                    "free; returns not_found when no report exists yet."
+                ),
+                parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
+                handler=lambda trend_id: c.get_social_evidence(trend_id),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="get_social_evidence_credits",
+                title="Get Social Evidence credits",
+                description=(
+                    "Read the account's Social Evidence credit balance, included allowance and "
+                    "available one-time packs. Free; does not consume a credit."
+                ),
+                parameters=_schema({}),
+                handler=lambda: c.get_social_evidence_credits(),
+            ),
+            AgentTool(
+                name="enrich_trend",
+                title="Run a Deep Dive",
+                description=(
+                    "Run an on-demand Deep Dive for a trend and return search demand, ads or "
+                    "creator evidence. Reserves Deep Dive credits only when usable live data is "
+                    "produced. Changes account credit state."
+                ),
+                parameters=_schema({
+                    "trend_id": {"type": "integer", "minimum": 1},
+                    "modules": {
+                        "type": "array",
+                        "items": {"type": "string", "enum": ["search_demand", "ads", "creators"]},
+                        "description": "Modules to build; omit for the trend's default set.",
+                    },
+                    "region": {"type": "string", "description": "Two-letter market code. Default: US."},
+                    "force": {"type": "boolean", "default": False},
+                    "request_id": {"type": "string", "description": "Optional idempotency key."},
+                }, ["trend_id"]),
+                handler=lambda trend_id, modules=None, region="US", force=False, request_id=None: c.enrich_trend(
+                    trend_id, modules=modules, region=region, force=force, request_id=request_id
+                ),
+                writes=True,
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="run_social_evidence",
+                title="Run Social Evidence",
+                description=(
+                    "Run or refresh Social Evidence for a trend. Reserves one Social Evidence "
+                    "credit per run, cache hit or miss, and can take 30-50 seconds. Changes "
+                    "account credit state."
+                ),
+                parameters=_schema({
+                    "trend_id": {"type": "integer", "minimum": 1},
+                    "modules": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": ["posts", "transcripts", "creators", "comments", "ads", "sponsors", "hashtags", "mentions"],
+                        },
+                        "description": "Modules to build; omit for the full report.",
+                    },
+                    "region": {"type": "string", "description": "Two-letter market code. Default: US."},
+                    "force": {"type": "boolean", "default": False},
+                    "request_id": {"type": "string", "description": "Optional idempotency key."},
+                }, ["trend_id"]),
+                handler=lambda trend_id, modules=None, region="US", force=False, request_id=None: c.run_social_evidence(
+                    trend_id, modules=modules, region=region, force=force, request_id=request_id
+                ),
+                writes=True,
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="create_social_evidence_checkout",
+                title="Buy Social Evidence credits",
+                description=(
+                    "Create a Stripe Checkout session for a Social Evidence credit pack. "
+                    "Returns a checkout URL the user must open to pay."
+                ),
+                parameters=_schema({
+                    "pack_id": {"type": "string", "description": "Pack id from get_social_evidence_credits."},
+                    "success_url": {"type": "string"},
+                    "cancel_url": {"type": "string"},
+                }, ["pack_id"]),
+                handler=lambda pack_id, success_url=None, cancel_url=None: c.create_social_evidence_checkout(
+                    pack_id, success_url=success_url, cancel_url=cancel_url
+                ),
+                writes=True,
+            ),
         ]
 
     # -- wire formats ----------------------------------------------------

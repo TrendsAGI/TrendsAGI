@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "trendsagi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Read live trend data from your TrendsAGI account - trending topics, trajectories, AI insights and recommendations - to inform paid media targeting and timing.",
   "author": {
     "name": "TrendsAGI",
@@ -22,7 +22,7 @@
       "interface": {
         "displayName": "TrendsAGI",
         "shortDescription": "Trend data for paid media",
-        "longDescription": "TrendsAGI connects ChatGPT to your TrendsAGI account so you can ask about what is trending and decide what to target and when.\n\nWhat you can do:\n- See which topics are trending now in a category, or around a brand, product or competitor, with measured volume, velocity and growth.\n- Check whether a trend is still rising, flat or fading over the last 24 hours, 7 days or 30 days before deciding on campaign timing or budget.\n- Read the AI insight for a trend: summary, key themes, sentiment, audience and suggested marketing angles for ad copy and creative briefs.\n- Search insights by theme to find related trends.\n- Review the recommendations TrendsAGI generated for your account, each with a decision brief and its evidence.\n- Check reputation or crisis events on your monitored topics, your watchlist and your API usage.\n\nWho it is for: paid media, growth and marketing teams who already use TrendsAGI.\n\nLimits: all tools are read-only - the plugin cannot change your account, create campaigns or spend money. Calls count toward your TrendsAGI plan's API limits, and some data (insight search, recommendations, crisis monitoring) depends on your plan. TrendsAGI measures trend volume and growth; it does not measure ad performance or conversion lift. A recommendation's confidence score reflects how complete its evidence is, not the chance that it will succeed.\n\nYou sign in with your TrendsAGI account and approve the connection. It appears under Profile > API Keys in TrendsAGI, where you can revoke it at any time.",
+        "longDescription": "TrendsAGI connects ChatGPT to your TrendsAGI account so you can ask about what is trending and decide what to target and when.\n\nWhat you can do:\n- See which topics are trending now in a category, or around a brand, product or competitor, with measured volume, velocity and growth.\n- Check whether a trend is still rising, flat or fading over the last 24 hours, 7 days or 30 days before deciding on campaign timing or budget.\n- Read the AI insight for a trend: summary, key themes, sentiment, audience and suggested marketing angles for ad copy and creative briefs.\n- Read the source-backed dossier behind a trend: resolved subject, dated timeline, channels, content landscape, brands and products, and labels found in an external trend list that are not measured yet.\n- Search insights by theme to find related trends.\n- Review the recommendations TrendsAGI generated for your account, each with a decision brief and its evidence.\n- Check reputation or crisis events on your monitored topics, your watchlist and your API usage.\n\nWho it is for: paid media, growth and marketing teams who already use TrendsAGI.\n\nLimits: all tools are read-only - the plugin cannot change your account, create campaigns or spend money. Calls count toward your TrendsAGI plan's API limits, and some data (insight search, recommendations, crisis monitoring) depends on your plan. TrendsAGI measures trend volume and growth; it does not measure ad performance or conversion lift. A recommendation's confidence score reflects how complete its evidence is, not the chance that it will succeed.\n\nYou sign in with your TrendsAGI account and approve the connection. It appears under Profile > API Keys in TrendsAGI, where you can revoke it at any time.",
         "developerName": "TrendsAGI",
         "category": "Productivity",
         "capabilities": [
@@ -66,6 +66,12 @@
               "prompt": "What audience and ad angles does TrendsAGI's insight suggest for the OpenAI trend?",
               "tools_triggered": "list_trends, get_trend_ai_insights",
               "expected_behavior": "Finds the OpenAI trend, calls get_trend_ai_insights and summarises the audience, sentiment, key themes and marketing angles from the stored insight without inventing details."
+            },
+            {
+              "description": "Read the dossier behind a trend",
+              "prompt": "What is the story behind the OpenAI trend on TrendsAGI?",
+              "tools_triggered": "list_trends, get_trend_dossier",
+              "expected_behavior": "Finds the trend with list_trends, calls get_trend_dossier, and summarises the resolved subject, dated timeline, channels, brands and products from the returned dossier. Says so when no dossier exists yet."
             },
             {
               "description": "Review account recommendations and watchlist",

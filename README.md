@@ -5,7 +5,7 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/trendsagi.svg)](https://pypi.org/project/trendsagi/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Real-time trend intelligence for your code and your AI agents: what is trending on social platforms right now, with measured volume, velocity and growth, AI insights on why each topic is moving, evidence-backed recommendations, crisis alerts and watchlists. Paid media and growth teams use it to target what is rising, time spend to the trend curve and brief creative on measured demand.
+Real-time trend intelligence for your code and your AI agents: what is trending on social platforms right now, with measured volume, velocity and growth, AI insights on why each topic is moving, source-backed dossiers, on-demand Deep Dives, post-level Social Evidence, evidence-backed recommendations, crisis alerts and watchlists. Paid media and growth teams use it to target what is rising, time spend to the trend curve and brief creative on measured demand.
 
 | | |
 | --- | --- |
@@ -60,6 +60,10 @@ if insight:
 ```bash
 trendsagi login                  # paste an API key; saved to ~/.config/trendsagi/config.json
 trendsagi trends list --category Technology --sort velocity --limit 10
+trendsagi trends dossier 123                    # source-backed story, timeline and channels
+trendsagi trends enrich 123 --module search_demand
+trendsagi trends social-evidence run 123 --module posts
+trendsagi credits social-evidence
 trendsagi insights get 123       # audience, sentiment and marketing angles
 trendsagi sql "SELECT category, count(*) FROM trends GROUP BY 1 ORDER BY 2 DESC"
 trendsagi recommendations list --priority high
@@ -169,7 +173,7 @@ One registry, every format. The tools are **read-only by default**; `add_to_watc
 | `read_data_schema` / `execute_sql` | Read-only SQL for questions that need filters, joins or aggregation |
 | `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |
 
-`enrich_trend`, `run_social_evidence` and `create_social_evidence_checkout` are credit-spending tools; they appear only with `allow_writes=True` and never in the read-only default.
+`enrich_trend`, `run_social_evidence` and `create_social_evidence_checkout` spend credits or start a purchase flow, so they appear only with `allow_writes=True` (or `trendsagi mcp --allow-writes`).
 
 ### JavaScript and TypeScript
 

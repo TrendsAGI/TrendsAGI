@@ -27,8 +27,10 @@ support the extension.
 ## Tools
 
 All read-only: `list_trends`, `list_trend_categories`, `search_trend_insights`,
-`get_trend`, `get_trend_ai_insights`, `get_trend_analytics`,
-`list_recommendations`, `list_crisis_events`, `list_watchlist`, `get_api_usage`.
+`get_trend`, `get_trend_ai_insights`, `get_trend_dossier`, `list_web_trends`,
+`get_trend_analytics`, `list_recommendations`, `list_crisis_events`,
+`list_watchlist`, `get_api_usage`, `read_data_schema`, `execute_sql` and
+`find_capability`.
 
 ## Install
 
