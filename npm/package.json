@@ -1,6 +1,6 @@
 {
   "name": "trendsagi",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "description": "TrendsAGI CLI: real-time trending topics with measured volume, velocity and growth, AI insights, recommendations, crisis alerts and read-only SQL from your terminal. For paid media, growth and AI agent workflows.",
   "keywords": [
     "trendsagi",
