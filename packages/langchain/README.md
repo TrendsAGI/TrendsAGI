@@ -12,6 +12,14 @@ npm install @trendsagi/langchain @trendsagi/core @langchain/openai zod
 
 - `list_trends`
 - `get_trend_insights`
+- `get_trend_dossier`
+- `list_web_trends`
+- `get_search_demand`
+- `get_brand_momentum`
+- `get_trend_creators`
+- `ask_trend`
+- `get_social_evidence`
+- `get_social_evidence_credits`
 - `list_recommendations`
 - `preview_ads`
 

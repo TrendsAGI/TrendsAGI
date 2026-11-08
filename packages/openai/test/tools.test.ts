@@ -14,16 +14,27 @@ function stubClient() {
     return { method, args };
   };
   const client = {
-    trends: { list: record("trends.list"), get: record("trends.get") },
+    trends: {
+      list: record("trends.list"),
+      get: record("trends.get"),
+      dossier: record("trends.dossier"),
+      discoveries: record("trends.discoveries"),
+      searchDemand: record("trends.searchDemand"),
+      brandMomentum: record("trends.brandMomentum"),
+      creators: record("trends.creators"),
+      ask: record("trends.ask"),
+      socialEvidence: record("trends.socialEvidence"),
+    },
     insights: { get: record("insights.get") },
     recommendations: { list: record("recommendations.list") },
     ads: { preview: record("ads.preview") },
+    credits: { socialEvidence: record("credits.socialEvidence") },
   } as unknown as TrendsAGI;
   return { client, calls };
 }
 
 describe("createOpenAITools", () => {
-  it("returns the five TrendsAGI tool names", () => {
+  it("returns the TrendsAGI tool names", () => {
     const { client } = stubClient();
     const tools = createOpenAITools(client);
     expect(tools.map((tool) => ("name" in tool ? tool.name : tool.function.name))).toEqual([
@@ -109,6 +120,31 @@ describe("runTrendsAGITool", () => {
       "google_ads",
       { trend_id: 9, apply_level: "ad_group", strict_safety: true },
     ]);
+  });
+
+  it("dispatches dossier, discovery, deep dive and social evidence tools", async () => {
+    const { client, calls } = stubClient();
+    await runTrendsAGITool(client, "trendsagi_get_trend_dossier", { trend_id: 7 });
+    await runTrendsAGITool(client, "trendsagi_list_web_trends", { limit: 5 });
+    await runTrendsAGITool(client, "trendsagi_get_search_demand", { trend_id: 7, geo: "UK" });
+    await runTrendsAGITool(client, "trendsagi_get_brand_momentum", { trend_id: 7, window: "30d" });
+    await runTrendsAGITool(client, "trendsagi_get_trend_creators", { trend_id: 7 });
+    await runTrendsAGITool(client, "trendsagi_ask_trend", { trend_id: 7, question: "What now?" });
+    await runTrendsAGITool(client, "trendsagi_get_social_evidence", { trend_id: 7 });
+    await runTrendsAGITool(client, "trendsagi_get_social_evidence_credits", {});
+    expect(calls.map((call) => call.method)).toEqual([
+      "trends.dossier",
+      "trends.discoveries",
+      "trends.searchDemand",
+      "trends.brandMomentum",
+      "trends.creators",
+      "trends.ask",
+      "trends.socialEvidence",
+      "credits.socialEvidence",
+    ]);
+    expect(calls[1].args).toEqual([{ limit: 5 }]);
+    expect(calls[2].args).toEqual([7, { geo: "UK" }]);
+    expect(calls[5].args).toEqual([7, "What now?"]);
   });
 
   it("returns an availability marker when no insight exists", async () => {

@@ -52,6 +52,19 @@ await trendsagi.trends.get(123);
 await trendsagi.trends.analytics(123, { period: "7d" });
 await trendsagi.trends.categories();
 await trendsagi.trends.autocomplete("skin");
+await trendsagi.trends.dossier(123);
+await trendsagi.trends.discoveries({ limit: 20 });
+await trendsagi.trends.enrich(123, { modules: ["search_demand"], region: "US" });
+await trendsagi.trends.searchDemand(123, { geo: "US" });
+await trendsagi.trends.brandMomentum(123, { window: "7d" });
+await trendsagi.trends.creators(123);
+await trendsagi.trends.ask(123, "What should we do next?");
+await trendsagi.trends.socialEvidence(123);
+await trendsagi.trends.runSocialEvidence(123, { modules: ["posts"] });
+
+// Credits
+await trendsagi.credits.socialEvidence();
+await trendsagi.credits.buySocialEvidence("social_evidence_10");
 
 // AI insights (read-only cached result)
 await trendsagi.insights.get(123);

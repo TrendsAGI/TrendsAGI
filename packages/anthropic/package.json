@@ -1,6 +1,6 @@
 {
   "name": "@trendsagi/anthropic",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Anthropic tool definitions for TrendsAGI: live trends, AI insights, recommendations and ads previews as Claude tool schemas, with a dispatcher.",
   "keywords": [
     "trendsagi",
@@ -54,7 +54,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@trendsagi/core": "^0.1.0"
+    "@trendsagi/core": "^0.2.0"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": ">=0.30"

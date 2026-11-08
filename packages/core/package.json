@@ -1,6 +1,6 @@
 {
   "name": "@trendsagi/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Typed JavaScript/TypeScript client for the TrendsAGI REST API: live trend volume, velocity, AI insights, recommendations and ads previews.",
   "keywords": [
     "trendsagi",

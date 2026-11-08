@@ -159,11 +159,17 @@ One registry, every format. The tools are **read-only by default**; `add_to_watc
 | `search_trend_insights` | Trends and insights matching a theme |
 | `get_trend` / `get_trend_analytics` | One trend and its volume time series |
 | `get_trend_ai_insights` | Summary, key themes, sentiment, audience, marketing angles |
+| `get_trend_dossier` / `list_web_trends` | The source-backed dossier, or labels from an external trend list |
+| `get_search_demand` / `get_brand_momentum` / `get_trend_creators` | Search interest, brand coverage and the accounts posting most |
+| `ask_trend` | A grounded answer about one trend, with citations |
+| `get_social_evidence` / `get_social_evidence_credits` | Post-level Social Evidence and the credit balance |
 | `list_recommendations` | Evidence-backed actions with a decision brief |
 | `list_crisis_events` | Reputation and crisis events for monitored topics |
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
 | `read_data_schema` / `execute_sql` | Read-only SQL for questions that need filters, joins or aggregation |
 | `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |
+
+`enrich_trend`, `run_social_evidence` and `create_social_evidence_checkout` are credit-spending tools; they appear only with `allow_writes=True` and never in the read-only default.
 
 ### JavaScript and TypeScript
 
@@ -194,7 +200,7 @@ console.log(trends.map((trend) => trend.name));
 | `@trendsagi/ai` | `createTrendsAGITools(client)` using the Vercel AI SDK `tool()` with `inputSchema` |
 | `@trendsagi/anthropic` | `createAnthropicTools(client)`, `runAnthropicTool(client, name, input)` |
 
-`@trendsagi/*` adapters expose `list_trends`, `get_trend`, `get_trend_insights`, `list_recommendations` and `preview_ads` (the exact names differ per framework). `preview_ads` only previews targeting changes; applying them stays in the app.
+`@trendsagi/*` adapters expose `list_trends`, `get_trend`, `get_trend_insights`, `get_trend_dossier`, `list_web_trends`, `get_search_demand`, `get_brand_momentum`, `get_trend_creators`, `ask_trend`, `get_social_evidence`, `get_social_evidence_credits`, `list_recommendations` and `preview_ads` (the exact names differ per framework). `preview_ads` only previews targeting changes; applying them stays in the app.
 
 ### OpenAI
 

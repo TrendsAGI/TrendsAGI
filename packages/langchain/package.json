@@ -1,6 +1,6 @@
 {
   "name": "@trendsagi/langchain",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "LangChain tools for TrendsAGI: live trends, AI insights, recommendations and ads previews as typed, tool-calling-ready functions.",
   "keywords": [
     "trendsagi",
@@ -53,7 +53,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@trendsagi/core": "^0.1.0"
+    "@trendsagi/core": "^0.2.0"
   },
   "peerDependencies": {
     "@langchain/core": ">=0.3",

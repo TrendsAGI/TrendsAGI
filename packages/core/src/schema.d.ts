@@ -64,6 +64,202 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trends/{trend_id}/dossier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve the source-backed dossier behind a trend label: the resolved subject, evidence coverage, a dated timeline, the
+         * @description Retrieve the source-backed dossier behind a trend label: the resolved subject, evidence coverage, a dated timeline, the channels carrying the conversation, the content landscape, and the brands and products visible in the coverage.
+         *
+         *     A dossier is source-backed evidence, not a measurement: it never invents volume, velocity, CPC or demographics.
+         *
+         *     Returns 404 when no dossier has been generated for the trend yet. A dossier is generated in the background and cached; this GET never starts a generation.
+         *
+         *     Use GET /api/trends?include=dossier to attach the compact resolved entity to every row of the trend list.
+         */
+        get: operations["getTrendDossier"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trends/discoveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List labels found in an external trend list, deduplicated and cached.
+         * @description List labels found in an external trend list, deduplicated and cached. Discovery evidence only: a discovery has no measured volume or velocity, and matched_trend_id points at the measured trend when the same label is already tracked.
+         *
+         *     Discovery rows are not measured trends. Never present a discovery as a TrendsAGI volume, velocity or growth figure.
+         *
+         *     A failed refresh leaves the previous cached list readable rather than returning an empty section.
+         */
+        get: operations["getTrendDiscoveries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trends/{trend_id}/search-demand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve the relative search-interest series and related queries captured for a trend.
+         * @description Retrieve the relative search-interest series and related queries captured for a trend. Interest is indexed 0-100 and is not an absolute search volume.
+         *
+         *     Relative search interest is a 0-100 index, not an absolute search volume.
+         *
+         *     The series is filled by an on-demand Deep Dive; this GET returns the stored result and does not start a provider call.
+         */
+        get: operations["getTrendSearchDemand"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trends/{trend_id}/brand-momentum": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Show which brands are visible in a trend's coverage and how their share of that coverage has moved.
+         * @description Show which brands are visible in a trend's coverage and how their share of that coverage has moved. This is share of coverage in the trend's sources, not market share.
+         *
+         *     Share is the brand's share of the coverage captured for this trend, not its market share.
+         *
+         *     With one capture the response uses snapshot_brands and omits share and delta.
+         */
+        get: operations["getTrendBrandMomentum"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Describe the tables an agent can query with SQL: every column's type and meaning, the query rules, limits and example qu
+         * @description Describe the tables an agent can query with SQL: every column's type and meaning, the query rules, limits and example queries. The hosted MCP server serves the same document as the read_data_schema tool.
+         *
+         *     Tables: trends, trend_snapshots (90 days of readings), trend_categories, trend_insights, watchlist, recommendations and crisis_events. The last three only ever contain your own account's rows.
+         */
+        get: operations["getAgentSchema"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/sql": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run one read-only PostgreSQL SELECT over your TrendsAGI data, for questions that need filtering, joins or aggregation.
+         * @description Run one read-only PostgreSQL SELECT over your TrendsAGI data, for questions that need filtering, joins or aggregation. The hosted MCP server exposes this as the execute_sql tool.
+         *
+         *     Queries are validated before they run: one SELECT, only the documented tables, and common aggregate, window, date/time, string, math, array and jsonb functions. Anything else returns 400 with an error code such as unknown_table or function_not_allowed and a message naming the problem.
+         *
+         *     Each query runs read-only and is cancelled after 5 seconds (error code timeout). A table outside your plan returns 403 plan_required.
+         *
+         *     Each query counts as one API request against your daily limit.
+         */
+        post: operations["executeAgentSql"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tools": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the TrendsAGI agent tools in WebMCP's shape: name, title, description, JSON input schema and annotations (readOnlyH
+         * @description List the TrendsAGI agent tools in WebMCP's shape: name, title, description, JSON input schema and annotations (readOnlyHint, untrustedContentHint). The hosted MCP server, the TrendsAGI app's WebMCP tools and this endpoint all serve the same read-only tools.
+         *
+         *     No sign-in needed: the tool list is the same for every account. Responses are cacheable for 5 minutes.
+         *
+         *     Pass each entry (plus an execute callback) to document.modelContext.registerTool to offer the tool to a browser agent through WebMCP.
+         */
+        get: operations["listAgentTools"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/agent/tools/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run one agent tool by name with its arguments as the JSON body, and get the same result the hosted MCP server's tools/ca
+         * @description Run one agent tool by name with its arguments as the JSON body, and get the same result the hosted MCP server's tools/call returns. The TrendsAGI app's WebMCP tools call this with the signed-in session; an API key works too.
+         *
+         *     A tool that fails still answers 200 with isError true and a JSON text explaining why (invalid_arguments, http_403 with an upgrade hint, http_429 with a wait hint), so an agent can recover.
+         *
+         *     An unknown tool name returns 404 with the list of tools. Arguments that are not a JSON object return 400.
+         *
+         *     With an API key, each call counts as the API request it runs, as on the MCP server. With a browser session (WebMCP), it counts as app use, like the same view in the app.
+         */
+        post: operations["callAgentTool"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/trends/{trend_id}/ai-insights": {
         parameters: {
             query?: never;
@@ -220,6 +416,132 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trends/{trend_id}/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run an on-demand Deep Dive for a trend and return the requested evidence modules.
+         * @description Run an on-demand Deep Dive for a trend and return the requested evidence modules. A Deep Dive reserves credits only when it produces usable live data; a cache hit costs nothing and returns the cached envelope.
+         *
+         *     A 402 response includes a topup prompt with the available packs; credits are reserved before the provider calls and released when no usable data was produced.
+         *
+         *     This endpoint is the on-demand Deep Dive; the GET routes below only read stored results.
+         */
+        post: operations["postTrendEnrich"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trends/{trend_id}/creators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the accounts posting most about a trend, with follower counts and post counts.
+         * @description List the accounts posting most about a trend, with follower counts and post counts. The ranking measures posting activity, not influence.
+         *
+         *     Accounts posting most is not a measure of influence.
+         */
+        get: operations["getTrendCreators"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trends/{trend_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a question about one trend.
+         * @description Ask a question about one trend. The answer is grounded in the evidence TrendsAGI has captured for that trend (insight, dossier, measured snapshots, social evidence and search demand) and returns numbered citations plus the evidence kinds used.
+         *
+         *     When the captured evidence is insufficient, the response says so and grounded is false; it does not invent an answer.
+         *
+         *     Citations may only use the evidence the server returned.
+         */
+        post: operations["postTrendAsk"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trends/{trend_id}/social-evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the stored Social Evidence report for a trend: the posts, transcripts, creators, comments, ads, sponsors, hashtags
+         * @description Read the stored Social Evidence report for a trend: the posts, transcripts, creators, comments, ads, sponsors, hashtags and brand mentions that made the trend rise, with a coverage quality summary.
+         *
+         *     This GET is free; a report is trend-scoped and is shared by every customer who opens the same trend.
+         *
+         *     Returns 404 with {"present": false} when no report exists yet. A section below its minimum sample is returned with present=false and no placeholder rows.
+         */
+        get: operations["getTrendSocialEvidence"];
+        put?: never;
+        /**
+         * Run or refresh Social Evidence for a trend.
+         * @description Run or refresh Social Evidence for a trend. The response is the served report; the run reserves one Social Evidence credit on a cache hit or miss and can take 30-50 seconds.
+         *
+         *     One Social Evidence credit is reserved per run, cache hit or miss.
+         *
+         *     A 402 response includes a topup prompt; a cost guard can pause the run without charging.
+         */
+        post: operations["postTrendSocialEvidence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/social-evidence-credits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the account's Social Evidence credit balance: the included monthly allowance, purchased credits, the available one-
+         * @description Read the account's Social Evidence credit balance: the included monthly allowance, purchased credits, the available one-time packs and the upsell copy shown when the allowance is exhausted.
+         *
+         *     Purchased credits never expire; the included allowance resets on the date in included.resets_at.
+         *
+         *     This endpoint is free and does not consume a credit.
+         */
+        get: operations["getSocialEvidenceCredits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/integrations/ads/providers": {
         parameters: {
             query?: never;
@@ -234,6 +556,54 @@ export interface paths {
         get: operations["getAdsProviders"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/ads/onboarding-platforms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the connect-first onboarding tiles: which ad platforms are released, which reporting adapters have landed rows, and
+         * @description List the connect-first onboarding tiles: which ad platforms are released, which reporting adapters have landed rows, and which platforms qualify, plus the onboarding flow to run.
+         *
+         *     `flow` is `connect_first` only when the campaign view is released and at least one platform qualifies; otherwise it is `legacy`, so a signup is never blocked behind a connect step it cannot complete.
+         *
+         *     `has_reporting_rows` and `qualifies` describe the reporting adapter, not the caller's own connection state.
+         */
+        get: operations["getAdsOnboardingPlatforms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/ads/{platform}/sync-now": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue an immediate sync for one connected ads platform instead of waiting for the nightly pass.
+         * @description Queue an immediate sync for one connected ads platform instead of waiting for the nightly pass. Repeating the call inside the rate window returns the request already queued.
+         *
+         *     202 means a sync was queued; 200 with `deduplicated` true means one is already inside the ten-minute window.
+         *
+         *     404 means the platform is not connected for this account; connect it before syncing.
+         */
+        post: operations["postAdsSyncNow"];
         delete?: never;
         options?: never;
         head?: never;
@@ -822,6 +1192,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/integrations/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the connector IDs currently released for the catalog.
+         * @description List the connector IDs currently released for the catalog. Use this before rendering connector choices or attempting a connector flow so administrators can retire a connector without a deploy.
+         *
+         *     The response lists connector IDs, not provider readiness. Use `GET /api/integrations/ads/providers` for ads OAuth configuration and connection state.
+         *
+         *     An administrator can hide every connector; an empty array is a deliberate catalog state, not an error.
+         */
+        get: operations["getIntegrationAvailability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/integrations/shopify/status": {
         parameters: {
             query?: never;
@@ -984,6 +1378,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/integrations/meta-capi/resources/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh the Meta CAPI ad accounts and pixels available to the connected token, then return the updated connector status.
+         * @description Refresh the Meta CAPI ad accounts and pixels available to the connected token, then return the updated connector status.
+         *
+         *     Call this after granting the TrendsAGI app access to a new Meta ad account or pixel.
+         *
+         *     If Meta rejects the read, the response includes `assets_fetch_error` and keeps the last known assets.
+         */
+        post: operations["postMetaCapiResourcesRefresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/integrations/meta-capi/push": {
         parameters: {
             query?: never;
@@ -1078,6 +1496,30 @@ export interface paths {
          */
         put: operations["putRedditAdsSelection"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/integrations/reddit-ads/resources/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh the Reddit Ads businesses, ad accounts, and pixels available to the connected token, then return the updated con
+         * @description Refresh the Reddit Ads businesses, ad accounts, and pixels available to the connected token, then return the updated connector status.
+         *
+         *     Call this after adding a business, ad account, or pixel in Reddit Ads Manager.
+         *
+         *     If Reddit rejects the read, the response includes `assets_fetch_error` and keeps the last known assets.
+         */
+        post: operations["postRedditAdsResourcesRefresh"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1388,146 +1830,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/integrations/n8n/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Check n8n connector readiness, connection status, and saved workflow selection.
-         * @description Check n8n connector readiness, connection status, and saved workflow selection.
-         */
-        get: operations["getN8nStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/integrations/n8n/connect": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Connect n8n by storing API key and default workflow routing metadata.
-         * @description Connect n8n by storing API key and default workflow routing metadata.
-         */
-        post: operations["postN8nConnect"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/integrations/n8n/workflows": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List workflows available from the connected n8n instance.
-         * @description List workflows available from the connected n8n instance.
-         */
-        get: operations["getN8nWorkflows"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/integrations/n8n/workflows/{workflow_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get details for one n8n workflow.
-         * @description Get details for one n8n workflow.
-         */
-        get: operations["getN8nWorkflowDetails"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/integrations/n8n/selection": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * Save n8n workflow selection and delivery defaults.
-         * @description Save n8n workflow selection and delivery defaults.
-         */
-        put: operations["putN8nSelection"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/integrations/n8n/push": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Push a payload into the configured n8n workflow/webhook destination.
-         * @description Push a payload into the configured n8n workflow/webhook destination.
-         */
-        post: operations["postN8nPush"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/integrations/n8n/disconnect": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Disconnect n8n integration and clear saved connector credentials.
-         * @description Disconnect n8n integration and clear saved connector credentials.
-         */
-        post: operations["postN8nDisconnect"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/integrations/delivery/health": {
         parameters: {
             query?: never;
@@ -1707,7 +2009,7 @@ export interface paths {
          * Subscribe to measured velocity or category events via webhook.
          * @description Subscribe to measured velocity or category events via webhook. Each delivery includes `X-Webhook-Signature`, a lowercase hexadecimal HMAC-SHA256 over the exact raw JSON request body.
          *
-         *     Supported Platforms: Works with AWS Lambda, Google Cloud Functions, n8n, Slack, Discord, Microsoft Teams, PagerDuty, Datadog, Shopify, Salesforce, and any system that accepts POST requests.
+         *     Supported Platforms: Works with AWS Lambda, Google Cloud Functions, Slack, Discord, Microsoft Teams, PagerDuty, Datadog, Shopify, Salesforce, and any system that accepts POST requests.
          *
          *     Only trend_velocity and trend_category have production event sources. Other legacy trigger names are rejected rather than saved as inert subscriptions.
          *
@@ -2094,6 +2396,8 @@ export interface operations {
                 limit?: number;
                 /** @description Optional. Zero-based pagination offset. Default: 0. */
                 offset?: number;
+                /** @description Optional. Comma-separated attachments; use 'dossier' to add the compact resolved entity to each row. */
+                include?: string;
             };
             header?: never;
             path?: never;
@@ -2207,6 +2511,448 @@ export interface operations {
                      *       ],
                      *       "velocity_per_hour": 1100,
                      *       "velocity_trend": "increasing"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getTrendDossier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "trend_id": 123,
+                     *       "status": "complete",
+                     *       "captured_at": "2026-11-08T09:00:00Z",
+                     *       "entity": {
+                     *         "subject_identified": true,
+                     *         "subject": "Example subject",
+                     *         "subject_type": "organization",
+                     *         "definition": "What the label refers to.",
+                     *         "confidence": 0.86
+                     *       },
+                     *       "coverage": {
+                     *         "status": "strong",
+                     *         "source_count": 12,
+                     *         "domain_count": 9,
+                     *         "dated_count": 7
+                     *       },
+                     *       "timeline": [
+                     *         {
+                     *           "at": "2026-11-06",
+                     *           "headline": "A dated development",
+                     *           "source_url": "https://example.com/story"
+                     *         }
+                     *       ],
+                     *       "channels": [
+                     *         {
+                     *           "platform": "reddit",
+                     *           "name": "r/example",
+                     *           "url": "https://www.reddit.com/r/example/"
+                     *         }
+                     *       ],
+                     *       "brands": [],
+                     *       "products": [],
+                     *       "delta": {
+                     *         "new_events": [],
+                     *         "new_channels": [],
+                     *         "new_brands": []
+                     *       }
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getTrendDiscoveries: {
+        parameters: {
+            query?: {
+                /** @description Optional. Maximum discoveries to return, 1-200. Default: 50. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "discoveries": [
+                     *         {
+                     *           "source": "neteye",
+                     *           "region": "US",
+                     *           "label": "Example label",
+                     *           "rank": 1,
+                     *           "first_seen_at": "2026-11-08T08:00:00Z",
+                     *           "last_seen_at": "2026-11-08T09:00:00Z",
+                     *           "seen_count": 6,
+                     *           "matched_trend_id": 123,
+                     *           "matched_name": "Example label"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getTrendSearchDemand: {
+        parameters: {
+            query?: {
+                /** @description Optional. Two-letter market code. Default: US. */
+                geo?: string;
+            };
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "geo": "US",
+                     *       "query": "example query",
+                     *       "label": "Example label",
+                     *       "series": [
+                     *         {
+                     *           "captured_at": "2026-11-01T00:00:00Z",
+                     *           "interest": 72
+                     *         }
+                     *       ],
+                     *       "related": [
+                     *         {
+                     *           "query": "example related query",
+                     *           "kind": "rising",
+                     *           "score": 80
+                     *         }
+                     *       ],
+                     *       "divergence": "aligned"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getTrendBrandMomentum: {
+        parameters: {
+            query?: {
+                /** @description Optional. Comparison window: '24h', '7d' or '30d'. Default: 7d. */
+                window?: string;
+            };
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "window": "7d",
+                     *       "captures": 3,
+                     *       "label": "Example label",
+                     *       "brands": [
+                     *         {
+                     *           "name": "Example brand",
+                     *           "mentions": 12,
+                     *           "share": 0.42,
+                     *           "sentiment": "positive",
+                     *           "delta": 0.08,
+                     *           "sparkline": [
+                     *             4,
+                     *             7,
+                     *             12
+                     *           ]
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getAgentSchema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "dialect": "PostgreSQL",
+                     *       "limits": {
+                     *         "max_query_chars": 10000,
+                     *         "default_max_rows": 100,
+                     *         "max_rows": 1000,
+                     *         "timeout_seconds": 5
+                     *       },
+                     *       "tables": [
+                     *         {
+                     *           "name": "trends",
+                     *           "description": "One row per trending topic TrendsAGI has seen on social platforms...",
+                     *           "columns": [
+                     *             {
+                     *               "name": "volume",
+                     *               "type": "integer",
+                     *               "description": "Newest measured volume. NULL means not measured, never zero."
+                     *             }
+                     *           ]
+                     *         },
+                     *         {
+                     *           "name": "recommendations",
+                     *           "requires": "A plan with recommendations.",
+                     *           "columns": []
+                     *         }
+                     *       ],
+                     *       "examples": [
+                     *         {
+                     *           "question": "Which topics are rising fastest right now?",
+                     *           "sql": "SELECT id, name, volume, growth_pct FROM trends WHERE ..."
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    executeAgentSql: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The query. */
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Required. One SELECT (WITH ... SELECT is fine) over the tables from /api/agent/schema. At most 10,000 characters. */
+                    query: string;
+                    /** @description Optional. Rows to return, 1 to 1000. Default: 100. */
+                    max_rows?: number;
+                    /** @description Optional. Stop adding rows once the encoded rows reach this size. Default and maximum: 1 MB. */
+                    max_result_bytes?: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "columns": [
+                     *         {
+                     *           "name": "category",
+                     *           "type": "text"
+                     *         },
+                     *         {
+                     *           "name": "trends",
+                     *           "type": "int8"
+                     *         },
+                     *         {
+                     *           "name": "avg_growth_pct",
+                     *           "type": "numeric"
+                     *         }
+                     *       ],
+                     *       "rows": [
+                     *         [
+                     *           "Sports",
+                     *           41,
+                     *           38.2
+                     *         ],
+                     *         [
+                     *           "Technology",
+                     *           57,
+                     *           21.7
+                     *         ]
+                     *       ],
+                     *       "row_count": 2,
+                     *       "truncated": false,
+                     *       "tables": [
+                     *         "trends"
+                     *       ],
+                     *       "elapsed_ms": 412
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    listAgentTools: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "instructions": "These tools read the signed-in user's TrendsAGI account...",
+                     *       "tools": [
+                     *         {
+                     *           "name": "list_trends",
+                     *           "title": "List trending topics",
+                     *           "description": "List topics trending now on social platforms with measured volume, velocity and growth...",
+                     *           "inputSchema": {
+                     *             "type": "object",
+                     *             "properties": {
+                     *               "category": {
+                     *                 "type": "string"
+                     *               },
+                     *               "sort_by": {
+                     *                 "type": "string",
+                     *                 "enum": [
+                     *                   "velocity",
+                     *                   "growth",
+                     *                   "volume",
+                     *                   "timestamp",
+                     *                   "name"
+                     *                 ],
+                     *                 "default": "velocity"
+                     *               },
+                     *               "limit": {
+                     *                 "type": "integer",
+                     *                 "minimum": 1,
+                     *                 "maximum": 25,
+                     *                 "default": 10
+                     *               }
+                     *             },
+                     *             "required": [],
+                     *             "additionalProperties": false
+                     *           },
+                     *           "annotations": {
+                     *             "readOnlyHint": true,
+                     *             "untrustedContentHint": true
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    callAgentTool: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A tool name from GET /api/agent/tools, e.g. list_trends. */
+                name: string;
+            };
+            cookie?: never;
+        };
+        /** @description The tool's arguments, matching its inputSchema. Send {} for a tool without arguments. */
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description For example {"category": "Technology", "limit": 5} for list_trends. */
+                    "(tool arguments)"?: Record<string, never>;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "content": [
+                     *         {
+                     *           "type": "text",
+                     *           "text": "{\"trends\":[{\"id\":123,\"name\":\"#AIUpdate\",\"volume\":55200}]}"
+                     *         }
+                     *       ],
+                     *       "isError": false
                      *     }
                      */
                     "application/json": Record<string, never>;
@@ -2504,6 +3250,334 @@ export interface operations {
             429: components["responses"]["RateLimited"];
         };
     };
+    postTrendEnrich: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        /** @description Modules to build. Omit them to use the trend's default module set. */
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description Optional. Any of: search_demand, ads, creators. */
+                    modules?: string[];
+                    /** @description Optional. Two-letter market code. Default: US. */
+                    region?: string;
+                    /** @description Optional. Rebuild a cached module instead of serving it. */
+                    force?: boolean;
+                    /** @description Optional. Idempotency key for the credit reservation. */
+                    request_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "trend_id": 123,
+                     *       "request_id": "1f47d6d0-3e6b-4f0e-9a2f-2f4c1b7a9d10",
+                     *       "status": "complete",
+                     *       "credits_charged": 1,
+                     *       "credits_remaining": {
+                     *         "included": 9,
+                     *         "purchased": 0,
+                     *         "resets_at": "2026-12-01T00:00:00Z"
+                     *       },
+                     *       "search_demand": {
+                     *         "geo": "US",
+                     *         "label": "Example label",
+                     *         "series": [],
+                     *         "related": [],
+                     *         "divergence": "aligned"
+                     *       },
+                     *       "ads": [],
+                     *       "creators": {
+                     *         "trend_id": 123,
+                     *         "label": "Example label",
+                     *         "creators": []
+                     *       }
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getTrendCreators: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "trend_id": 123,
+                     *       "label": "Example label",
+                     *       "creators": [
+                     *         {
+                     *           "screen_name": "examplecreator",
+                     *           "followers_count": 120000,
+                     *           "posts": 4,
+                     *           "latest_post_snippet": "A recent post about the trend.",
+                     *           "profile_url": "https://example.com/creator"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    postTrendAsk: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        /** @description The question to answer. */
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Required. The question about this trend. */
+                    question: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "A grounded answer.",
+                     *       "citations": [
+                     *         {
+                     *           "n": 1,
+                     *           "title": "A source title",
+                     *           "url": "https://example.com/source",
+                     *           "source_type": "dossier"
+                     *         }
+                     *       ],
+                     *       "grounded": true,
+                     *       "evidence": [
+                     *         {
+                     *           "kind": "dossier",
+                     *           "label": "Trend dossier",
+                     *           "count": 1
+                     *         }
+                     *       ],
+                     *       "follow_ups": [
+                     *         "A useful follow-up question"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getTrendSocialEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "trend_id": 123,
+                     *       "status": "complete",
+                     *       "refreshed_at": "2026-11-08T09:00:00Z",
+                     *       "credits_charged": 0,
+                     *       "credits_remaining": {
+                     *         "included": 9,
+                     *         "purchased": 0,
+                     *         "resets_at": "2026-12-01T00:00:00Z"
+                     *       },
+                     *       "sections": {
+                     *         "posts": {
+                     *           "present": true,
+                     *           "sample_size": 24,
+                     *           "items": []
+                     *         }
+                     *       },
+                     *       "quality": {
+                     *         "completeness": "strong",
+                     *         "as_of": "2026-11-08T09:00:00Z",
+                     *         "source_count": 24,
+                     *         "sections_present": 6
+                     *       }
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    postTrendSocialEvidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The signal ID. */
+                trend_id: number;
+            };
+            cookie?: never;
+        };
+        /** @description Report modules and options. */
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description Optional. Any of: posts, transcripts, creators, comments, ads, sponsors, hashtags, mentions. */
+                    modules?: string[];
+                    /** @description Optional. Two-letter market code. Default: US. */
+                    region?: string;
+                    /** @description Optional. Rebuild the report instead of serving the stored one. */
+                    force?: boolean;
+                    /** @description Optional. Idempotency key for the credit reservation. */
+                    request_id?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "trend_id": 123,
+                     *       "status": "complete",
+                     *       "refreshed_at": "2026-11-08T09:00:00Z",
+                     *       "credits_charged": 1,
+                     *       "credits_remaining": {
+                     *         "included": 9,
+                     *         "purchased": 0,
+                     *         "resets_at": "2026-12-01T00:00:00Z"
+                     *       },
+                     *       "sections": {
+                     *         "posts": {
+                     *           "present": true,
+                     *           "sample_size": 24,
+                     *           "items": []
+                     *         }
+                     *       },
+                     *       "quality": {
+                     *         "completeness": "strong",
+                     *         "as_of": "2026-11-08T09:00:00Z",
+                     *         "source_count": 24,
+                     *         "sections_present": 6
+                     *       }
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getSocialEvidenceCredits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "plan": "starter",
+                     *       "included": {
+                     *         "remaining": 9,
+                     *         "total": 10,
+                     *         "resets_at": "2026-12-01T00:00:00Z"
+                     *       },
+                     *       "purchased": {
+                     *         "remaining": 0
+                     *       },
+                     *       "packs": [
+                     *         {
+                     *           "id": "social_evidence_10",
+                     *           "credits": 10,
+                     *           "price": "£4.99",
+                     *           "lookup_key": "trendsagi_social_evidence_10_gbp",
+                     *           "apple_product_id": "com.trendsagi.app.socialevidence.10"
+                     *         }
+                     *       ],
+                     *       "upsell": {
+                     *         "headline": "You have used this month's Social Evidence reports.",
+                     *         "body": "Top up to keep investigating.",
+                     *         "primary_pack": "social_evidence_10",
+                     *         "fallback_copy": "Contact support if you need more."
+                     *       }
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
     getAdsProviders: {
         parameters: {
             query?: never;
@@ -2536,6 +3610,91 @@ export interface operations {
                      *           }
                      *         }
                      *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    getAdsOnboardingPlatforms: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "flow": "connect_first",
+                     *       "campaigns_released": true,
+                     *       "qualifying": [
+                     *         "google_ads",
+                     *         "meta_ads"
+                     *       ],
+                     *       "platforms": [
+                     *         {
+                     *           "platform": "google_ads",
+                     *           "label": "Google Ads",
+                     *           "released": true,
+                     *           "has_reporting_rows": true,
+                     *           "qualifies": true,
+                     *           "slow_first_sync": false,
+                     *           "reporting_only": false,
+                     *           "captures": [
+                     *             "campaigns",
+                     *             "ad groups",
+                     *             "metrics"
+                     *           ]
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    postAdsSyncNow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description google_ads | meta_ads | tiktok_ads | linkedin_ads | microsoft_ads | snapchat_ads | pinterest_ads | reddit_ads */
+                platform: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "request_id": 1842,
+                     *       "platform": "meta_ads",
+                     *       "status": "queued",
+                     *       "phase": "recent",
+                     *       "requested_at": "2026-11-07T09:30:00Z",
+                     *       "deduplicated": false,
+                     *       "retry_after_seconds": 300,
+                     *       "slow_first_sync": false
                      *     }
                      */
                     "application/json": Record<string, never>;
@@ -4110,6 +5269,41 @@ export interface operations {
             429: components["responses"]["RateLimited"];
         };
     };
+    getIntegrationAvailability: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "released": [
+                     *         "slack",
+                     *         "shopify",
+                     *         "meta_capi",
+                     *         "reddit_ads",
+                     *         "bigquery",
+                     *         "google_sheets",
+                     *         "webhook_reactor"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
     getShopifyStatus: {
         parameters: {
             query?: never;
@@ -4408,6 +5602,49 @@ export interface operations {
             429: components["responses"]["RateLimited"];
         };
     };
+    postMetaCapiResourcesRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "configured": true,
+                     *       "is_connected": true,
+                     *       "ad_accounts": [
+                     *         {
+                     *           "account_id": "act_123",
+                     *           "account_name": "Acme",
+                     *           "status": "ACTIVE"
+                     *         }
+                     *       ],
+                     *       "pixels": [
+                     *         {
+                     *           "pixel_id": "1234567890",
+                     *           "pixel_name": "Acme Pixel",
+                     *           "account_id": "act_123"
+                     *         }
+                     *       ],
+                     *       "assets_refreshed_at": "2026-10-25T09:00:00Z"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
     postMetaCapiPush: {
         parameters: {
             query?: never;
@@ -4611,6 +5848,55 @@ export interface operations {
                     /**
                      * @example {
                      *       "success": true
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    postRedditAdsResourcesRefresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "configured": true,
+                     *       "is_connected": true,
+                     *       "businesses": [
+                     *         {
+                     *           "business_id": "biz_123",
+                     *           "name": "Acme"
+                     *         }
+                     *       ],
+                     *       "ad_accounts": [
+                     *         {
+                     *           "account_id": "acc_123",
+                     *           "account_name": "Acme Ads",
+                     *           "business_id": "biz_123"
+                     *         }
+                     *       ],
+                     *       "pixels": [
+                     *         {
+                     *           "pixel_id": "px_123",
+                     *           "pixel_name": "Acme Pixel",
+                     *           "account_id": "acc_123"
+                     *         }
+                     *       ],
+                     *       "assets_refreshed_at": "2026-10-25T09:00:00Z"
                      *     }
                      */
                     "application/json": Record<string, never>;
@@ -5165,299 +6451,12 @@ export interface operations {
             429: components["responses"]["RateLimited"];
         };
     };
-    getN8nStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "configured": true,
-                     *       "is_connected": true,
-                     *       "connected_at": "2026-02-19T18:51:00Z",
-                     *       "selection": {
-                     *         "api_base_url": "https://n8n.example.com",
-                     *         "workflow_id": "14",
-                     *         "workflow_name": "Trend Alerts",
-                     *         "default_event": "trend_lifecycle"
-                     *       }
-                     *     }
-                     */
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
-    postN8nConnect: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description n8n connector credentials and defaults. */
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description Required n8n API key/token. */
-                    api_key: string;
-                    /** @description Optional n8n API base URL. */
-                    api_base_url?: string;
-                    /** @description Optional default workflow ID. */
-                    workflow_id?: string;
-                    /** @description Optional workflow label. */
-                    workflow_name?: string;
-                    /** @description Optional webhook invocation URL. */
-                    webhook_url?: string;
-                    /** @description Optional default event name. */
-                    default_event?: string;
-                    /** @description Optional metadata enrichment flag. */
-                    include_metadata?: boolean;
-                    /** @description Optional client scope. */
-                    client_id?: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": true
-                     *     }
-                     */
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
-    getN8nWorkflows: {
-        parameters: {
-            query?: {
-                /** @description Optional base URL override for multi-instance environments. */
-                api_base_url?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "workflows": [
-                     *         {
-                     *           "workflow_id": "14",
-                     *           "name": "Trend Alerts",
-                     *           "active": true,
-                     *           "updated_at": "2026-02-18T20:10:00Z",
-                     *           "webhook_url": "https://n8n.example.com/webhook/trend-alerts"
-                     *         }
-                     *       ]
-                     *     }
-                     */
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
-    getN8nWorkflowDetails: {
-        parameters: {
-            query?: {
-                /** @description Optional base URL override. */
-                api_base_url?: string;
-            };
-            header?: never;
-            path: {
-                /** @description Required n8n workflow ID. */
-                workflow_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "workflow": {
-                     *         "workflow_id": "14",
-                     *         "name": "Trend Alerts",
-                     *         "active": true,
-                     *         "updated_at": "2026-02-18T20:10:00Z",
-                     *         "webhook_url": "https://n8n.example.com/webhook/trend-alerts"
-                     *       }
-                     *     }
-                     */
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
-    putN8nSelection: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description n8n workflow selection payload. */
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description Optional default workflow ID. */
-                    workflow_id?: string;
-                    /** @description Optional workflow label. */
-                    workflow_name?: string;
-                    /** @description Optional webhook URL override. */
-                    webhook_url?: string;
-                    /** @description Optional default event name. */
-                    default_event?: string;
-                    /** @description Optional metadata enrichment flag. */
-                    include_metadata?: boolean;
-                    /** @description Optional n8n API base URL. */
-                    api_base_url?: string;
-                    /** @description Optional client scope. */
-                    client_id?: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": true
-                     *     }
-                     */
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
-    postN8nPush: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description n8n invocation payload. */
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description Optional event label (falls back to selection default). */
-                    event?: string;
-                    /** @description Optional workflow override. */
-                    workflow_id?: string;
-                    /** @description Optional webhook URL override. */
-                    webhook_url?: string;
-                    /** @description Optional base URL override. */
-                    api_base_url?: string;
-                    /** @description Optional payload object. */
-                    data?: Record<string, never>;
-                    /** @description Optional single input object. */
-                    input?: Record<string, never>;
-                    /** @description Optional structured input map. */
-                    inputs?: Record<string, never>;
-                    /** @description Optional full payload override. */
-                    payload?: Record<string, never>;
-                    /** @description Optional client scope. */
-                    client_id?: string;
-                };
-            };
-        };
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "success": true,
-                     *       "status_code": 200,
-                     *       "message": "event queued for n8n delivery",
-                     *       "workflow_id": "14",
-                     *       "invoke_mode": "webhook",
-                     *       "delivery_status": "queued",
-                     *       "idempotency_key": "n8n:user:101:..."
-                     *     }
-                     */
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
-    postN8nDisconnect: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            429: components["responses"]["RateLimited"];
-        };
-    };
     getIntegrationDeliveryHealth: {
         parameters: {
             query?: {
                 /** @description Optional lookback window (default 168 hours). */
                 lookback_hours?: number;
-                /** @description Optional provider filter (for example: meta_capi, shopify, n8n). */
+                /** @description Optional provider filter (for example: meta_capi, shopify, google_sheets). */
                 provider?: string;
             };
             header?: never;

@@ -1,6 +1,6 @@
 # `@trendsagi/ai`
 
-Vercel AI SDK tools for [TrendsAGI](https://trendsagi.com). The package exposes four `tool()` objects with `inputSchema` zod definitions, ready for `generateText`, `streamText` and agent loops.
+Vercel AI SDK tools for [TrendsAGI](https://trendsagi.com). The package exposes twelve `tool()` objects with `inputSchema` zod definitions, ready for `generateText`, `streamText` and agent loops.
 
 ```bash
 npm install @trendsagi/ai @trendsagi/core ai @ai-sdk/openai zod
@@ -12,6 +12,14 @@ npm install @trendsagi/ai @trendsagi/core ai @ai-sdk/openai zod
 
 - `list_trends`
 - `get_trend_insights`
+- `get_trend_dossier`
+- `list_web_trends`
+- `get_search_demand`
+- `get_brand_momentum`
+- `get_trend_creators`
+- `ask_trend`
+- `get_social_evidence`
+- `get_social_evidence_credits`
 - `list_recommendations`
 - `preview_ads`
 

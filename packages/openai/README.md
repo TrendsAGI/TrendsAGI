@@ -13,6 +13,14 @@ The OpenAI SDK is an optional peer dependency. The package never imports it at r
 - `trendsagi_list_trends`
 - `trendsagi_get_trend`
 - `trendsagi_get_insights`
+- `trendsagi_get_trend_dossier`
+- `trendsagi_list_web_trends`
+- `trendsagi_get_search_demand`
+- `trendsagi_get_brand_momentum`
+- `trendsagi_get_trend_creators`
+- `trendsagi_ask_trend`
+- `trendsagi_get_social_evidence`
+- `trendsagi_get_social_evidence_credits`
 - `trendsagi_list_recommendations`
 - `trendsagi_preview_ads`
 

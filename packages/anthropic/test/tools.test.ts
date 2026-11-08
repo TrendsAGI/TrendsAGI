@@ -13,10 +13,21 @@ function stubClient() {
     return { method, args };
   };
   const client = {
-    trends: { list: record("trends.list"), get: record("trends.get") },
+    trends: {
+      list: record("trends.list"),
+      get: record("trends.get"),
+      dossier: record("trends.dossier"),
+      discoveries: record("trends.discoveries"),
+      searchDemand: record("trends.searchDemand"),
+      brandMomentum: record("trends.brandMomentum"),
+      creators: record("trends.creators"),
+      ask: record("trends.ask"),
+      socialEvidence: record("trends.socialEvidence"),
+    },
     insights: { get: record("insights.get") },
     recommendations: { list: record("recommendations.list") },
     ads: { preview: record("ads.preview") },
+    credits: { socialEvidence: record("credits.socialEvidence") },
   } as unknown as TrendsAGI;
   return { client, calls };
 }
@@ -41,7 +52,7 @@ describe("createAnthropicTools", () => {
 
   it("accepts a client for API symmetry", () => {
     const { client } = stubClient();
-    expect(createAnthropicTools(client)).toHaveLength(5);
+    expect(createAnthropicTools(client)).toHaveLength(13);
   });
 });
 
@@ -74,6 +85,28 @@ describe("runAnthropicTool", () => {
     });
     expect(calls[0].args[0]).toBe("tiktok_ads");
     expect(calls[0].args[1]).toMatchObject({ trend_id: 5, strict_safety: false });
+  });
+
+  it("dispatches dossier, discovery and social evidence tools", async () => {
+    const { client, calls } = stubClient();
+    await runAnthropicTool(client, "trendsagi_get_trend_dossier", { trend_id: 7 });
+    await runAnthropicTool(client, "trendsagi_list_web_trends", { limit: 5 });
+    await runAnthropicTool(client, "trendsagi_get_search_demand", { trend_id: 7, geo: "UK" });
+    await runAnthropicTool(client, "trendsagi_get_brand_momentum", { trend_id: 7, window: "30d" });
+    await runAnthropicTool(client, "trendsagi_get_trend_creators", { trend_id: 7 });
+    await runAnthropicTool(client, "trendsagi_ask_trend", { trend_id: 7, question: "What now?" });
+    await runAnthropicTool(client, "trendsagi_get_social_evidence", { trend_id: 7 });
+    await runAnthropicTool(client, "trendsagi_get_social_evidence_credits", {});
+    expect(calls.map((call) => call.method)).toEqual([
+      "trends.dossier",
+      "trends.discoveries",
+      "trends.searchDemand",
+      "trends.brandMomentum",
+      "trends.creators",
+      "trends.ask",
+      "trends.socialEvidence",
+      "credits.socialEvidence",
+    ]);
   });
 
   it("rejects unknown tools and missing required inputs", async () => {

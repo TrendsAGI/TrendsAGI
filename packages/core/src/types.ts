@@ -137,6 +137,8 @@ export interface TrendListParams {
   interests?: string[] | string;
   category?: string;
   search?: string;
+  /** Comma-separated attachments; `dossier` attaches the compact resolved entity. */
+  include?: string;
   signal?: AbortSignal;
 }
 
@@ -440,5 +442,415 @@ export interface AdsPreviewResponse {
   blocked?: boolean;
   target_ad_group_ids?: string[];
   changes?: AdsPreviewChange[];
+  [key: string]: unknown;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Dossiers, discovery, Deep Dive and Social Evidence                          */
+/* -------------------------------------------------------------------------- */
+
+export interface TrendListParamsWithInclude extends TrendListParams {
+  /** Comma-separated attachments; `dossier` attaches the compact resolved entity. */
+  include?: string;
+}
+
+export interface DossierEntity {
+  subject_identified?: boolean;
+  subject?: string | null;
+  subject_type?: string | null;
+  definition?: string | null;
+  aliases?: string[];
+  authoritative_url?: string | null;
+  confidence?: number;
+  other_meanings?: string[];
+  [key: string]: unknown;
+}
+
+export interface DossierCoverage {
+  status?: string | null;
+  source_count?: number;
+  domain_count?: number;
+  dated_count?: number;
+  freshest_at?: string | null;
+  oldest_at?: string | null;
+  high_authority?: number;
+  mid_authority?: number;
+  low_authority?: number;
+  captured_at?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DossierEvent {
+  at?: string | null;
+  headline: string;
+  detail?: string | null;
+  event_type?: string | null;
+  source_n?: number | null;
+  source_url?: string | null;
+  source_title?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DossierChannel {
+  platform?: string | null;
+  name: string;
+  url?: string | null;
+  channel_type?: string | null;
+  evidence_n?: number | null;
+  source_url?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DossierSerpResult {
+  query?: string | null;
+  title: string;
+  url: string;
+  site?: string | null;
+  published?: string | null;
+  format?: string | null;
+  angle?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DossierContentLandscape {
+  queries?: string[];
+  results?: DossierSerpResult[];
+  questions?: string[];
+  gaps?: string[];
+  outline?: string[];
+  [key: string]: unknown;
+}
+
+export interface DossierBrand {
+  name: string;
+  presence?: string | null;
+  sentiment?: string | null;
+  source_n?: number | null;
+  source_url?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DossierProduct {
+  name: string;
+  marketplace?: string | null;
+  price?: string | null;
+  source_n?: number | null;
+  source_url?: string | null;
+  [key: string]: unknown;
+}
+
+export interface DossierDelta {
+  previous_captured_at?: string | null;
+  new_events?: DossierEvent[];
+  new_channels?: DossierChannel[];
+  new_brands?: DossierBrand[];
+  [key: string]: unknown;
+}
+
+export interface TrendDossier {
+  trend_id: number;
+  status: string;
+  prompt_version?: string | null;
+  model?: string | null;
+  captured_at?: string | null;
+  expires_at?: string | null;
+  entity?: DossierEntity | null;
+  coverage?: DossierCoverage | null;
+  timeline?: DossierEvent[];
+  channels?: DossierChannel[];
+  content_landscape?: DossierContentLandscape | null;
+  brands?: DossierBrand[];
+  products?: DossierProduct[];
+  delta?: DossierDelta | null;
+  [key: string]: unknown;
+}
+
+export interface TrendDiscovery {
+  source?: string | null;
+  region?: string | null;
+  label: string;
+  rank?: number | null;
+  first_seen_at?: string | null;
+  last_seen_at?: string | null;
+  seen_count?: number | null;
+  matched_trend_id?: number | null;
+  matched_name?: string | null;
+  [key: string]: unknown;
+}
+
+export interface TrendDiscoveryListResponse {
+  discoveries: TrendDiscovery[];
+  [key: string]: unknown;
+}
+
+export type DeepDiveModule = "search_demand" | "ads" | "creators" | (string & {});
+
+export interface SearchDemandPoint {
+  captured_at?: string | null;
+  interest: number;
+  [key: string]: unknown;
+}
+
+export interface RelatedQuery {
+  query: string;
+  kind?: string | null;
+  score?: number | null;
+  [key: string]: unknown;
+}
+
+export interface SearchDemandResponse {
+  geo?: string | null;
+  query?: string | null;
+  label?: string | null;
+  series: SearchDemandPoint[];
+  related: RelatedQuery[];
+  divergence?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AdCreativeItem {
+  platform?: string | null;
+  advertiser?: string | null;
+  ad_id: string;
+  headline?: string | null;
+  body?: string | null;
+  cta?: string | null;
+  landing_url?: string | null;
+  started_at?: string | null;
+  source_url?: string | null;
+  angle?: string | null;
+  [key: string]: unknown;
+}
+
+export interface CreatorLeaderboardRow {
+  screen_name: string;
+  followers_count?: number | null;
+  posts?: number;
+  latest_post_snippet?: string | null;
+  profile_url?: string | null;
+  [key: string]: unknown;
+}
+
+export interface CreatorLeaderboardResponse {
+  trend_id: number;
+  label?: string | null;
+  creators: CreatorLeaderboardRow[];
+  [key: string]: unknown;
+}
+
+export interface BrandMomentumRow {
+  name: string;
+  mentions?: number;
+  share?: number;
+  sentiment?: string | null;
+  delta?: number | null;
+  sparkline?: number[];
+  [key: string]: unknown;
+}
+
+export interface BrandSnapshotRow {
+  name: string;
+  presence?: string | null;
+  sentiment?: string | null;
+  source_url?: string | null;
+  [key: string]: unknown;
+}
+
+export interface BrandMomentumResponse {
+  window?: string | null;
+  captures?: number;
+  label?: string | null;
+  brands: BrandMomentumRow[];
+  snapshot_brands?: BrandSnapshotRow[];
+  [key: string]: unknown;
+}
+
+export interface EnrichTrendBody {
+  modules?: DeepDiveModule[];
+  region?: string;
+  force?: boolean;
+  request_id?: string;
+  [key: string]: unknown;
+}
+
+export interface DeepDiveCreditsRemaining {
+  included?: number;
+  purchased?: number;
+  resets_at?: string | null;
+  daily_used?: number;
+  daily_limit?: number;
+  [key: string]: unknown;
+}
+
+export interface DeepDiveTopup {
+  plan?: string | null;
+  packs?: unknown;
+  headline?: string | null;
+  body?: string | null;
+  upgrade_plan?: string | null;
+  upgrade_label?: string | null;
+  fallback_copy?: string | null;
+  [key: string]: unknown;
+}
+
+export interface EnrichTrendResponse {
+  trend_id?: number | null;
+  request_id?: string | null;
+  status?: string | null;
+  credits_charged?: number;
+  credits_remaining?: DeepDiveCreditsRemaining | null;
+  data?: Record<string, unknown>;
+  search_demand?: SearchDemandResponse | null;
+  ads?: AdCreativeItem[];
+  creators?: CreatorLeaderboardResponse | null;
+  quality?: Record<string, unknown> | null;
+  refreshed_at?: string | null;
+  cache_age_seconds?: number | null;
+  message?: string | null;
+  topup?: DeepDiveTopup | null;
+  [key: string]: unknown;
+}
+
+export interface AskTrendBody {
+  question: string;
+  [key: string]: unknown;
+}
+
+export interface AskTrendCitation {
+  n: number;
+  title: string;
+  url?: string | null;
+  source_type?: string | null;
+  [key: string]: unknown;
+}
+
+export interface AskTrendEvidence {
+  kind?: string | null;
+  label?: string | null;
+  count?: number;
+  [key: string]: unknown;
+}
+
+export interface AskTrendResponse {
+  answer: string;
+  citations: AskTrendCitation[];
+  grounded: boolean;
+  generated_at?: string | null;
+  evidence?: AskTrendEvidence[];
+  follow_ups?: string[];
+  insufficient_evidence_reason?: string | null;
+  [key: string]: unknown;
+}
+
+export type SocialEvidenceModule =
+  | "posts"
+  | "transcripts"
+  | "creators"
+  | "comments"
+  | "ads"
+  | "sponsors"
+  | "hashtags"
+  | "mentions"
+  | (string & {});
+
+export interface RunSocialEvidenceBody {
+  modules?: SocialEvidenceModule[];
+  region?: string;
+  force?: boolean;
+  request_id?: string;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceIncludedCredits {
+  remaining?: number;
+  total?: number;
+  resets_at?: string | null;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidencePurchasedCredits {
+  remaining?: number;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceCreditPack {
+  id: string;
+  credits?: number;
+  price?: string | null;
+  lookup_key?: string | null;
+  apple_product_id?: string | null;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceUpsell {
+  headline?: string | null;
+  body?: string | null;
+  primary_pack?: string | null;
+  upgrade_plan?: string | null;
+  upgrade_label?: string | null;
+  fallback_copy?: string | null;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceCreditBalance {
+  plan?: string | null;
+  included: SocialEvidenceIncludedCredits;
+  purchased: SocialEvidencePurchasedCredits;
+  packs: SocialEvidenceCreditPack[];
+  upsell: SocialEvidenceUpsell;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceCreditsRemaining {
+  included?: number;
+  purchased?: number;
+  resets_at?: string | null;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceQuality {
+  completeness?: string | null;
+  as_of?: string | null;
+  source_count?: number;
+  sections_present?: number;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceSection {
+  present: boolean;
+  sample_size?: number;
+  items?: unknown[];
+  tags?: Array<Record<string, unknown>>;
+  themes?: Array<Record<string, unknown>>;
+  angle_groups?: Array<Record<string, unknown>>;
+  source_count?: number | null;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceReport {
+  trend_id: number;
+  status: string;
+  refreshed_at?: string | null;
+  credits_charged?: number;
+  credits_remaining: SocialEvidenceCreditsRemaining;
+  sections: Record<string, SocialEvidenceSection>;
+  quality: SocialEvidenceQuality;
+  topup?: SocialEvidenceUpsell | null;
+  message?: string | null;
+  error_code?: string | null;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceCheckoutBody {
+  pack_id: string;
+  success_url?: string;
+  cancel_url?: string;
+  [key: string]: unknown;
+}
+
+export interface SocialEvidenceCheckoutResponse {
+  checkout_url: string;
+  session_id?: string | null;
+  pack?: SocialEvidenceCreditPack | null;
   [key: string]: unknown;
 }

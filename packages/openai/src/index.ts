@@ -46,6 +46,14 @@ export const TRENDSAGI_OPENAI_TOOL_NAMES = [
   "trendsagi_list_trends",
   "trendsagi_get_trend",
   "trendsagi_get_insights",
+  "trendsagi_get_trend_dossier",
+  "trendsagi_list_web_trends",
+  "trendsagi_get_search_demand",
+  "trendsagi_get_brand_momentum",
+  "trendsagi_get_trend_creators",
+  "trendsagi_ask_trend",
+  "trendsagi_get_social_evidence",
+  "trendsagi_get_social_evidence_credits",
   "trendsagi_list_recommendations",
   "trendsagi_preview_ads",
 ] as const;
@@ -187,10 +195,128 @@ const PREVIEW_ADS: ToolSpec = {
   },
 };
 
+const GET_DOSSIER: ToolSpec = {
+  name: "trendsagi_get_trend_dossier",
+  description:
+    "Read the source-backed dossier for one trend: resolved subject, evidence coverage, dated timeline, channels, content landscape, brands and products. Returns available=false when no dossier exists yet.",
+  parameters: {
+    type: "object",
+    properties: {
+      trend_id: { type: "integer", minimum: 1, description: "Trend ID returned by trendsagi_list_trends." },
+    },
+    required: ["trend_id"],
+    additionalProperties: false,
+  },
+};
+
+const LIST_WEB_TRENDS: ToolSpec = {
+  name: "trendsagi_list_web_trends",
+  description:
+    "List labels found in an external trend list, deduplicated and cached. Discovery evidence only: no measured volume or velocity. matched_trend_id links to a measured trend when one exists.",
+  parameters: {
+    type: "object",
+    properties: {
+      limit: { type: "integer", minimum: 1, maximum: 200, default: 20 },
+    },
+    additionalProperties: false,
+  },
+};
+
+const GET_SEARCH_DEMAND: ToolSpec = {
+  name: "trendsagi_get_search_demand",
+  description:
+    "Read the stored relative search-interest series and related queries for one trend. Interest is a 0-100 index, not an absolute search volume.",
+  parameters: {
+    type: "object",
+    properties: {
+      trend_id: { type: "integer", minimum: 1 },
+      geo: { type: "string", description: "Two-letter market code. Default: US." },
+    },
+    required: ["trend_id"],
+    additionalProperties: false,
+  },
+};
+
+const GET_BRAND_MOMENTUM: ToolSpec = {
+  name: "trendsagi_get_brand_momentum",
+  description:
+    "Read which brands are visible in a trend's coverage and how their share of that coverage moved. Share of coverage, not market share.",
+  parameters: {
+    type: "object",
+    properties: {
+      trend_id: { type: "integer", minimum: 1 },
+      window: { type: "string", enum: ["24h", "7d", "30d"] },
+    },
+    required: ["trend_id"],
+    additionalProperties: false,
+  },
+};
+
+const GET_TREND_CREATORS: ToolSpec = {
+  name: "trendsagi_get_trend_creators",
+  description: "List the accounts posting most about a trend. Posting activity, not influence.",
+  parameters: {
+    type: "object",
+    properties: {
+      trend_id: { type: "integer", minimum: 1 },
+    },
+    required: ["trend_id"],
+    additionalProperties: false,
+  },
+};
+
+const ASK_TREND: ToolSpec = {
+  name: "trendsagi_ask_trend",
+  description:
+    "Ask a grounded question about one trend. Returns an answer with numbered citations; grounded=false means the captured evidence was insufficient.",
+  parameters: {
+    type: "object",
+    properties: {
+      trend_id: { type: "integer", minimum: 1 },
+      question: { type: "string", description: "Question about the trend." },
+    },
+    required: ["trend_id", "question"],
+    additionalProperties: false,
+  },
+};
+
+const GET_SOCIAL_EVIDENCE: ToolSpec = {
+  name: "trendsagi_get_social_evidence",
+  description:
+    "Read the stored Social Evidence report for a trend: posts, transcripts, creators, comments, ads, sponsors, hashtags and brand mentions. Free to read; returns available=false when no report exists yet.",
+  parameters: {
+    type: "object",
+    properties: {
+      trend_id: { type: "integer", minimum: 1 },
+    },
+    required: ["trend_id"],
+    additionalProperties: false,
+  },
+};
+
+const GET_SOCIAL_EVIDENCE_CREDITS: ToolSpec = {
+  name: "trendsagi_get_social_evidence_credits",
+  description:
+    "Read the account's Social Evidence credit balance, included allowance and available one-time packs. Free; does not consume a credit.",
+  parameters: {
+    type: "object",
+    properties: {},
+    additionalProperties: false,
+  },
+};
+
 const TOOL_SPECS: readonly ToolSpec[] = [
   LIST_TRENDS,
   GET_TREND,
   GET_INSIGHTS,
+  GET_DOSSIER,
+  LIST_WEB_TRENDS,
+  GET_SEARCH_DEMAND,
+  GET_BRAND_MOMENTUM,
+  GET_TREND_CREATORS,
+  ASK_TREND,
+  GET_SOCIAL_EVIDENCE,
+  GET_SOCIAL_EVIDENCE_CREDITS,
   LIST_RECOMMENDATIONS,
   PREVIEW_ADS,
 ];
@@ -336,6 +462,43 @@ export async function runTrendsAGITool(
         type: optionalString(parsed, "type"),
         match_user_interests: optionalBoolean(parsed, "match_user_interests"),
       });
+
+    case "trendsagi_get_trend_dossier": {
+      const trendId = integer(parsed, "trend_id", true) as number;
+      const dossier = await client.trends.dossier(trendId);
+      return dossier ?? { trend_id: trendId, available: false };
+    }
+
+    case "trendsagi_list_web_trends":
+      return client.trends.discoveries({ limit: integer(parsed, "limit", false) });
+
+    case "trendsagi_get_search_demand":
+      return client.trends.searchDemand(integer(parsed, "trend_id", true) as number, {
+        geo: optionalString(parsed, "geo"),
+      });
+
+    case "trendsagi_get_brand_momentum":
+      return client.trends.brandMomentum(integer(parsed, "trend_id", true) as number, {
+        window: optionalString(parsed, "window"),
+      });
+
+    case "trendsagi_get_trend_creators":
+      return client.trends.creators(integer(parsed, "trend_id", true) as number);
+
+    case "trendsagi_ask_trend":
+      return client.trends.ask(
+        integer(parsed, "trend_id", true) as number,
+        optionalString(parsed, "question") as string,
+      );
+
+    case "trendsagi_get_social_evidence": {
+      const trendId = integer(parsed, "trend_id", true) as number;
+      const report = await client.trends.socialEvidence(trendId);
+      return report ?? { trend_id: trendId, available: false };
+    }
+
+    case "trendsagi_get_social_evidence_credits":
+      return client.credits.socialEvidence();
 
     case "trendsagi_preview_ads": {
       const body: AdsPreviewBody = {

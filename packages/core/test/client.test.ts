@@ -142,6 +142,65 @@ describe("namespaces", () => {
     ]);
   });
 
+  it("maps dossier, discovery, deep dive and social evidence methods", async () => {
+    const { calls, fetchImpl } = jsonFetch({
+      trend_id: 12,
+      status: "complete",
+      discoveries: [],
+      series: [],
+      related: [],
+      creators: [],
+      brands: [],
+      citations: [],
+      answer: "",
+      included: {},
+      purchased: {},
+      packs: [],
+      upsell: {},
+      sections: {},
+      quality: {},
+      credits_remaining: {},
+    });
+    const trendsagi = client(fetchImpl);
+    await trendsagi.trends.dossier(12);
+    await trendsagi.trends.discoveries({ limit: 5 });
+    await trendsagi.trends.enrich(12, { modules: ["search_demand"], region: "UK" });
+    await trendsagi.trends.searchDemand(12, { geo: "UK" });
+    await trendsagi.trends.brandMomentum(12, { window: "30d" });
+    await trendsagi.trends.creators(12);
+    await trendsagi.trends.ask(12, "What now?");
+    await trendsagi.trends.socialEvidence(12);
+    await trendsagi.trends.runSocialEvidence(12, { modules: ["posts"] });
+    await trendsagi.credits.socialEvidence();
+    await trendsagi.credits.buySocialEvidence("social_evidence_10");
+    expect(calls.map((call) => call.url)).toEqual([
+      "https://api.trendsagi.com/api/trends/12/dossier",
+      "https://api.trendsagi.com/api/trends/discoveries?limit=5",
+      "https://api.trendsagi.com/api/trends/12/enrich",
+      "https://api.trendsagi.com/api/trends/12/search-demand?geo=UK",
+      "https://api.trendsagi.com/api/trends/12/brand-momentum?window=30d",
+      "https://api.trendsagi.com/api/trends/12/creators",
+      "https://api.trendsagi.com/api/trends/12/ask",
+      "https://api.trendsagi.com/api/trends/12/social-evidence",
+      "https://api.trendsagi.com/api/trends/12/social-evidence",
+      "https://api.trendsagi.com/api/user/social-evidence-credits",
+      "https://api.trendsagi.com/api/billing/social-evidence/checkout",
+    ]);
+    expect(JSON.parse(String(calls[2].init.body))).toEqual({
+      modules: ["search_demand"],
+      region: "UK",
+    });
+    expect(JSON.parse(String(calls[6].init.body))).toEqual({ question: "What now?" });
+    expect(JSON.parse(String(calls[8].init.body))).toEqual({ modules: ["posts"] });
+  });
+
+  it("returns null for a missing dossier or social evidence report", async () => {
+    const { fetchImpl } = jsonFetch({ detail: "not found" }, 404);
+    const trendsagi = client(fetchImpl);
+    await expect(trendsagi.trends.dossier(12)).resolves.toBeNull();
+    await expect(trendsagi.trends.socialEvidence(12)).resolves.toBeNull();
+  });
+
   it("normalizes category and autocomplete arrays", async () => {
     let payload: unknown = ["Technology", "Beauty"];
     const fetchImpl = (async () =>

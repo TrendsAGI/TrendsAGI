@@ -7,9 +7,14 @@ import type {
   AdsResourcesParams,
   AdsResourcesResponse,
   AIInsight,
+  AskTrendResponse,
   AutocompleteResponse,
   AutocompleteResult,
+  BrandMomentumResponse,
   CategoryListResponse,
+  CreatorLeaderboardResponse,
+  EnrichTrendBody,
+  EnrichTrendResponse,
   InsightSearchParams,
   InsightSearchResponse,
   QueryParams,
@@ -17,9 +22,17 @@ import type {
   RecommendationListParams,
   RecommendationListResponse,
   RequestOptions,
+  RunSocialEvidenceBody,
+  SearchDemandResponse,
+  SocialEvidenceCheckoutBody,
+  SocialEvidenceCheckoutResponse,
+  SocialEvidenceCreditBalance,
+  SocialEvidenceReport,
   Trend,
   TrendAnalyticsParams,
   TrendAnalyticsResponse,
+  TrendDiscoveryListResponse,
+  TrendDossier,
   TrendListParams,
   TrendListResponse,
   TrendsAGIOptions,
@@ -155,6 +168,118 @@ class TrendsNamespace {
     const results = response.results ?? [];
     return { ...response, results, suggestions: response.suggestions ?? results.map((item) => item.name) };
   }
+
+  /** Retrieve the source-backed dossier for one trend, or null when none exists. */
+  async dossier(id: number | string): Promise<TrendDossier | null> {
+    try {
+      return await this.client.request<TrendDossier>(
+        `/api/trends/${encodeURIComponent(String(id))}/dossier`,
+      );
+    } catch (error) {
+      if (error instanceof TrendsAGIError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
+  /** List labels found in an external trend list. Discovery evidence only. */
+  discoveries(params: { limit?: number; signal?: AbortSignal } = {}): Promise<TrendDiscoveryListResponse> {
+    const { signal, ...query } = params;
+    return this.client.request<TrendDiscoveryListResponse>("/api/trends/discoveries", {
+      query,
+      signal,
+    });
+  }
+
+  /** Run an on-demand Deep Dive. Reserves credits only when usable live data is produced. */
+  enrich(id: number | string, body: EnrichTrendBody = {}): Promise<EnrichTrendResponse> {
+    return this.client.request<EnrichTrendResponse>(
+      `/api/trends/${encodeURIComponent(String(id))}/enrich`,
+      { method: "POST", body },
+    );
+  }
+
+  /** Read the stored relative search-interest series and related queries. */
+  searchDemand(
+    id: number | string,
+    params: { geo?: string; signal?: AbortSignal } = {},
+  ): Promise<SearchDemandResponse> {
+    const { signal, ...query } = params;
+    return this.client.request<SearchDemandResponse>(
+      `/api/trends/${encodeURIComponent(String(id))}/search-demand`,
+      { query, signal },
+    );
+  }
+
+  /** Read brands visible in a trend's coverage and their movement. */
+  brandMomentum(
+    id: number | string,
+    params: { window?: "24h" | "7d" | "30d" | (string & {}); signal?: AbortSignal } = {},
+  ): Promise<BrandMomentumResponse> {
+    const { signal, ...query } = params;
+    return this.client.request<BrandMomentumResponse>(
+      `/api/trends/${encodeURIComponent(String(id))}/brand-momentum`,
+      { query, signal },
+    );
+  }
+
+  /** List the accounts posting most about a trend. */
+  creators(id: number | string): Promise<CreatorLeaderboardResponse> {
+    return this.client.request<CreatorLeaderboardResponse>(
+      `/api/trends/${encodeURIComponent(String(id))}/creators`,
+    );
+  }
+
+  /** Ask a grounded question about one trend. */
+  ask(id: number | string, question: string): Promise<AskTrendResponse> {
+    return this.client.request<AskTrendResponse>(
+      `/api/trends/${encodeURIComponent(String(id))}/ask`,
+      { method: "POST", body: { question } },
+    );
+  }
+
+  /** Read the stored Social Evidence report, or null when none exists. */
+  async socialEvidence(id: number | string): Promise<SocialEvidenceReport | null> {
+    try {
+      return await this.client.request<SocialEvidenceReport>(
+        `/api/trends/${encodeURIComponent(String(id))}/social-evidence`,
+      );
+    } catch (error) {
+      if (error instanceof TrendsAGIError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
+  /** Run or refresh Social Evidence. Reserves one credit per run. */
+  runSocialEvidence(
+    id: number | string,
+    body: RunSocialEvidenceBody = {},
+  ): Promise<SocialEvidenceReport> {
+    return this.client.request<SocialEvidenceReport>(
+      `/api/trends/${encodeURIComponent(String(id))}/social-evidence`,
+      { method: "POST", body },
+    );
+  }
+}
+
+class CreditsNamespace {
+  constructor(private readonly client: Requester) {}
+
+  /** Read the Social Evidence credit balance. Free. */
+  socialEvidence(): Promise<SocialEvidenceCreditBalance> {
+    return this.client.request<SocialEvidenceCreditBalance>("/api/user/social-evidence-credits");
+  }
+
+  /** Create a Stripe Checkout session for a Social Evidence credit pack. */
+  buySocialEvidence(
+    packId: string,
+    params: { success_url?: string; cancel_url?: string } = {},
+  ): Promise<SocialEvidenceCheckoutResponse> {
+    const body: SocialEvidenceCheckoutBody = { pack_id: packId, ...params };
+    return this.client.request<SocialEvidenceCheckoutResponse>(
+      "/api/billing/social-evidence/checkout",
+      { method: "POST", body },
+    );
+  }
 }
 
 class InsightsNamespace {
@@ -221,6 +346,7 @@ export class TrendsAGI {
   readonly insights: InsightsNamespace;
   readonly recommendations: RecommendationsNamespace;
   readonly ads: AdsNamespace;
+  readonly credits: CreditsNamespace;
 
   private readonly fetchImpl: typeof fetch;
   private readonly defaultHeaders?: Record<string, string>;
@@ -251,6 +377,7 @@ export class TrendsAGI {
     this.insights = new InsightsNamespace(this);
     this.recommendations = new RecommendationsNamespace(this);
     this.ads = new AdsNamespace(this);
+    this.credits = new CreditsNamespace(this);
   }
 
   /**
