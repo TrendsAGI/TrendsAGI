@@ -193,6 +193,7 @@ class TrendsAGIClient:
         order: Optional[str] = None, # Alias for sort_dir
         category: Optional[str] = None,
         search: Optional[str] = None,
+        include: Optional[str] = None,
     ) -> models.TrendListResponse:
         """
         Retrieve a list of currently trending topics.
@@ -201,6 +202,8 @@ class TrendsAGIClient:
                         ``category``, or ``name``.
         :param category: Only return trends in this category (see ``get_trend_categories``).
         :param search: Only return trends whose name matches this phrase.
+        :param include: Optional comma-separated attachments. Use ``dossier`` to
+                        attach the compact resolved entity to each row.
         """
         page = (offset // limit) + 1
         
@@ -220,6 +223,7 @@ class TrendsAGIClient:
             "exclude_sentiment": exclude_sentiment,
             "category": category.strip() if category and category.strip() else None,
             "search": search.strip() if search and search.strip() else None,
+            "include": include.strip() if include and include.strip() else None,
         }
         if interests:
             params["interests"] = ",".join(interests)
@@ -321,6 +325,203 @@ class TrendsAGIClient:
         # Better to make `data: List[SnapshotData]`.
         
         return analytics
+
+    # --- Dossier, Discovery, Deep Dive and Social Evidence Methods ---
+
+    def get_trend_dossier(self, trend_id: int) -> Optional[models.TrendDossier]:
+        """
+        Retrieve the source-backed dossier for a trend.
+
+        Returns ``None`` when no dossier has been generated yet. A dossier is
+        evidence, not a measurement: it never invents volume, velocity or CPC.
+        """
+        try:
+            response_data = self._request('GET', f'/api/trends/{trend_id}/dossier')
+        except exceptions.NotFoundError:
+            return None
+        return models.TrendDossier.model_validate(response_data)
+
+    def get_trend_discoveries(self, limit: int = 50) -> models.TrendDiscoveryListResponse:
+        """
+        List labels found in an external trend list.
+
+        A discovery is discovery evidence only; it has no measured volume or
+        velocity. ``matched_trend_id`` points at an existing measured trend when
+        the same label is already tracked.
+
+        :param limit: Maximum discoveries to return, 1-200.
+        """
+        params = {"limit": max(1, min(int(limit), 200))}
+        response_data = self._request('GET', '/api/trends/discoveries', params=params)
+        return models.TrendDiscoveryListResponse.model_validate(response_data)
+
+    def enrich_trend(
+        self,
+        trend_id: int,
+        modules: Optional[List[str]] = None,
+        region: str = 'US',
+        force: bool = False,
+        request_id: Optional[str] = None,
+    ) -> models.EnrichTrendResponse:
+        """
+        Run an on-demand Deep Dive for a trend.
+
+        Supported modules are ``search_demand``, ``ads`` and ``creators``. A
+        Deep Dive reserves credits only when it produces usable live data; a
+        cache hit costs nothing. A 402 response includes a topup prompt.
+
+        :param modules: Modules to build; omit for the trend's default set.
+        :param region: Two-letter market code (default ``US``).
+        :param force: Rebuild a cached module instead of serving it.
+        :param request_id: Optional idempotency key for the credit reservation.
+        """
+        payload: Dict[str, Any] = {
+            "modules": list(modules or []),
+            "region": region or 'US',
+            "force": bool(force),
+        }
+        if request_id:
+            payload["request_id"] = request_id
+        response_data = self._request('POST', f'/api/trends/{trend_id}/enrich', json=payload)
+        return models.EnrichTrendResponse.model_validate(response_data)
+
+    def get_search_demand(self, trend_id: int, geo: str = 'US') -> models.SearchDemandResponse:
+        """
+        Retrieve the stored relative search-interest series and related queries.
+
+        Interest is a 0-100 index, not an absolute search volume. This GET does
+        not start a provider call; use :meth:`enrich_trend` with
+        ``modules=["search_demand"]`` to fill an empty series.
+        """
+        params = {"geo": geo or 'US'}
+        response_data = self._request('GET', f'/api/trends/{trend_id}/search-demand', params=params)
+        return models.SearchDemandResponse.model_validate(response_data)
+
+    def get_brand_momentum(self, trend_id: int, window: str = '7d') -> models.BrandMomentumResponse:
+        """
+        Retrieve the brands visible in a trend's coverage and their momentum.
+
+        ``share`` is share of the coverage captured for this trend, not market
+        share. With one capture the response uses ``snapshot_brands`` and omits
+        share and delta.
+
+        :param window: ``24h``, ``7d`` or ``30d`` (default ``7d``).
+        """
+        normalized = (window or '7d').lower()
+        if normalized not in {'24h', '7d', '30d'}:
+            raise ValueError("window must be '24h', '7d' or '30d'")
+        response_data = self._request(
+            'GET', f'/api/trends/{trend_id}/brand-momentum', params={"window": normalized}
+        )
+        return models.BrandMomentumResponse.model_validate(response_data)
+
+    def get_trend_creators(self, trend_id: int) -> models.CreatorLeaderboardResponse:
+        """
+        List the accounts posting most about a trend.
+
+        The ranking measures posting activity, not influence.
+        """
+        response_data = self._request('GET', f'/api/trends/{trend_id}/creators')
+        return models.CreatorLeaderboardResponse.model_validate(response_data)
+
+    def ask_trend(self, trend_id: int, question: str) -> models.AskTrendResponse:
+        """
+        Ask a question about one trend.
+
+        The answer is grounded in the evidence TrendsAGI captured for the trend
+        and returns numbered citations. ``grounded`` is false when the evidence
+        is insufficient; the response then explains why instead of inventing an
+        answer.
+        """
+        normalized = (question or '').strip()
+        if not normalized:
+            raise ValueError("question must not be empty")
+        response_data = self._request(
+            'POST', f'/api/trends/{trend_id}/ask', json={"question": normalized}
+        )
+        return models.AskTrendResponse.model_validate(response_data)
+
+    def get_social_evidence(self, trend_id: int) -> Optional[models.SocialEvidenceReport]:
+        """
+        Retrieve the stored Social Evidence report for a trend.
+
+        Reading is free. Returns ``None`` when no report exists yet. The report
+        is trend-scoped and shared by every customer who opens the same trend.
+        """
+        try:
+            response_data = self._request('GET', f'/api/trends/{trend_id}/social-evidence')
+        except exceptions.NotFoundError:
+            return None
+        return models.SocialEvidenceReport.model_validate(response_data)
+
+    def run_social_evidence(
+        self,
+        trend_id: int,
+        modules: Optional[List[str]] = None,
+        region: str = 'US',
+        force: bool = False,
+        request_id: Optional[str] = None,
+    ) -> models.SocialEvidenceReport:
+        """
+        Run or refresh Social Evidence for a trend.
+
+        One Social Evidence credit is reserved per run, cache hit or miss. The
+        call can take 30-50 seconds. A 402 response includes a topup prompt.
+
+        :param modules: Any of ``posts``, ``transcripts``, ``creators``,
+                        ``comments``, ``ads``, ``sponsors``, ``hashtags`` and
+                        ``mentions``. Omit for the full report.
+        :param region: Two-letter market code (default ``US``).
+        :param force: Rebuild the report instead of serving the stored one.
+        :param request_id: Optional idempotency key for the credit reservation.
+        """
+        payload: Dict[str, Any] = {
+            "modules": list(modules or []),
+            "region": region or 'US',
+            "force": bool(force),
+        }
+        if request_id:
+            payload["request_id"] = request_id
+        response_data = self._request(
+            'POST', f'/api/trends/{trend_id}/social-evidence', json=payload
+        )
+        return models.SocialEvidenceReport.model_validate(response_data)
+
+    def get_social_evidence_credits(self) -> models.SocialEvidenceCreditBalance:
+        """
+        Read the account's Social Evidence credit balance.
+
+        Free; does not consume a credit. Includes the included monthly
+        allowance, purchased credits and the available one-time packs.
+        """
+        response_data = self._request('GET', '/api/user/social-evidence-credits')
+        return models.SocialEvidenceCreditBalance.model_validate(response_data)
+
+    def create_social_evidence_checkout(
+        self,
+        pack_id: str,
+        success_url: Optional[str] = None,
+        cancel_url: Optional[str] = None,
+    ) -> models.SocialEvidenceCheckoutResponse:
+        """
+        Create a Stripe Checkout session for a Social Evidence credit pack.
+
+        :param pack_id: Pack id from :meth:`get_social_evidence_credits`.
+        :param success_url: Optional return URL after a completed payment.
+        :param cancel_url: Optional return URL after a cancelled payment.
+        """
+        normalized = (pack_id or '').strip()
+        if not normalized:
+            raise ValueError("pack_id must not be empty")
+        payload: Dict[str, Any] = {"pack_id": normalized}
+        if success_url:
+            payload["success_url"] = success_url
+        if cancel_url:
+            payload["cancel_url"] = cancel_url
+        response_data = self._request(
+            'POST', '/api/billing/social-evidence/checkout', json=payload
+        )
+        return models.SocialEvidenceCheckoutResponse.model_validate(response_data)
 
     def analyze_trend(self, trend_id: int, force_refresh: bool = False) -> models.AnalysisResponse:
         """

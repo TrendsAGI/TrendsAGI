@@ -200,6 +200,38 @@ def test_nested_body_fields_and_data_merge(api, capsys, monkeypatch):
     }
 
 
+def test_deep_dive_and_social_evidence_commands(api, capsys, monkeypatch):
+    monkeypatch.setenv("TRENDSAGI_API_KEY", KEY)
+    api.routes[("GET", "/api/trends/123/dossier")] = (200, {"trend_id": 123, "status": "complete"}, "application/json")
+    code, out, _ = run(capsys, "trends", "dossier", "123")
+    assert code == 0 and json.loads(out)["trend_id"] == 123
+    assert api.calls[-1]["path"] == "/api/trends/123/dossier"
+
+    api.routes[("POST", "/api/trends/123/enrich")] = (200, {"status": "complete"}, "application/json")
+    code, _, _ = run(capsys, "-y", "trends", "enrich", "123", "--module", "search_demand,ads", "--region", "UK")
+    assert code == 0
+    assert api.calls[-1]["body"] == {
+        "modules": ["search_demand", "ads"],
+        "region": "UK",
+    }
+
+    code, _, err = run(capsys, "trends", "social-evidence", "run", "123", "--module", "posts")
+    assert code == cli.EXIT_USAGE and "123" in err
+
+    api.routes[("POST", "/api/trends/123/social-evidence")] = (200, {"status": "complete"}, "application/json")
+    code, _, _ = run(capsys, "-y", "trends", "social-evidence", "run", "123", "--module", "posts", "--force")
+    assert code == 0
+    assert api.calls[-1]["body"] == {
+        "modules": ["posts"],
+        "region": "US",
+        "force": True,
+    }
+
+    api.routes[("GET", "/api/user/social-evidence-credits")] = (200, {"plan": "starter"}, "application/json")
+    code, out, _ = run(capsys, "credits", "social-evidence")
+    assert code == 0 and json.loads(out)["plan"] == "starter"
+
+
 def test_watchlist_add_needs_a_keyword_or_category(api, capsys, monkeypatch):
     monkeypatch.setenv("TRENDSAGI_API_KEY", KEY)
     code, _, _ = run(capsys, "watchlist", "add")

@@ -674,3 +674,328 @@ class SlackStatus(OrmBaseModel):
     channel_id: Optional[str] = None
     configuration_url: Optional[str] = None
     new_trend_alerts: Optional[bool] = None
+
+
+# --- Deep Dive, Dossier, Discovery and Social Evidence models ---
+
+class DossierEntity(OrmBaseModel):
+    subject_identified: bool = False
+    subject: Optional[str] = None
+    subject_type: Optional[str] = None
+    definition: Optional[str] = None
+    aliases: List[str] = Field(default_factory=list)
+    authoritative_url: Optional[str] = None
+    confidence: float = 0.0
+    other_meanings: List[str] = Field(default_factory=list)
+
+
+class DossierCoverage(OrmBaseModel):
+    status: Optional[str] = None
+    source_count: int = 0
+    domain_count: int = 0
+    dated_count: int = 0
+    freshest_at: Optional[str] = None
+    oldest_at: Optional[str] = None
+    high_authority: int = 0
+    mid_authority: int = 0
+    low_authority: int = 0
+    captured_at: Optional[datetime] = None
+
+
+class DossierEvent(OrmBaseModel):
+    at: Optional[str] = None
+    headline: str
+    detail: Optional[str] = None
+    event_type: Optional[str] = None
+    source_n: Optional[int] = None
+    source_url: Optional[str] = None
+    source_title: Optional[str] = None
+
+
+class DossierChannel(OrmBaseModel):
+    platform: Optional[str] = None
+    name: str
+    url: Optional[str] = None
+    channel_type: Optional[str] = None
+    evidence_n: Optional[int] = None
+    source_url: Optional[str] = None
+
+
+class DossierSerpResult(OrmBaseModel):
+    query: Optional[str] = None
+    title: str
+    url: str
+    site: Optional[str] = None
+    published: Optional[str] = None
+    format: Optional[str] = None
+    angle: Optional[str] = None
+
+
+class DossierContentLandscape(OrmBaseModel):
+    queries: List[str] = Field(default_factory=list)
+    results: List[DossierSerpResult] = Field(default_factory=list)
+    questions: List[str] = Field(default_factory=list)
+    gaps: List[str] = Field(default_factory=list)
+    outline: List[str] = Field(default_factory=list)
+
+
+class DossierBrand(OrmBaseModel):
+    name: str
+    presence: Optional[str] = None
+    sentiment: Optional[str] = None
+    source_n: Optional[int] = None
+    source_url: Optional[str] = None
+
+
+class DossierProduct(OrmBaseModel):
+    name: str
+    marketplace: Optional[str] = None
+    price: Optional[str] = None
+    source_n: Optional[int] = None
+    source_url: Optional[str] = None
+
+
+class DossierDelta(OrmBaseModel):
+    previous_captured_at: Optional[datetime] = None
+    new_events: List[DossierEvent] = Field(default_factory=list)
+    new_channels: List[DossierChannel] = Field(default_factory=list)
+    new_brands: List[DossierBrand] = Field(default_factory=list)
+
+
+class TrendDossier(OrmBaseModel):
+    trend_id: int
+    status: str
+    prompt_version: Optional[str] = None
+    model: Optional[str] = None
+    captured_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    entity: Optional[DossierEntity] = None
+    coverage: Optional[DossierCoverage] = None
+    timeline: List[DossierEvent] = Field(default_factory=list)
+    channels: List[DossierChannel] = Field(default_factory=list)
+    content_landscape: Optional[DossierContentLandscape] = None
+    brands: List[DossierBrand] = Field(default_factory=list)
+    products: List[DossierProduct] = Field(default_factory=list)
+    delta: Optional[DossierDelta] = None
+
+
+class DiscoveredTrend(OrmBaseModel):
+    source: Optional[str] = None
+    region: Optional[str] = None
+    label: str
+    rank: Optional[int] = None
+    first_seen_at: Optional[datetime] = None
+    last_seen_at: Optional[datetime] = None
+    seen_count: Optional[int] = None
+    matched_trend_id: Optional[int] = None
+    matched_name: Optional[str] = None
+
+
+class TrendDiscoveryListResponse(OrmBaseModel):
+    discoveries: List[DiscoveredTrend] = Field(default_factory=list)
+
+
+class SearchDemandPoint(OrmBaseModel):
+    captured_at: Optional[str] = None
+    interest: int = 0
+
+
+class RelatedQueryItem(OrmBaseModel):
+    query: str
+    kind: Optional[str] = None
+    score: Optional[int] = None
+
+
+class SearchDemandResponse(OrmBaseModel):
+    geo: Optional[str] = None
+    query: Optional[str] = None
+    label: Optional[str] = None
+    series: List[SearchDemandPoint] = Field(default_factory=list)
+    related: List[RelatedQueryItem] = Field(default_factory=list)
+    divergence: Optional[str] = None
+
+
+class AdCreativeItem(OrmBaseModel):
+    platform: Optional[str] = None
+    advertiser: Optional[str] = None
+    ad_id: str
+    headline: Optional[str] = None
+    body: Optional[str] = None
+    cta: Optional[str] = None
+    landing_url: Optional[str] = None
+    started_at: Optional[str] = None
+    source_url: Optional[str] = None
+    angle: Optional[str] = None
+
+
+class CreatorLeaderboardRow(OrmBaseModel):
+    screen_name: str
+    followers_count: Optional[int] = None
+    posts: int = 0
+    latest_post_snippet: Optional[str] = None
+    profile_url: Optional[str] = None
+
+
+class CreatorLeaderboardResponse(OrmBaseModel):
+    trend_id: int
+    label: Optional[str] = None
+    creators: List[CreatorLeaderboardRow] = Field(default_factory=list)
+
+
+class BrandMomentumRow(OrmBaseModel):
+    name: str
+    mentions: int = 0
+    share: float = 0.0
+    sentiment: Optional[str] = None
+    delta: Optional[float] = None
+    sparkline: List[int] = Field(default_factory=list)
+
+
+class BrandSnapshotRow(OrmBaseModel):
+    name: str
+    presence: Optional[str] = None
+    sentiment: Optional[str] = None
+    source_url: Optional[str] = None
+
+
+class BrandMomentumResponse(OrmBaseModel):
+    window: Optional[str] = None
+    captures: int = 0
+    label: Optional[str] = None
+    brands: List[BrandMomentumRow] = Field(default_factory=list)
+    snapshot_brands: List[BrandSnapshotRow] = Field(default_factory=list)
+
+
+class DeepDiveCreditsRemaining(OrmBaseModel):
+    included: int = 0
+    purchased: int = 0
+    resets_at: Optional[str] = None
+    daily_used: int = 0
+    daily_limit: int = 0
+
+
+class DeepDiveTopup(OrmBaseModel):
+    plan: Optional[str] = None
+    packs: Optional[Any] = None
+    headline: Optional[str] = None
+    body: Optional[str] = None
+    upgrade_plan: Optional[str] = None
+    upgrade_label: Optional[str] = None
+    fallback_copy: Optional[str] = None
+
+
+class EnrichTrendResponse(OrmBaseModel):
+    trend_id: Optional[int] = None
+    request_id: Optional[str] = None
+    status: Optional[str] = None
+    credits_charged: int = 0
+    credits_remaining: Optional[DeepDiveCreditsRemaining] = None
+    data: Dict[str, Any] = Field(default_factory=dict)
+    search_demand: Optional[SearchDemandResponse] = None
+    ads: List[AdCreativeItem] = Field(default_factory=list)
+    creators: Optional[CreatorLeaderboardResponse] = None
+    quality: Optional[Dict[str, Any]] = None
+    refreshed_at: Optional[str] = None
+    cache_age_seconds: Optional[int] = None
+    message: Optional[str] = None
+    topup: Optional[DeepDiveTopup] = None
+
+
+class AskTrendCitation(OrmBaseModel):
+    n: int
+    title: str
+    url: Optional[str] = None
+    source_type: Optional[str] = None
+
+
+class AskTrendEvidence(OrmBaseModel):
+    kind: Optional[str] = None
+    label: Optional[str] = None
+    count: int = 0
+
+
+class AskTrendResponse(OrmBaseModel):
+    answer: str
+    citations: List[AskTrendCitation] = Field(default_factory=list)
+    grounded: bool = False
+    generated_at: Optional[str] = None
+    evidence: List[AskTrendEvidence] = Field(default_factory=list)
+    follow_ups: List[str] = Field(default_factory=list)
+    insufficient_evidence_reason: Optional[str] = None
+
+
+class SocialEvidenceIncludedCredits(OrmBaseModel):
+    remaining: int = 0
+    total: int = 0
+    resets_at: Optional[str] = None
+
+
+class SocialEvidencePurchasedCredits(OrmBaseModel):
+    remaining: int = 0
+
+
+class SocialEvidenceCreditPack(OrmBaseModel):
+    id: str
+    credits: int = 0
+    price: Optional[str] = None
+    lookup_key: Optional[str] = None
+    apple_product_id: Optional[str] = None
+
+
+class SocialEvidenceUpsell(OrmBaseModel):
+    headline: Optional[str] = None
+    body: Optional[str] = None
+    primary_pack: Optional[str] = None
+    upgrade_plan: Optional[str] = None
+    upgrade_label: Optional[str] = None
+    fallback_copy: Optional[str] = None
+
+
+class SocialEvidenceCreditBalance(OrmBaseModel):
+    plan: Optional[str] = None
+    included: SocialEvidenceIncludedCredits = Field(default_factory=SocialEvidenceIncludedCredits)
+    purchased: SocialEvidencePurchasedCredits = Field(default_factory=SocialEvidencePurchasedCredits)
+    packs: List[SocialEvidenceCreditPack] = Field(default_factory=list)
+    upsell: SocialEvidenceUpsell = Field(default_factory=SocialEvidenceUpsell)
+
+
+class SocialEvidenceCreditsRemaining(OrmBaseModel):
+    included: int = 0
+    purchased: int = 0
+    resets_at: Optional[str] = None
+
+
+class SocialEvidenceQuality(OrmBaseModel):
+    completeness: Optional[str] = None
+    as_of: Optional[str] = None
+    source_count: int = 0
+    sections_present: int = 0
+
+
+class SocialEvidenceSection(OrmBaseModel):
+    present: bool = False
+    sample_size: int = 0
+    items: List[Any] = Field(default_factory=list)
+    tags: List[Dict[str, Any]] = Field(default_factory=list)
+    themes: List[Dict[str, Any]] = Field(default_factory=list)
+    angle_groups: List[Dict[str, Any]] = Field(default_factory=list)
+    source_count: Optional[int] = None
+
+
+class SocialEvidenceReport(OrmBaseModel):
+    trend_id: int
+    status: str
+    refreshed_at: Optional[str] = None
+    credits_charged: int = 0
+    credits_remaining: SocialEvidenceCreditsRemaining = Field(default_factory=SocialEvidenceCreditsRemaining)
+    sections: Dict[str, SocialEvidenceSection] = Field(default_factory=dict)
+    quality: SocialEvidenceQuality = Field(default_factory=SocialEvidenceQuality)
+    topup: Optional[SocialEvidenceUpsell] = None
+    message: Optional[str] = None
+    error_code: Optional[str] = None
+
+
+class SocialEvidenceCheckoutResponse(OrmBaseModel):
+    checkout_url: str
+    session_id: Optional[str] = None
+    pack: Optional[SocialEvidenceCreditPack] = None

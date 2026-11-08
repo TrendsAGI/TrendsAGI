@@ -19,6 +19,11 @@ trendsagi --help
 ```bash
 trendsagi trends list --sort velocity --limit 10          # fastest-moving topics
 trendsagi trends analytics 123 --period 7d                # one trend's readings over time
+trendsagi trends dossier 123                               # source-backed story, timeline and channels
+trendsagi trends enrich 123 --module search_demand         # on-demand Deep Dive (can reserve credits)
+trendsagi trends social-evidence get 123                   # stored post-level evidence
+trendsagi trends social-evidence run 123 --module posts    # refresh it (reserves one credit)
+trendsagi credits social-evidence                          # balance and one-time packs
 trendsagi insights get 123                                # audience, sentiment and marketing angles
 trendsagi insights generate 123 --wait                    # build fresh insights, then print them
 trendsagi recommendations list --priority high            # prioritised actions with their evidence
@@ -35,7 +40,8 @@ trendsagi api /api/integrations/delivery/health -q lookback_hours=24   # any end
 | Commands | What they do |
 | --- | --- |
 | `login`, `logout`, `whoami` | Save, forget and check the API key |
-| `trends` | Trending topics: `list`, `get`, `analytics`, `categories`, `autocomplete` |
+| `trends` | Trending topics: `list`, `get`, `analytics`, `categories`, `autocomplete`, `dossier`, `discoveries`, `enrich`, `search-demand`, `brand-momentum`, `creators`, `ask`, `social-evidence get\|run` |
+| `credits` | `social-evidence` balance, `buy-social-evidence` checkout |
 | `insights` | AI insights: `get`, `generate`, `status`, `search` |
 | `recommendations` (`recs`) | `list`, `action`, `feedback` |
 | `crisis` | `list`, `action` (acknowledge, archive, reopen) |

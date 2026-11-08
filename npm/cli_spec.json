@@ -78,6 +78,131 @@
           "method": "GET",
           "path": "/api/trends/autocomplete",
           "args": [{"name": "query", "param": "q", "in": "query", "help": "Phrase to complete."}]
+        },
+        {
+          "name": "dossier",
+          "help": "Show the source-backed dossier for a trend.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}/dossier",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "table": {"kind": "object"}
+        },
+        {
+          "name": "discoveries",
+          "help": "List labels found in an external trend list (discovery evidence, not measurements).",
+          "method": "GET",
+          "path": "/api/trends/discoveries",
+          "options": [
+            {"flag": "limit", "type": "int", "default": 50, "help": "Rows to return, 1-200."}
+          ],
+          "table": {"rows": "discoveries", "columns": ["label", "rank", "source", "region", "matched_trend_id"]}
+        },
+        {
+          "name": "enrich",
+          "help": "Run an on-demand Deep Dive (search demand, ads or creators). Can reserve credits.",
+          "method": "POST",
+          "path": "/api/trends/{trend_id}/enrich",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "options": [
+            {"flag": "module", "param": "modules", "type": "list", "metavar": "A,B", "help": "Modules to build: search_demand,ads,creators."},
+            {"flag": "region", "default": "US", "help": "Two-letter market code."},
+            {"flag": "force", "type": "flag", "help": "Rebuild a cached module."},
+            {"flag": "request-id", "param": "request_id", "help": "Idempotency key for the credit reservation."}
+          ],
+          "confirm": "Run a Deep Dive for trend {trend_id}? It can reserve credits.",
+          "table": {"kind": "object"}
+        },
+        {
+          "name": "search-demand",
+          "help": "Show the stored relative search-interest series and related queries.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}/search-demand",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "options": [{"flag": "geo", "default": "US", "help": "Two-letter market code."}],
+          "table": {"rows": "series", "columns": ["captured_at", "interest"]}
+        },
+        {
+          "name": "brand-momentum",
+          "help": "Show the brands visible in a trend's coverage and their movement.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}/brand-momentum",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "options": [{"flag": "window", "choices": ["24h", "7d", "30d"], "default": "7d", "help": "Comparison window."}],
+          "table": {"rows": "brands", "columns": ["name", "mentions", "share", "sentiment", "delta"]}
+        },
+        {
+          "name": "creators",
+          "help": "List the accounts posting most about a trend.",
+          "method": "GET",
+          "path": "/api/trends/{trend_id}/creators",
+          "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+          "table": {"rows": "creators", "columns": ["screen_name", "followers_count", "posts", "profile_url"]}
+        },
+        {
+          "name": "ask",
+          "help": "Ask a grounded question about one trend.",
+          "method": "POST",
+          "path": "/api/trends/{trend_id}/ask",
+          "args": [
+            {"name": "trend_id", "type": "int", "help": "Trend ID."},
+            {"name": "question", "in": "body", "help": "Question about the trend."}
+          ],
+          "table": {"kind": "object"}
+        },
+        {
+          "name": "social-evidence",
+          "help": "Read or run Social Evidence for a trend.",
+          "commands": [
+            {
+              "name": "get",
+              "help": "Show the stored Social Evidence report (free).",
+              "method": "GET",
+              "path": "/api/trends/{trend_id}/social-evidence",
+              "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+              "table": {"kind": "object"}
+            },
+            {
+              "name": "run",
+              "help": "Run or refresh Social Evidence (reserves one credit).",
+              "method": "POST",
+              "path": "/api/trends/{trend_id}/social-evidence",
+              "args": [{"name": "trend_id", "type": "int", "help": "Trend ID."}],
+              "options": [
+                {"flag": "module", "param": "modules", "type": "list", "metavar": "A,B", "help": "Modules: posts,transcripts,creators,comments,ads,sponsors,hashtags,mentions."},
+                {"flag": "region", "default": "US", "help": "Two-letter market code."},
+                {"flag": "force", "type": "flag", "help": "Rebuild the report."},
+                {"flag": "request-id", "param": "request_id", "help": "Idempotency key for the credit reservation."}
+              ],
+              "confirm": "Run Social Evidence for trend {trend_id}? It reserves one credit.",
+              "table": {"kind": "object"}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "credits",
+      "help": "Credit balances and one-time packs.",
+      "commands": [
+        {
+          "name": "social-evidence",
+          "help": "Show the Social Evidence credit balance.",
+          "method": "GET",
+          "path": "/api/user/social-evidence-credits",
+          "table": {"kind": "object"}
+        },
+        {
+          "name": "buy-social-evidence",
+          "help": "Create a Stripe Checkout session for a Social Evidence pack.",
+          "method": "POST",
+          "path": "/api/billing/social-evidence/checkout",
+          "args": [{"name": "pack_id", "in": "body", "help": "Pack ID from 'credits social-evidence'."}],
+          "options": [
+            {"flag": "success-url", "param": "success_url", "help": "Return URL after payment."},
+            {"flag": "cancel-url", "param": "cancel_url", "help": "Return URL after cancellation."}
+          ],
+          "confirm": "Create a checkout session for pack {pack_id}?",
+          "table": {"kind": "object"}
         }
       ]
     },

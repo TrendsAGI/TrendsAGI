@@ -32,6 +32,9 @@
       "name": "Signal Discovery"
     },
     {
+      "name": "Agents"
+    },
+    {
       "name": "Context Injection"
     },
     {
@@ -137,6 +140,15 @@
             "description": "Optional. Zero-based pagination offset. Default: 0.",
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Comma-separated attachments; use 'dossier' to add the compact resolved entity to each row.",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -288,6 +300,566 @@
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}/dossier": {
+      "get": {
+        "tags": [
+          "Signal Discovery"
+        ],
+        "operationId": "getTrendDossier",
+        "summary": "Retrieve the source-backed dossier behind a trend label: the resolved subject, evidence coverage, a dated timeline, the ",
+        "description": "Retrieve the source-backed dossier behind a trend label: the resolved subject, evidence coverage, a dated timeline, the channels carrying the conversation, the content landscape, and the brands and products visible in the coverage.\n\nA dossier is source-backed evidence, not a measurement: it never invents volume, velocity, CPC or demographics.\n\nReturns 404 when no dossier has been generated for the trend yet. A dossier is generated in the background and cached; this GET never starts a generation.\n\nUse GET /api/trends?include=dossier to attach the compact resolved entity to every row of the trend list.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "trend_id": 123,
+                  "status": "complete",
+                  "captured_at": "2026-11-08T09:00:00Z",
+                  "entity": {
+                    "subject_identified": true,
+                    "subject": "Example subject",
+                    "subject_type": "organization",
+                    "definition": "What the label refers to.",
+                    "confidence": 0.86
+                  },
+                  "coverage": {
+                    "status": "strong",
+                    "source_count": 12,
+                    "domain_count": 9,
+                    "dated_count": 7
+                  },
+                  "timeline": [
+                    {
+                      "at": "2026-11-06",
+                      "headline": "A dated development",
+                      "source_url": "https://example.com/story"
+                    }
+                  ],
+                  "channels": [
+                    {
+                      "platform": "reddit",
+                      "name": "r/example",
+                      "url": "https://www.reddit.com/r/example/"
+                    }
+                  ],
+                  "brands": [],
+                  "products": [],
+                  "delta": {
+                    "new_events": [],
+                    "new_channels": [],
+                    "new_brands": []
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/trends/discoveries": {
+      "get": {
+        "tags": [
+          "Signal Discovery"
+        ],
+        "operationId": "getTrendDiscoveries",
+        "summary": "List labels found in an external trend list, deduplicated and cached.",
+        "description": "List labels found in an external trend list, deduplicated and cached. Discovery evidence only: a discovery has no measured volume or velocity, and matched_trend_id points at the measured trend when the same label is already tracked.\n\nDiscovery rows are not measured trends. Never present a discovery as a TrendsAGI volume, velocity or growth figure.\n\nA failed refresh leaves the previous cached list readable rather than returning an empty section.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Maximum discoveries to return, 1-200. Default: 50.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "discoveries": [
+                    {
+                      "source": "neteye",
+                      "region": "US",
+                      "label": "Example label",
+                      "rank": 1,
+                      "first_seen_at": "2026-11-08T08:00:00Z",
+                      "last_seen_at": "2026-11-08T09:00:00Z",
+                      "seen_count": 6,
+                      "matched_trend_id": 123,
+                      "matched_name": "Example label"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}/search-demand": {
+      "get": {
+        "tags": [
+          "Signal Discovery"
+        ],
+        "operationId": "getTrendSearchDemand",
+        "summary": "Retrieve the relative search-interest series and related queries captured for a trend.",
+        "description": "Retrieve the relative search-interest series and related queries captured for a trend. Interest is indexed 0-100 and is not an absolute search volume.\n\nRelative search interest is a 0-100 index, not an absolute search volume.\n\nThe series is filled by an on-demand Deep Dive; this GET returns the stored result and does not start a provider call.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "geo",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Two-letter market code. Default: US.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "geo": "US",
+                  "query": "example query",
+                  "label": "Example label",
+                  "series": [
+                    {
+                      "captured_at": "2026-11-01T00:00:00Z",
+                      "interest": 72
+                    }
+                  ],
+                  "related": [
+                    {
+                      "query": "example related query",
+                      "kind": "rising",
+                      "score": 80
+                    }
+                  ],
+                  "divergence": "aligned"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}/brand-momentum": {
+      "get": {
+        "tags": [
+          "Signal Discovery"
+        ],
+        "operationId": "getTrendBrandMomentum",
+        "summary": "Show which brands are visible in a trend's coverage and how their share of that coverage has moved.",
+        "description": "Show which brands are visible in a trend's coverage and how their share of that coverage has moved. This is share of coverage in the trend's sources, not market share.\n\nShare is the brand's share of the coverage captured for this trend, not its market share.\n\nWith one capture the response uses snapshot_brands and omits share and delta.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "description": "Optional. Comparison window: '24h', '7d' or '30d'. Default: 7d.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "window": "7d",
+                  "captures": 3,
+                  "label": "Example label",
+                  "brands": [
+                    {
+                      "name": "Example brand",
+                      "mentions": 12,
+                      "share": 0.42,
+                      "sentiment": "positive",
+                      "delta": 0.08,
+                      "sparkline": [
+                        4,
+                        7,
+                        12
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/agent/schema": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "operationId": "getAgentSchema",
+        "summary": "Describe the tables an agent can query with SQL: every column's type and meaning, the query rules, limits and example qu",
+        "description": "Describe the tables an agent can query with SQL: every column's type and meaning, the query rules, limits and example queries. The hosted MCP server serves the same document as the read_data_schema tool.\n\nTables: trends, trend_snapshots (90 days of readings), trend_categories, trend_insights, watchlist, recommendations and crisis_events. The last three only ever contain your own account's rows.",
+        "x-plan-tier": "Developer",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "dialect": "PostgreSQL",
+                  "limits": {
+                    "max_query_chars": 10000,
+                    "default_max_rows": 100,
+                    "max_rows": 1000,
+                    "timeout_seconds": 5
+                  },
+                  "tables": [
+                    {
+                      "name": "trends",
+                      "description": "One row per trending topic TrendsAGI has seen on social platforms...",
+                      "columns": [
+                        {
+                          "name": "volume",
+                          "type": "integer",
+                          "description": "Newest measured volume. NULL means not measured, never zero."
+                        }
+                      ]
+                    },
+                    {
+                      "name": "recommendations",
+                      "requires": "A plan with recommendations.",
+                      "columns": []
+                    }
+                  ],
+                  "examples": [
+                    {
+                      "question": "Which topics are rising fastest right now?",
+                      "sql": "SELECT id, name, volume, growth_pct FROM trends WHERE ..."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/agent/sql": {
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "operationId": "executeAgentSql",
+        "summary": "Run one read-only PostgreSQL SELECT over your TrendsAGI data, for questions that need filtering, joins or aggregation.",
+        "description": "Run one read-only PostgreSQL SELECT over your TrendsAGI data, for questions that need filtering, joins or aggregation. The hosted MCP server exposes this as the execute_sql tool.\n\nQueries are validated before they run: one SELECT, only the documented tables, and common aggregate, window, date/time, string, math, array and jsonb functions. Anything else returns 400 with an error code such as unknown_table or function_not_allowed and a message naming the problem.\n\nEach query runs read-only and is cancelled after 5 seconds (error code timeout). A table outside your plan returns 403 plan_required.\n\nEach query counts as one API request against your daily limit.",
+        "x-plan-tier": "Developer",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "columns": [
+                    {
+                      "name": "category",
+                      "type": "text"
+                    },
+                    {
+                      "name": "trends",
+                      "type": "int8"
+                    },
+                    {
+                      "name": "avg_growth_pct",
+                      "type": "numeric"
+                    }
+                  ],
+                  "rows": [
+                    [
+                      "Sports",
+                      41,
+                      38.2
+                    ],
+                    [
+                      "Technology",
+                      57,
+                      21.7
+                    ]
+                  ],
+                  "row_count": 2,
+                  "truncated": false,
+                  "tables": [
+                    "trends"
+                  ],
+                  "elapsed_ms": 412
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "requestBody": {
+          "description": "The query.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Required. One SELECT (WITH ... SELECT is fine) over the tables from /api/agent/schema. At most 10,000 characters."
+                  },
+                  "max_rows": {
+                    "type": "integer",
+                    "description": "Optional. Rows to return, 1 to 1000. Default: 100."
+                  },
+                  "max_result_bytes": {
+                    "type": "integer",
+                    "description": "Optional. Stop adding rows once the encoded rows reach this size. Default and maximum: 1 MB."
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/agent/tools": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "operationId": "listAgentTools",
+        "summary": "List the TrendsAGI agent tools in WebMCP's shape: name, title, description, JSON input schema and annotations (readOnlyH",
+        "description": "List the TrendsAGI agent tools in WebMCP's shape: name, title, description, JSON input schema and annotations (readOnlyHint, untrustedContentHint). The hosted MCP server, the TrendsAGI app's WebMCP tools and this endpoint all serve the same read-only tools.\n\nNo sign-in needed: the tool list is the same for every account. Responses are cacheable for 5 minutes.\n\nPass each entry (plus an execute callback) to document.modelContext.registerTool to offer the tool to a browser agent through WebMCP.",
+        "x-plan-tier": "Developer",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "instructions": "These tools read the signed-in user's TrendsAGI account...",
+                  "tools": [
+                    {
+                      "name": "list_trends",
+                      "title": "List trending topics",
+                      "description": "List topics trending now on social platforms with measured volume, velocity and growth...",
+                      "inputSchema": {
+                        "type": "object",
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "sort_by": {
+                            "type": "string",
+                            "enum": [
+                              "velocity",
+                              "growth",
+                              "volume",
+                              "timestamp",
+                              "name"
+                            ],
+                            "default": "velocity"
+                          },
+                          "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 25,
+                            "default": 10
+                          }
+                        },
+                        "required": [],
+                        "additionalProperties": false
+                      },
+                      "annotations": {
+                        "readOnlyHint": true,
+                        "untrustedContentHint": true
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/agent/tools/{name}": {
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "operationId": "callAgentTool",
+        "summary": "Run one agent tool by name with its arguments as the JSON body, and get the same result the hosted MCP server's tools/ca",
+        "description": "Run one agent tool by name with its arguments as the JSON body, and get the same result the hosted MCP server's tools/call returns. The TrendsAGI app's WebMCP tools call this with the signed-in session; an API key works too.\n\nA tool that fails still answers 200 with isError true and a JSON text explaining why (invalid_arguments, http_403 with an upgrade hint, http_429 with a wait hint), so an agent can recover.\n\nAn unknown tool name returns 404 with the list of tools. Arguments that are not a JSON object return 400.\n\nWith an API key, each call counts as the API request it runs, as on the MCP server. With a browser session (WebMCP), it counts as app use, like the same view in the app.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "A tool name from GET /api/agent/tools, e.g. list_trends.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "{\"trends\":[{\"id\":123,\"name\":\"#AIUpdate\",\"volume\":55200}]}"
+                    }
+                  ],
+                  "isError": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "requestBody": {
+          "description": "The tool's arguments, matching its inputSchema. Send {} for a tool without arguments.",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "(tool arguments)": {
+                    "type": "object",
+                    "description": "For example {\"category\": \"Technology\", \"limit\": 5} for list_trends."
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -721,6 +1293,450 @@
         }
       }
     },
+    "/api/trends/{trend_id}/enrich": {
+      "post": {
+        "tags": [
+          "Context Injection"
+        ],
+        "operationId": "postTrendEnrich",
+        "summary": "Run an on-demand Deep Dive for a trend and return the requested evidence modules.",
+        "description": "Run an on-demand Deep Dive for a trend and return the requested evidence modules. A Deep Dive reserves credits only when it produces usable live data; a cache hit costs nothing and returns the cached envelope.\n\nA 402 response includes a topup prompt with the available packs; credits are reserved before the provider calls and released when no usable data was produced.\n\nThis endpoint is the on-demand Deep Dive; the GET routes below only read stored results.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "trend_id": 123,
+                  "request_id": "1f47d6d0-3e6b-4f0e-9a2f-2f4c1b7a9d10",
+                  "status": "complete",
+                  "credits_charged": 1,
+                  "credits_remaining": {
+                    "included": 9,
+                    "purchased": 0,
+                    "resets_at": "2026-12-01T00:00:00Z"
+                  },
+                  "search_demand": {
+                    "geo": "US",
+                    "label": "Example label",
+                    "series": [],
+                    "related": [],
+                    "divergence": "aligned"
+                  },
+                  "ads": [],
+                  "creators": {
+                    "trend_id": 123,
+                    "label": "Example label",
+                    "creators": []
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "requestBody": {
+          "description": "Modules to build. Omit them to use the trend's default module set.",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "modules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional. Any of: search_demand, ads, creators."
+                  },
+                  "region": {
+                    "type": "string",
+                    "description": "Optional. Two-letter market code. Default: US."
+                  },
+                  "force": {
+                    "type": "boolean",
+                    "description": "Optional. Rebuild a cached module instead of serving it."
+                  },
+                  "request_id": {
+                    "type": "string",
+                    "description": "Optional. Idempotency key for the credit reservation."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}/creators": {
+      "get": {
+        "tags": [
+          "Context Injection"
+        ],
+        "operationId": "getTrendCreators",
+        "summary": "List the accounts posting most about a trend, with follower counts and post counts.",
+        "description": "List the accounts posting most about a trend, with follower counts and post counts. The ranking measures posting activity, not influence.\n\nAccounts posting most is not a measure of influence.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "trend_id": 123,
+                  "label": "Example label",
+                  "creators": [
+                    {
+                      "screen_name": "examplecreator",
+                      "followers_count": 120000,
+                      "posts": 4,
+                      "latest_post_snippet": "A recent post about the trend.",
+                      "profile_url": "https://example.com/creator"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}/ask": {
+      "post": {
+        "tags": [
+          "Context Injection"
+        ],
+        "operationId": "postTrendAsk",
+        "summary": "Ask a question about one trend.",
+        "description": "Ask a question about one trend. The answer is grounded in the evidence TrendsAGI has captured for that trend (insight, dossier, measured snapshots, social evidence and search demand) and returns numbered citations plus the evidence kinds used.\n\nWhen the captured evidence is insufficient, the response says so and grounded is false; it does not invent an answer.\n\nCitations may only use the evidence the server returned.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "answer": "A grounded answer.",
+                  "citations": [
+                    {
+                      "n": 1,
+                      "title": "A source title",
+                      "url": "https://example.com/source",
+                      "source_type": "dossier"
+                    }
+                  ],
+                  "grounded": true,
+                  "evidence": [
+                    {
+                      "kind": "dossier",
+                      "label": "Trend dossier",
+                      "count": 1
+                    }
+                  ],
+                  "follow_ups": [
+                    "A useful follow-up question"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "requestBody": {
+          "description": "The question to answer.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "description": "Required. The question about this trend."
+                  }
+                },
+                "required": [
+                  "question"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trends/{trend_id}/social-evidence": {
+      "get": {
+        "tags": [
+          "Context Injection"
+        ],
+        "operationId": "getTrendSocialEvidence",
+        "summary": "Read the stored Social Evidence report for a trend: the posts, transcripts, creators, comments, ads, sponsors, hashtags ",
+        "description": "Read the stored Social Evidence report for a trend: the posts, transcripts, creators, comments, ads, sponsors, hashtags and brand mentions that made the trend rise, with a coverage quality summary.\n\nThis GET is free; a report is trend-scoped and is shared by every customer who opens the same trend.\n\nReturns 404 with {\"present\": false} when no report exists yet. A section below its minimum sample is returned with present=false and no placeholder rows.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "trend_id": 123,
+                  "status": "complete",
+                  "refreshed_at": "2026-11-08T09:00:00Z",
+                  "credits_charged": 0,
+                  "credits_remaining": {
+                    "included": 9,
+                    "purchased": 0,
+                    "resets_at": "2026-12-01T00:00:00Z"
+                  },
+                  "sections": {
+                    "posts": {
+                      "present": true,
+                      "sample_size": 24,
+                      "items": []
+                    }
+                  },
+                  "quality": {
+                    "completeness": "strong",
+                    "as_of": "2026-11-08T09:00:00Z",
+                    "source_count": 24,
+                    "sections_present": 6
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Context Injection"
+        ],
+        "operationId": "postTrendSocialEvidence",
+        "summary": "Run or refresh Social Evidence for a trend.",
+        "description": "Run or refresh Social Evidence for a trend. The response is the served report; the run reserves one Social Evidence credit on a cache hit or miss and can take 30-50 seconds.\n\nOne Social Evidence credit is reserved per run, cache hit or miss.\n\nA 402 response includes a topup prompt; a cost guard can pause the run without charging.",
+        "x-plan-tier": "Developer",
+        "parameters": [
+          {
+            "name": "trend_id",
+            "in": "path",
+            "required": true,
+            "description": "The signal ID.",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "trend_id": 123,
+                  "status": "complete",
+                  "refreshed_at": "2026-11-08T09:00:00Z",
+                  "credits_charged": 1,
+                  "credits_remaining": {
+                    "included": 9,
+                    "purchased": 0,
+                    "resets_at": "2026-12-01T00:00:00Z"
+                  },
+                  "sections": {
+                    "posts": {
+                      "present": true,
+                      "sample_size": 24,
+                      "items": []
+                    }
+                  },
+                  "quality": {
+                    "completeness": "strong",
+                    "as_of": "2026-11-08T09:00:00Z",
+                    "source_count": 24,
+                    "sections_present": 6
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        },
+        "requestBody": {
+          "description": "Report modules and options.",
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "modules": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional. Any of: posts, transcripts, creators, comments, ads, sponsors, hashtags, mentions."
+                  },
+                  "region": {
+                    "type": "string",
+                    "description": "Optional. Two-letter market code. Default: US."
+                  },
+                  "force": {
+                    "type": "boolean",
+                    "description": "Optional. Rebuild the report instead of serving the stored one."
+                  },
+                  "request_id": {
+                    "type": "string",
+                    "description": "Optional. Idempotency key for the credit reservation."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/social-evidence-credits": {
+      "get": {
+        "tags": [
+          "Configuration"
+        ],
+        "operationId": "getSocialEvidenceCredits",
+        "summary": "Read the account's Social Evidence credit balance: the included monthly allowance, purchased credits, the available one-",
+        "description": "Read the account's Social Evidence credit balance: the included monthly allowance, purchased credits, the available one-time packs and the upsell copy shown when the allowance is exhausted.\n\nPurchased credits never expire; the included allowance resets on the date in included.resets_at.\n\nThis endpoint is free and does not consume a credit.",
+        "x-plan-tier": "Developer",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "plan": "starter",
+                  "included": {
+                    "remaining": 9,
+                    "total": 10,
+                    "resets_at": "2026-12-01T00:00:00Z"
+                  },
+                  "purchased": {
+                    "remaining": 0
+                  },
+                  "packs": [
+                    {
+                      "id": "social_evidence_10",
+                      "credits": 10,
+                      "price": "£4.99",
+                      "lookup_key": "trendsagi_social_evidence_10_gbp",
+                      "apple_product_id": "com.trendsagi.app.socialevidence.10"
+                    }
+                  ],
+                  "upsell": {
+                    "headline": "You have used this month's Social Evidence reports.",
+                    "body": "Top up to keep investigating.",
+                    "primary_pack": "social_evidence_10",
+                    "fallback_copy": "Contact support if you need more."
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
     "/api/integrations/ads/providers": {
       "get": {
         "tags": [
@@ -754,6 +1770,109 @@
                       }
                     }
                   ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/integrations/ads/onboarding-platforms": {
+      "get": {
+        "tags": [
+          "Ads Integrations"
+        ],
+        "operationId": "getAdsOnboardingPlatforms",
+        "summary": "List the connect-first onboarding tiles: which ad platforms are released, which reporting adapters have landed rows, and",
+        "description": "List the connect-first onboarding tiles: which ad platforms are released, which reporting adapters have landed rows, and which platforms qualify, plus the onboarding flow to run.\n\n`flow` is `connect_first` only when the campaign view is released and at least one platform qualifies; otherwise it is `legacy`, so a signup is never blocked behind a connect step it cannot complete.\n\n`has_reporting_rows` and `qualifies` describe the reporting adapter, not the caller's own connection state.",
+        "x-plan-tier": "All Plans",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "flow": "connect_first",
+                  "campaigns_released": true,
+                  "qualifying": [
+                    "google_ads",
+                    "meta_ads"
+                  ],
+                  "platforms": [
+                    {
+                      "platform": "google_ads",
+                      "label": "Google Ads",
+                      "released": true,
+                      "has_reporting_rows": true,
+                      "qualifies": true,
+                      "slow_first_sync": false,
+                      "reporting_only": false,
+                      "captures": [
+                        "campaigns",
+                        "ad groups",
+                        "metrics"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/integrations/ads/{platform}/sync-now": {
+      "post": {
+        "tags": [
+          "Ads Integrations"
+        ],
+        "operationId": "postAdsSyncNow",
+        "summary": "Queue an immediate sync for one connected ads platform instead of waiting for the nightly pass.",
+        "description": "Queue an immediate sync for one connected ads platform instead of waiting for the nightly pass. Repeating the call inside the rate window returns the request already queued.\n\n202 means a sync was queued; 200 with `deduplicated` true means one is already inside the ten-minute window.\n\n404 means the platform is not connected for this account; connect it before syncing.",
+        "x-plan-tier": "All Plans",
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "path",
+            "required": true,
+            "description": "google_ads | meta_ads | tiktok_ads | linkedin_ads | microsoft_ads | snapchat_ads | pinterest_ads | reddit_ads",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "request_id": 1842,
+                  "platform": "meta_ads",
+                  "status": "queued",
+                  "phase": "recent",
+                  "requested_at": "2026-11-07T09:30:00Z",
+                  "deduplicated": false,
+                  "retry_after_seconds": 300,
+                  "slow_first_sync": false
                 }
               }
             }
@@ -3155,6 +4274,46 @@
         }
       }
     },
+    "/api/integrations/availability": {
+      "get": {
+        "tags": [
+          "Integrations"
+        ],
+        "operationId": "getIntegrationAvailability",
+        "summary": "List the connector IDs currently released for the catalog.",
+        "description": "List the connector IDs currently released for the catalog. Use this before rendering connector choices or attempting a connector flow so administrators can retire a connector without a deploy.\n\nThe response lists connector IDs, not provider readiness. Use `GET /api/integrations/ads/providers` for ads OAuth configuration and connection state.\n\nAn administrator can hide every connector; an empty array is a deliberate catalog state, not an error.",
+        "x-plan-tier": "All Plans",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "released": [
+                    "slack",
+                    "shopify",
+                    "meta_capi",
+                    "reddit_ads",
+                    "bigquery",
+                    "google_sheets",
+                    "webhook_reactor"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
     "/api/integrations/shopify/status": {
       "get": {
         "tags": [
@@ -3574,6 +4733,54 @@
         }
       }
     },
+    "/api/integrations/meta-capi/resources/refresh": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "operationId": "postMetaCapiResourcesRefresh",
+        "summary": "Refresh the Meta CAPI ad accounts and pixels available to the connected token, then return the updated connector status.",
+        "description": "Refresh the Meta CAPI ad accounts and pixels available to the connected token, then return the updated connector status.\n\nCall this after granting the TrendsAGI app access to a new Meta ad account or pixel.\n\nIf Meta rejects the read, the response includes `assets_fetch_error` and keeps the last known assets.",
+        "x-plan-tier": "Advantage",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "configured": true,
+                  "is_connected": true,
+                  "ad_accounts": [
+                    {
+                      "account_id": "act_123",
+                      "account_name": "Acme",
+                      "status": "ACTIVE"
+                    }
+                  ],
+                  "pixels": [
+                    {
+                      "pixel_id": "1234567890",
+                      "pixel_name": "Acme Pixel",
+                      "account_id": "act_123"
+                    }
+                  ],
+                  "assets_refreshed_at": "2026-10-25T09:00:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
     "/api/integrations/meta-capi/push": {
       "post": {
         "tags": [
@@ -3870,6 +5077,60 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/integrations/reddit-ads/resources/refresh": {
+      "post": {
+        "tags": [
+          "Integrations"
+        ],
+        "operationId": "postRedditAdsResourcesRefresh",
+        "summary": "Refresh the Reddit Ads businesses, ad accounts, and pixels available to the connected token, then return the updated con",
+        "description": "Refresh the Reddit Ads businesses, ad accounts, and pixels available to the connected token, then return the updated connector status.\n\nCall this after adding a business, ad account, or pixel in Reddit Ads Manager.\n\nIf Reddit rejects the read, the response includes `assets_fetch_error` and keeps the last known assets.",
+        "x-plan-tier": "Advantage",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "configured": true,
+                  "is_connected": true,
+                  "businesses": [
+                    {
+                      "business_id": "biz_123",
+                      "name": "Acme"
+                    }
+                  ],
+                  "ad_accounts": [
+                    {
+                      "account_id": "acc_123",
+                      "account_name": "Acme Ads",
+                      "business_id": "biz_123"
+                    }
+                  ],
+                  "pixels": [
+                    {
+                      "pixel_id": "px_123",
+                      "pixel_name": "Acme Pixel",
+                      "account_id": "acc_123"
+                    }
+                  ],
+                  "assets_refreshed_at": "2026-10-25T09:00:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
           }
         }
       }
@@ -4641,424 +5902,6 @@
         }
       }
     },
-    "/api/integrations/n8n/status": {
-      "get": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "getN8nStatus",
-        "summary": "Check n8n connector readiness, connection status, and saved workflow selection.",
-        "description": "Check n8n connector readiness, connection status, and saved workflow selection.",
-        "x-plan-tier": "Advantage",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "configured": true,
-                  "is_connected": true,
-                  "connected_at": "2026-02-19T18:51:00Z",
-                  "selection": {
-                    "api_base_url": "https://n8n.example.com",
-                    "workflow_id": "14",
-                    "workflow_name": "Trend Alerts",
-                    "default_event": "trend_lifecycle"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        }
-      }
-    },
-    "/api/integrations/n8n/connect": {
-      "post": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "postN8nConnect",
-        "summary": "Connect n8n by storing API key and default workflow routing metadata.",
-        "description": "Connect n8n by storing API key and default workflow routing metadata.",
-        "x-plan-tier": "Advantage",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "success": true
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        },
-        "requestBody": {
-          "description": "n8n connector credentials and defaults.",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "api_key": {
-                    "type": "string",
-                    "description": "Required n8n API key/token."
-                  },
-                  "api_base_url": {
-                    "type": "string",
-                    "description": "Optional n8n API base URL."
-                  },
-                  "workflow_id": {
-                    "type": "string",
-                    "description": "Optional default workflow ID."
-                  },
-                  "workflow_name": {
-                    "type": "string",
-                    "description": "Optional workflow label."
-                  },
-                  "webhook_url": {
-                    "type": "string",
-                    "description": "Optional webhook invocation URL."
-                  },
-                  "default_event": {
-                    "type": "string",
-                    "description": "Optional default event name."
-                  },
-                  "include_metadata": {
-                    "type": "boolean",
-                    "description": "Optional metadata enrichment flag."
-                  },
-                  "client_id": {
-                    "type": "string",
-                    "description": "Optional client scope."
-                  }
-                },
-                "required": [
-                  "api_key"
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/integrations/n8n/workflows": {
-      "get": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "getN8nWorkflows",
-        "summary": "List workflows available from the connected n8n instance.",
-        "description": "List workflows available from the connected n8n instance.",
-        "x-plan-tier": "Advantage",
-        "parameters": [
-          {
-            "name": "api_base_url",
-            "in": "query",
-            "required": false,
-            "description": "Optional base URL override for multi-instance environments.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "workflows": [
-                    {
-                      "workflow_id": "14",
-                      "name": "Trend Alerts",
-                      "active": true,
-                      "updated_at": "2026-02-18T20:10:00Z",
-                      "webhook_url": "https://n8n.example.com/webhook/trend-alerts"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        }
-      }
-    },
-    "/api/integrations/n8n/workflows/{workflow_id}": {
-      "get": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "getN8nWorkflowDetails",
-        "summary": "Get details for one n8n workflow.",
-        "description": "Get details for one n8n workflow.",
-        "x-plan-tier": "Advantage",
-        "parameters": [
-          {
-            "name": "workflow_id",
-            "in": "path",
-            "required": true,
-            "description": "Required n8n workflow ID.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "api_base_url",
-            "in": "query",
-            "required": false,
-            "description": "Optional base URL override.",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "workflow": {
-                    "workflow_id": "14",
-                    "name": "Trend Alerts",
-                    "active": true,
-                    "updated_at": "2026-02-18T20:10:00Z",
-                    "webhook_url": "https://n8n.example.com/webhook/trend-alerts"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        }
-      }
-    },
-    "/api/integrations/n8n/selection": {
-      "put": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "putN8nSelection",
-        "summary": "Save n8n workflow selection and delivery defaults.",
-        "description": "Save n8n workflow selection and delivery defaults.",
-        "x-plan-tier": "Advantage",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "success": true
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        },
-        "requestBody": {
-          "description": "n8n workflow selection payload.",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "workflow_id": {
-                    "type": "string",
-                    "description": "Optional default workflow ID."
-                  },
-                  "workflow_name": {
-                    "type": "string",
-                    "description": "Optional workflow label."
-                  },
-                  "webhook_url": {
-                    "type": "string",
-                    "description": "Optional webhook URL override."
-                  },
-                  "default_event": {
-                    "type": "string",
-                    "description": "Optional default event name."
-                  },
-                  "include_metadata": {
-                    "type": "boolean",
-                    "description": "Optional metadata enrichment flag."
-                  },
-                  "api_base_url": {
-                    "type": "string",
-                    "description": "Optional n8n API base URL."
-                  },
-                  "client_id": {
-                    "type": "string",
-                    "description": "Optional client scope."
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/integrations/n8n/push": {
-      "post": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "postN8nPush",
-        "summary": "Push a payload into the configured n8n workflow/webhook destination.",
-        "description": "Push a payload into the configured n8n workflow/webhook destination.",
-        "x-plan-tier": "Advantage",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                },
-                "example": {
-                  "success": true,
-                  "status_code": 200,
-                  "message": "event queued for n8n delivery",
-                  "workflow_id": "14",
-                  "invoke_mode": "webhook",
-                  "delivery_status": "queued",
-                  "idempotency_key": "n8n:user:101:..."
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        },
-        "requestBody": {
-          "description": "n8n invocation payload.",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "event": {
-                    "type": "string",
-                    "description": "Optional event label (falls back to selection default)."
-                  },
-                  "workflow_id": {
-                    "type": "string",
-                    "description": "Optional workflow override."
-                  },
-                  "webhook_url": {
-                    "type": "string",
-                    "description": "Optional webhook URL override."
-                  },
-                  "api_base_url": {
-                    "type": "string",
-                    "description": "Optional base URL override."
-                  },
-                  "data": {
-                    "type": "object",
-                    "description": "Optional payload object."
-                  },
-                  "input": {
-                    "type": "object",
-                    "description": "Optional single input object."
-                  },
-                  "inputs": {
-                    "type": "object",
-                    "description": "Optional structured input map."
-                  },
-                  "payload": {
-                    "type": "object",
-                    "description": "Optional full payload override."
-                  },
-                  "client_id": {
-                    "type": "string",
-                    "description": "Optional client scope."
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/integrations/n8n/disconnect": {
-      "post": {
-        "tags": [
-          "Integrations"
-        ],
-        "operationId": "postN8nDisconnect",
-        "summary": "Disconnect n8n integration and clear saved connector credentials.",
-        "description": "Disconnect n8n integration and clear saved connector credentials.",
-        "x-plan-tier": "Advantage",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "429": {
-            "$ref": "#/components/responses/RateLimited"
-          }
-        }
-      }
-    },
     "/api/integrations/delivery/health": {
       "get": {
         "tags": [
@@ -5082,7 +5925,7 @@
             "name": "provider",
             "in": "query",
             "required": false,
-            "description": "Optional provider filter (for example: meta_capi, shopify, n8n).",
+            "description": "Optional provider filter (for example: meta_capi, shopify, google_sheets).",
             "schema": {
               "type": "string"
             }
@@ -5492,7 +6335,7 @@
         ],
         "operationId": "createWebhook",
         "summary": "Subscribe to measured velocity or category events via webhook.",
-        "description": "Subscribe to measured velocity or category events via webhook. Each delivery includes `X-Webhook-Signature`, a lowercase hexadecimal HMAC-SHA256 over the exact raw JSON request body.\n\nSupported Platforms: Works with AWS Lambda, Google Cloud Functions, n8n, Slack, Discord, Microsoft Teams, PagerDuty, Datadog, Shopify, Salesforce, and any system that accepts POST requests.\n\nOnly trend_velocity and trend_category have production event sources. Other legacy trigger names are rejected rather than saved as inert subscriptions.\n\nsigning_secret is returned only by create and rotate-secret. Store it immediately; list and update responses never expose it.\n\nNew subscriptions start paused. Save the one-time secret, send a signed test, then PATCH is_active to true.\n\nVerify the signature against the unmodified raw request bytes with a constant-time comparison. Re-serializing parsed JSON can change the bytes and invalidate a correct signature.",
+        "description": "Subscribe to measured velocity or category events via webhook. Each delivery includes `X-Webhook-Signature`, a lowercase hexadecimal HMAC-SHA256 over the exact raw JSON request body.\n\nSupported Platforms: Works with AWS Lambda, Google Cloud Functions, Slack, Discord, Microsoft Teams, PagerDuty, Datadog, Shopify, Salesforce, and any system that accepts POST requests.\n\nOnly trend_velocity and trend_category have production event sources. Other legacy trigger names are rejected rather than saved as inert subscriptions.\n\nsigning_secret is returned only by create and rotate-secret. Store it immediately; list and update responses never expose it.\n\nNew subscriptions start paused. Save the one-time secret, send a signed test, then PATCH is_active to true.\n\nVerify the signature against the unmodified raw request bytes with a constant-time comparison. Re-serializing parsed JSON can change the bytes and invalidate a correct signature.",
         "x-plan-tier": "Scale",
         "responses": {
           "200": {
