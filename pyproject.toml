@@ -6,11 +6,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trendsagi"
-version = "0.17.0"
+version = "0.18.0"
 authors = [
   { name="TrendsAGI", email="contact@trendsagi.com" },
 ]
-description = "Official TrendsAGI Python client and CLI: real-time trend intelligence for paid media targeting and timing, with a command line, AI agent tools, an MCP server, WebMCP support, and a Grok/Claude/Cursor plugin."
+description = "Official TrendsAGI Python client and CLI: real-time trend intelligence for paid media targeting and timing, with a command line, AI agent tools, an MCP server with Skills over MCP, WebMCP support, and a Grok/Claude/Cursor plugin."
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
@@ -37,7 +37,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.2,<2; python_version >= '3.10'"]
+mcp = ["mcp>=2.3,<3; python_version >= '3.10'"]
 langchain = ["langchain-core>=0.2"]
 
 [project.scripts]
@@ -59,4 +59,4 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-trendsagi = ["cli_spec.json", "templates/Dockerfile", "templates/terraform/*.tf"]
+trendsagi = ["cli_spec.json", "templates/Dockerfile", "templates/terraform/*.tf", "skills/*/SKILL.md", "skills/*/references/*.md"]

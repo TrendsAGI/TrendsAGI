@@ -14,9 +14,10 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 | **Command line** | `trendsagi`, one command per API action, tables in a terminal and JSON in a pipe |
 | **Agent tools** | `TrendsAGITools` for OpenAI, Claude, LangChain and WebMCP |
 | **Hosted MCP server** | `https://api.trendsagi.com/mcp` for Claude, ChatGPT, Grok, Cursor and Gemini CLI |
+| **Cursor Agent SDK** | A ready agent project in [`agent-sdk/`](agent-sdk/): one connection file gives an Agent SDK agent every hosted tool |
 | **Browser agents (WebMCP)** | Signed in to app.trendsagi.com, your browser's agent gets the same tools ([`webmcp/`](webmcp/)) |
 | **Local MCP server** | `trendsagi mcp`, the same tools over stdio |
-| **Plugins** | Claude, Grok and Cursor plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
+| **Plugins** | Claude, Grok, Cursor and Snowflake Cortex Code plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
 | **Ad execution** | Executors that preview, then apply, Google, Meta, TikTok and LinkedIn ad changes from your own infrastructure |
 
 ## Install
@@ -99,6 +100,7 @@ Add the hosted MCP server, sign in to TrendsAGI and approve the connection:
 | ChatGPT | Add a custom connector with the URL below |
 | Grok | Install the TrendsAGI plugin, or add the URL as a remote MCP server |
 | Cursor | `{ "mcpServers": { "trendsagi": { "url": "https://api.trendsagi.com/mcp" } } }` |
+| Snowflake Cortex Code | `cortex mcp add trendsagi https://api.trendsagi.com/mcp --type http`, or `cortex plugin install github:TrendsAGI/TrendsAGI/plugins/trendsagi` |
 | Gemini CLI | `gemini extensions install https://github.com/TrendsAGI/TrendsAGI` |
 
 ```text
@@ -106,6 +108,30 @@ https://api.trendsagi.com/mcp
 ```
 
 Then ask *"What is accelerating fastest in Technology this week, and who should I target with it?"* The hosted tools are read-only, and each call counts as one API request. Each connection gets its own key, listed as "AI connector: <assistant>" under Profile > API Keys; delete it to disconnect. Clients without OAuth can send an API key as `Authorization: Bearer <key>`. Guide: [trendsagi.com/mcp](https://trendsagi.com/mcp).
+
+The hosted server also publishes the TrendsAGI paid-media skill over MCP (SEP-2640) at `skill://trendsagi/SKILL.md`. Clients that support the `io.modelcontextprotocol/skills` extension discover it with `skills/list` and load it with `resources/read`; the manifest carries a SHA-256 digest and byte size for every file. Clients without the extension still receive the server instructions and tool descriptions, and the plugin distributions keep a bundled copy of the skill.
+
+## Build an agent with Cursor Agent SDK
+
+[Agent SDK](https://cursor.com/docs/agent-sdk) defines agents as a folder of Markdown and TypeScript. Add TrendsAGI with one file and the agent gets the hosted MCP server's read-only tools by name:
+
+```ts
+// bot/mcp-connections/trendsagi.ts
+import { defineConnection } from "@grok/agent-sdk/connections";
+
+export default defineConnection({
+  url: "https://api.trendsagi.com/mcp",
+  headers: { authorization: "Bearer ${TRENDSAGI_API_KEY}" },  // filled by Agent SDK, not JavaScript
+  advertiseTools: true,
+  effects: "read",
+});
+```
+
+```bash
+agent-sdk run --dir . --message "What is rising fastest in Technology this week?"
+```
+
+[`agent-sdk/`](agent-sdk/) is a complete project to copy: instructions, a trend-brief skill, hosting settings (egress to `api.trendsagi.com`, a `TRENDSAGI_API_KEY` secret) and smoke evals. Guide: [trendsagi.com/api-docs/integrations/agent-sdk](https://trendsagi.com/api-docs/integrations/agent-sdk).
 
 ## Use TrendsAGI from your browser's agent (WebMCP)
 
@@ -116,7 +142,7 @@ To put TrendsAGI tools on **your own** site, register them in your page and run 
 ```python
 tools = TrendsAGITools(TrendsAGIClient(api_key=os.environ["TRENDSAGI_API_KEY"]))
 
-tools.webmcp()                     # serve to your page: name, description, inputSchema, annotations
+tools.webmcp()                     # serve to your page: name, title, description, inputSchema, annotations
 tools.call("list_trends", args)    # run the call your page forwards
 ```
 
@@ -217,6 +243,12 @@ Or in any MCP client's JSON config (Claude Desktop, Cursor, VS Code):
 { "mcpServers": { "trendsagi": { "command": "trendsagi-mcp", "env": { "TRENDSAGI_API_KEY": "your_api_key" } } } }
 ```
 
+The local server publishes the same skill as the hosted endpoint, at
+`skill://trendsagi/SKILL.md`, and declares the `io.modelcontextprotocol/skills`
+extension. It is read from the installed package, so it stays in step with the
+version of `trendsagi` you installed. Supporting references cover the tool
+surface, paid-media workflow, read-only SQL and error handling.
+
 ## Query with SQL
 
 For answers no single endpoint returns, such as growth by category or the trends that match a watchlist:
@@ -261,7 +293,15 @@ google = GoogleAdsExecutor({
     "access_token": os.environ["GOOGLE_ADS_ACCESS_TOKEN"],
     "developer_token": os.environ["GOOGLE_ADS_DEVELOPER_TOKEN"],
 })
-preview = google.apply_targeting(insight, customer_id="1234567890", campaign_id="9876543210", dry_run=True, strict_mode=True)
+# Positive keywords target an ad group; campaign criteria can only exclude.
+preview = google.apply_targeting(
+    insight,
+    customer_id="1234567890",
+    campaign_id="9876543210",
+    ad_group_id="1122334455",
+    dry_run=True,
+    strict_mode=True,
+)
 print(preview.response)  # inspect before any real change
 ```
 

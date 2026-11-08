@@ -2,6 +2,66 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.18.0] - 2026-11-06
+
+### Added
+
+- **Skills over MCP.** The bundled stdio server declares
+  `io.modelcontextprotocol/skills` (SEP-2640) and serves the TrendsAGI
+  paid-media skill at `skill://trendsagi/SKILL.md`. `skills/list` and
+  `skills/get` return a complete manifest with a SHA-256 digest and byte size
+  for every file; `resources/read` serves the files and
+  `resources/directory/read` lists subdirectories. The skill covers the tool
+  surface, targeting and budget decisions, read-only SQL, the answer contract
+  and error handling. Clients that support the extension load it automatically;
+  clients that do not still receive the server instructions and tool
+  descriptions.
+
+### Changed
+
+- The `mcp` extra now requires `mcp>=2.3,<3`, the first release line with the
+  2026-07-28 protocol surface and extension capabilities. Python 3.10+ is still
+  required for the local MCP server.
+- The package ships `src/trendsagi/skills/trendsagi/` as package data, so the
+  served skill and its references are installed with the wheel.
+
+## [0.17.2] - 2026-11-02
+
+### Added
+
+- `TrendsAGITools.webmcp()` descriptors carry a `title`, the short label WebMCP
+  browsers show in their tool lists. The titles match the hosted MCP server's.
+
+### Fixed
+
+- [`webmcp/trendsagi-webmcp.js`](webmcp/trendsagi-webmcp.js) returns each tool
+  result as an object. The WebMCP draft JSON-serializes whatever `execute`
+  resolves to, so the JSON text it returned before reached the agent as one
+  escaped string. A cancelled call now also aborts its request.
+
+## [0.17.1] - 2026-10-27
+
+### Added
+
+- [`agent-sdk/`](agent-sdk/): a Cursor Agent SDK project that reaches the hosted MCP
+  server through one connection file (`bot/mcp-connections/trendsagi.ts`), with
+  instructions, a trend-brief skill, hosting settings and smoke evals. The README has a
+  "Build an agent with Cursor Agent SDK" section.
+
+### Fixed
+
+- `GoogleAdsExecutor` now calls Google Ads API v26, the current major. Google
+  retires older majors on a rolling schedule (v22 went away in October 2026),
+  and a retired major makes every read and mutate fail with a bare "Request
+  contains an invalid argument."
+- Positive Google Ads keywords are written through `adGroupCriteria:mutate`
+  with an `ad_group_id`. Campaign criteria only support negative keywords, so
+  sending positive keywords there was rejected by Google. The executor now
+  raises a clear `ValueError` when positive keywords are supplied without an
+  ad group instead of sending an invalid request.
+- Negative keywords still go to `campaignCriteria:mutate` and do not require an
+  ad group.
+
 ## [0.17.0] - 2026-10-21
 
 ### Added

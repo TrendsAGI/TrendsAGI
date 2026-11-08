@@ -2,7 +2,10 @@
 
 Exposes :class:`trendsagi.agent_tools.TrendsAGITools` over stdio so any MCP
 client (Claude Desktop, Claude Code, Cursor, VS Code, and others) can query
-live trend data without custom glue code.
+live trend data without custom glue code. It also serves the packaged
+TrendsAGI Agent Skill over MCP (SEP-2640), so a client that supports the
+``io.modelcontextprotocol/skills`` extension discovers the workflow
+automatically.
 
 Run it with::
 
@@ -20,10 +23,11 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from .agent_tools import TrendsAGITools
 from .client import TrendsAGIClient
+from .skill_catalog import SKILLS_EXTENSION, catalog
 
 SERVER_NAME = "trendsagi"
 
@@ -48,37 +52,101 @@ SERVER_INSTRUCTIONS = (
     "task to learn whether TrendsAGI supports it and where in the app it is done.\n\n"
     "Report numbers as measurements. A recommendation's confidence score measures how complete its "
     "evidence is, not the probability that the action will work, and TrendsAGI does not measure "
-    "conversion lift - never present one as a TrendsAGI figure."
+    "conversion lift - never present one as a TrendsAGI figure.\n\n"
+    "This server also publishes an Agent Skill over MCP (the io.modelcontextprotocol/skills "
+    "extension): skill://trendsagi/SKILL.md. Read it with resources/read before a multi-step "
+    "paid-media task. It carries the full workflow, answer contract and guardrails; the tool "
+    "descriptions remain the authority on arguments and return shapes."
 )
 
 
 def build_server(tools: TrendsAGITools) -> Any:
-    """Create an MCP ``Server`` that serves ``tools``."""
+    """Create an MCP ``Server`` that serves ``tools`` and the TrendsAGI skill."""
     try:
         import mcp.types as types
         from mcp.server import Server
+        from mcp.shared.exceptions import MCPError
     except ImportError as exc:  # pragma: no cover - exercised only without the extra
         raise SystemExit(
             'The MCP server needs the optional dependency: pip install "trendsagi[mcp]" (Python 3.10+)'
         ) from exc
 
+    from . import __version__
+
     try:
-        server = Server(SERVER_NAME, instructions=SERVER_INSTRUCTIONS)
+        server = Server(SERVER_NAME, version=__version__, instructions=SERVER_INSTRUCTIONS)
     except TypeError:  # pragma: no cover - mcp releases without instructions support
         server = Server(SERVER_NAME)
 
-    @server.list_tools()
-    async def list_tools() -> List[types.Tool]:
-        return [
-            types.Tool(name=tool.name, description=tool.description, inputSchema=tool.parameters)
-            for tool in tools.tools
-        ]
+    # SEP-2640: advertise the extension before the handshake is serialized.
+    extensions = getattr(server, "extensions", None)
+    if isinstance(extensions, dict):
+        extensions[SKILLS_EXTENSION] = {"directoryRead": True}
 
-    @server.call_tool()
-    async def call_tool(name: str, arguments: Optional[Dict[str, Any]]) -> List[types.TextContent]:
+    class _ListSkillsParams(types.PaginatedRequestParams):
+        pass
+
+    class _SkillUriParams(types.RequestParams):
+        uri: str
+
+    async def list_tools(_ctx: Any, _params: Any) -> Any:
+        return types.ListToolsResult(
+            tools=[
+                types.Tool(name=tool.name, description=tool.description, inputSchema=tool.parameters)
+                for tool in tools.tools
+            ]
+        )
+
+    async def call_tool(_ctx: Any, params: Any) -> Any:
         # The SDK client is synchronous; keep the event loop responsive.
-        result = await asyncio.to_thread(tools.call, name, arguments or {})
-        return [types.TextContent(type="text", text=json.dumps(result, default=str))]
+        result = await asyncio.to_thread(tools.call, params.name, params.arguments or {})
+        return types.CallToolResult(
+            content=[types.TextContent(type="text", text=json.dumps(result, default=str))]
+        )
+
+    async def list_skills(_ctx: Any, params: Any) -> Dict[str, Any]:
+        return catalog().list_result(getattr(params, "cursor", None))
+
+    async def get_skill(_ctx: Any, params: Any) -> Dict[str, Any]:
+        try:
+            return catalog().get_result(params.uri)
+        except KeyError:
+            raise MCPError(
+                code=types.INVALID_PARAMS,
+                message="No skill is served at " + params.uri,
+            ) from None
+
+    async def list_resources(_ctx: Any, _params: Any) -> Dict[str, Any]:
+        return catalog().resources_result()
+
+    async def read_resource(_ctx: Any, params: Any) -> Dict[str, Any]:
+        try:
+            return catalog().read_result(params.uri)
+        except KeyError:
+            raise MCPError(
+                code=types.INVALID_PARAMS,
+                message="No resource is served at " + params.uri,
+            ) from None
+
+    async def read_directory(_ctx: Any, params: Any) -> Dict[str, Any]:
+        try:
+            return catalog().directory_result(params.uri)
+        except KeyError:
+            raise MCPError(
+                code=types.INVALID_PARAMS,
+                message=params.uri + " is not a directory resource",
+            ) from None
+
+    # Register every method explicitly: mcp 2.x has no list_tools()/call_tool()
+    # decorators on the low-level Server, and the capabilities are derived from
+    # these handlers before create_initialization_options() runs.
+    server.add_request_handler("tools/list", types.PaginatedRequestParams, list_tools)
+    server.add_request_handler("tools/call", types.CallToolRequestParams, call_tool)
+    server.add_request_handler("skills/list", _ListSkillsParams, list_skills)
+    server.add_request_handler("skills/get", _SkillUriParams, get_skill)
+    server.add_request_handler("resources/list", types.PaginatedRequestParams, list_resources)
+    server.add_request_handler("resources/read", types.ReadResourceRequestParams, read_resource)
+    server.add_request_handler("resources/directory/read", _SkillUriParams, read_directory)
 
     return server
 

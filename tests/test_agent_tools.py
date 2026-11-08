@@ -192,6 +192,8 @@ def test_webmcp_format_shares_the_contract_and_marks_hints():
     assert webmcp["execute_sql"]["annotations"]["untrustedContentHint"] is True
     assert webmcp["list_watchlist"]["annotations"]["untrustedContentHint"] is False
     json.dumps(tools.webmcp())  # served to the page as JSON
+    assert webmcp["list_trends"]["title"] == "List trending topics"
+    assert all(t.get("title") for t in webmcp.values()), "every WebMCP tool needs a title for the browser's UI"
 
     _, writable = _tools(allow_writes=True)
     read_only = {t["name"]: t["annotations"]["readOnlyHint"] for t in writable.webmcp()}

@@ -1,2 +1,3 @@
 include CHANGELOG.md
 include src/trendsagi/cli_spec.json
+recursive-include src/trendsagi/skills *.md
