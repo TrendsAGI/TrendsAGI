@@ -15,7 +15,7 @@ Real-time trend intelligence for your code and your AI agents: what is trending 
 | **Hosted MCP server** | `https://api.trendsagi.com/mcp` for Claude, ChatGPT, Grok, Cursor and Gemini CLI |
 | **Cursor Agent SDK** | A ready agent project in [`agent-sdk/`](agent-sdk/): one connection file gives an Agent SDK agent every hosted tool |
 | **Browser agents (WebMCP)** | Signed in to app.trendsagi.com, your browser's agent gets the same tools ([`webmcp/`](webmcp/)) |
-| **Local MCP server** | `trendsagi mcp`, the same tools over stdio |
+| **Local MCP server** | `trendsagi mcp`, the same tools over stdio, sharing the CLI login |
 | **Plugins** | Claude, Grok, Cursor and Snowflake Cortex Code plugin in [`plugins/trendsagi`](plugins/trendsagi), Gemini CLI extension at the repo root |
 | **Ad execution** | Executors that preview, then apply, Google, Meta, TikTok and LinkedIn ad changes from your own infrastructure |
 
@@ -28,7 +28,15 @@ pipx install trendsagi           # just the command line, in its own environment
 npx trendsagi --help             # or the same command line from npm (Node.js 18+)
 ```
 
-Create an API key under Profile > API Keys at [app.trendsagi.com](https://app.trendsagi.com) and export it:
+Sign in once. The browser flow approves a short code and saves an API key to
+`~/.config/trendsagi/config.json`; the CLI and the local MCP server both use it:
+
+```bash
+trendsagi login
+```
+
+For CI and other non-interactive machines, create a key under Profile > API Keys at
+[app.trendsagi.com](https://app.trendsagi.com) and export it instead:
 
 ```bash
 export TRENDSAGI_API_KEY="your_api_key"
@@ -56,7 +64,7 @@ if insight:
 ## Command line
 
 ```bash
-trendsagi login                  # paste an API key; saved to ~/.config/trendsagi/config.json
+trendsagi login                  # approve a code in your browser; saved to ~/.config/trendsagi/config.json
 trendsagi trends list --category Technology --sort velocity --limit 10
 trendsagi trends dossier 123                    # source-backed story, timeline and channels
 trendsagi trends enrich 123 --module search_demand
@@ -71,7 +79,7 @@ trendsagi api /api/integrations/delivery/health -q lookback_hours=24   # any end
 
 | Commands | What they do |
 | --- | --- |
-| `login`, `logout`, `whoami` | Save, forget and check the API key |
+| `login`, `logout`, `whoami` | Sign in from the terminal (browser code or `--with-token`), forget and check the login |
 | `trends` `list` `get` `analytics` `categories` `autocomplete` | Trending topics with measured volume, velocity and growth |
 | `insights` `get` `generate [--wait]` `status` `search` | AI insights per trend |
 | `recommendations` `list` `action` `feedback` | Evidence-backed recommendations and their workflow status |
@@ -88,6 +96,29 @@ trendsagi api /api/integrations/delivery/health -q lookback_hours=24   # any end
 Every command has `--help`. In a terminal, lists print as tables; piped or with `--json` they print JSON, so `trendsagi trends list | jq` works. The key comes from `--api-key`, then `TRENDSAGI_API_KEY`, then the saved login. Commands that delete something or change live ads ask first; pass `--yes` in scripts. Exit codes: 0 success, 1 API error, 2 invalid usage, 4 missing or rejected key.
 
 The commands are declared once in [`src/trendsagi/cli_spec.json`](src/trendsagi/cli_spec.json); a dependency-free Node.js build of the same CLI lives in [`npm/`](npm/) and is published as [`trendsagi` on npm](https://www.npmjs.com/package/trendsagi). Guide: [trendsagi.com/api-docs/integrations/cli](https://trendsagi.com/api-docs/integrations/cli).
+
+### One login: CLI and MCP
+
+`trendsagi login` uses the OAuth 2.0 device flow (RFC 8628). It prints a short
+code and a URL; approve it in a browser where you are signed in to TrendsAGI,
+and the CLI receives an ordinary API key. The same saved login then starts the
+local MCP server:
+
+```bash
+trendsagi login
+claude mcp add trendsagi -- trendsagi mcp
+```
+
+No API key is copied into the client config, and `trendsagi-mcp` reads the same
+file if you start it directly. When the `trendsagi` command is available, the
+stdio server tells the agent so: for bulk reads, pagination or a full result set
+it can run `trendsagi sql "SELECT ..." --json` (or any command with `--json`)
+and filter the output before it reaches the model. The hosted server never sees
+that steering because it has no terminal.
+
+Non-interactive logins still work: `trendsagi login --with-token` reads a key
+from standard input, `--api-key` and `TRENDSAGI_API_KEY` take precedence, and
+`--no-browser` prints the URL without opening one.
 
 The client calls any endpoint too: `client.request("GET", "/api/integrations/delivery/health", params={"lookback_hours": 24})`.
 
@@ -211,14 +242,19 @@ With Claude, pass `tools=tools.anthropic()` and answer each `tool_use` block wit
 
 ```bash
 pip install "trendsagi[mcp]"
-claude mcp add trendsagi --env TRENDSAGI_API_KEY=your_api_key -- trendsagi mcp
+trendsagi login
+claude mcp add trendsagi -- trendsagi mcp
 ```
 
-Or in any MCP client's JSON config (Claude Desktop, Cursor, VS Code):
+Or in any MCP client's JSON config (Claude Desktop, Cursor, VS Code), which
+uses the saved login:
 
 ```json
-{ "mcpServers": { "trendsagi": { "command": "trendsagi-mcp", "env": { "TRENDSAGI_API_KEY": "your_api_key" } } } }
+{ "mcpServers": { "trendsagi": { "command": "trendsagi-mcp" } } }
 ```
+
+On a machine without a saved login, pass a key explicitly with
+`--env TRENDSAGI_API_KEY=your_api_key` (or in the JSON config's `env`).
 
 The local server publishes the same skill as the hosted endpoint, at
 `skill://trendsagi/SKILL.md`, and declares the `io.modelcontextprotocol/skills`
@@ -300,7 +336,7 @@ except exceptions.AuthenticationError:
 ## Other commands
 
 ```bash
-trendsagi mcp [--allow-writes]                              # MCP server over stdio
+trendsagi mcp [--allow-writes]                              # MCP server over stdio, sharing the login
 trendsagi scaffold --type docker --output-dir ./runner      # executor runner template
 trendsagi scaffold --type terraform --output-dir ./infra    # infrastructure template
 ```

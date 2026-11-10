@@ -14,7 +14,6 @@ commands that need more than one request or special output name a
 from __future__ import annotations
 
 import argparse
-import getpass
 import json
 import os
 import platform
@@ -29,6 +28,11 @@ SPEC_PATH = Path(__file__).with_name("cli_spec.json")
 DEFAULT_BASE_URL = "https://api.trendsagi.com"
 API_KEY_PREFIXES = ("ltc_live_", "ltc_test_")
 BODY_METHODS = {"POST", "PUT", "PATCH"}
+
+# RFC 8628 device login. The CLI is a public client with a fixed client_id:
+# the device flow never redirects, so there is nothing to register per machine.
+DEVICE_CLIENT_ID = "trendsagi-cli"
+DEVICE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code"
 
 EXIT_ERROR = 1
 EXIT_USAGE = 2
@@ -527,16 +531,92 @@ def run_spec_command(ctx: Context, cmd: Dict[str, Any], args: argparse.Namespace
     return 0
 
 
+def _oauth_post(ctx: Context, path: str, data: Dict[str, str]):
+    import requests
+
+    try:
+        return requests.post(
+            ctx.base_url + path,
+            data=data,
+            timeout=30,
+            headers={"Accept": "application/json"},
+        )
+    except requests.RequestException as exc:
+        raise CLIError(f"Could not reach {ctx.base_url}: {exc}") from exc
+
+
+def _device_login(ctx: Context, open_browser: bool = True) -> str:
+    """Approve a short code in the browser and return the API key it issues.
+
+    The device flow works over SSH, in a container and on a machine whose
+    browser is somewhere else, which a loopback redirect does not. The token
+    the server returns is an ordinary API key, so this one login also powers
+    ``trendsagi mcp`` and every later command.
+    """
+    start = _oauth_post(ctx, "/oauth/device_authorization", {
+        "client_id": DEVICE_CLIENT_ID,
+        "scope": "trends:read",
+        "resource": ctx.base_url + "/mcp",
+    })
+    try:
+        body = start.json()
+    except ValueError:
+        body = {}
+    if start.status_code != 200:
+        detail = body.get("error_description") or body.get("detail") or start.text.strip()
+        raise CLIError(f"Could not start the login: {detail or start.status_code}")
+
+    complete = body.get("verification_uri_complete") or body.get("verification_uri")
+    code = body.get("user_code")
+    if not complete or not code:
+        raise CLIError("The server did not return a sign-in URL. Update the CLI, or use 'trendsagi login --with-token'.")
+    print(f"Open {complete}", file=sys.stderr)
+    print(f"Approve code {code} for TrendsAGI CLI.", file=sys.stderr)
+    if open_browser and sys.stderr.isatty():
+        try:
+            import webbrowser
+
+            webbrowser.open(complete)
+        except Exception:  # a headless box has no browser; the URL is printed
+            pass
+
+    interval = max(1, int(body.get("interval") or 5))
+    deadline = time.time() + int(body.get("expires_in") or 600)
+    while time.time() < deadline:
+        time.sleep(interval)
+        response = _oauth_post(ctx, "/oauth/token", {
+            "grant_type": DEVICE_GRANT_TYPE,
+            "device_code": body.get("device_code", ""),
+            "client_id": DEVICE_CLIENT_ID,
+        })
+        try:
+            payload = response.json()
+        except ValueError:
+            payload = {}
+        if response.status_code == 200 and payload.get("access_token"):
+            return str(payload["access_token"])
+        error = payload.get("error")
+        if error == "authorization_pending":
+            continue
+        if error == "slow_down":
+            interval += 5
+            continue
+        if error == "access_denied":
+            raise CLIError("The login was cancelled in the browser.", EXIT_AUTH)
+        if error == "expired_token":
+            raise CLIError("The sign-in code expired. Run 'trendsagi login' again.", EXIT_AUTH)
+        detail = payload.get("error_description") or payload.get("detail") or response.text.strip()
+        raise CLIError(f"Login failed: {detail or response.status_code}")
+    raise CLIError("Timed out waiting for approval in the browser. Run 'trendsagi login' again.", EXIT_AUTH)
+
+
 def handle_login(ctx: Context, cmd: Dict[str, Any], args: argparse.Namespace) -> int:
     if getattr(args, "opt_with_token", None):
         key = sys.stdin.readline().strip()
     elif ctx.flag_api_key:
         key = ctx.flag_api_key.strip()
     else:
-        if not sys.stdin.isatty():
-            raise CLIError("No terminal to prompt on; pipe the key in with 'trendsagi login --with-token'.", EXIT_USAGE)
-        print(f"Create an API key at {ctx.spec['api_keys_url']}", file=sys.stderr)
-        key = getpass.getpass("Paste your TrendsAGI API key: ").strip()
+        key = _device_login(ctx, open_browser=not getattr(args, "opt_no_browser", None))
     if not key:
         raise CLIError("No API key given.", EXIT_USAGE)
     if not key.startswith(API_KEY_PREFIXES):
@@ -840,7 +920,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.command == "mcp":
             from .mcp_server import run
 
-            run(api_key=ctx.api_key, base_url=ctx.base_url, allow_writes=args.allow_writes)
+            run(api_key=ctx.api_key, base_url=ctx.base_url, allow_writes=args.allow_writes, cli_available=True)
             return 0
 
         cmd = getattr(args, "_command", None)

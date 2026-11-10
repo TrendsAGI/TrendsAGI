@@ -11,6 +11,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
+import { spawn } from "node:child_process";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const SPEC = JSON.parse(readFileSync(join(here, "..", "cli_spec.json"), "utf8"));
@@ -18,6 +19,9 @@ const VERSION = JSON.parse(readFileSync(join(here, "..", "package.json"), "utf8"
 
 const DEFAULT_BASE_URL = "https://api.trendsagi.com";
 const API_KEY_PREFIXES = ["ltc_live_", "ltc_test_"];
+// RFC 8628 device login, shared with the Python CLI.
+const DEVICE_CLIENT_ID = "trendsagi-cli";
+const DEVICE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code";
 const BODY_METHODS = new Set(["POST", "PUT", "PATCH"]);
 const EXIT_ERROR = 1;
 const EXIT_USAGE = 2;
@@ -554,16 +558,93 @@ async function runSpecCommand(ctx, cmd, args, options) {
   return 0;
 }
 
+async function postForm(baseURL, path, data) {
+  let response;
+  try {
+    response = await fetch(baseURL + path, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json" },
+      body: new URLSearchParams(data).toString(),
+    });
+  } catch (error) {
+    throw new CLIError(`Could not reach ${baseURL}: ${error.message}`);
+  }
+  let body = {};
+  try {
+    body = await response.json();
+  } catch {
+    body = {};
+  }
+  return { status: response.status, body };
+}
+
+function openBrowser(url) {
+  if (!process.stderr.isTTY) return;
+  const [command, args] =
+    process.platform === "darwin" ? ["open", [url]]
+    : process.platform === "win32" ? ["cmd", ["/c", "start", "", url]]
+    : ["xdg-open", [url]];
+  try {
+    const child = spawn(command, args, { detached: true, stdio: "ignore" });
+    child.on("error", () => {});
+    child.unref();
+  } catch {
+    // The URL is printed either way.
+  }
+}
+
+async function deviceLogin(ctx, open) {
+  const started = await postForm(ctx.baseURL, "/oauth/device_authorization", {
+    client_id: DEVICE_CLIENT_ID,
+    scope: "trends:read",
+    resource: `${ctx.baseURL}/mcp`,
+  });
+  if (started.status !== 200) {
+    const detail = started.body.error_description || started.body.detail || `HTTP ${started.status}`;
+    throw new CLIError(`Could not start the login: ${detail}`);
+  }
+  const { verification_uri_complete: complete, user_code: userCode } = started.body;
+  if (!complete || !userCode) {
+    throw new CLIError("The server did not return a sign-in URL. Update the CLI, or use 'trendsagi login --with-token'.");
+  }
+  err(`Open ${complete}`);
+  err(`Approve code ${userCode} for TrendsAGI CLI.`);
+  if (open) openBrowser(complete);
+
+  let interval = Math.max(1, Number(started.body.interval) || 5);
+  const deadline = Date.now() + (Number(started.body.expires_in) || 600) * 1000;
+  // Tests set TRENDSAGI_DEVICE_POLL_MS so a pending poll does not take the
+  // real RFC interval; people never set it.
+  const override = process.env.TRENDSAGI_DEVICE_POLL_MS;
+  while (Date.now() < deadline) {
+    const delay = override ? Number(override) : interval * 1000;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    const polled = await postForm(ctx.baseURL, "/oauth/token", {
+      grant_type: DEVICE_GRANT_TYPE,
+      device_code: started.body.device_code || "",
+      client_id: DEVICE_CLIENT_ID,
+    });
+    if (polled.status === 200 && polled.body.access_token) return String(polled.body.access_token);
+    const error = polled.body.error;
+    if (error === "authorization_pending") continue;
+    if (error === "slow_down") {
+      interval += 5;
+      continue;
+    }
+    if (error === "access_denied") throw new CLIError("The login was cancelled in the browser.", EXIT_AUTH);
+    if (error === "expired_token") throw new CLIError("The sign-in code expired. Run 'trendsagi login' again.", EXIT_AUTH);
+    const detail = polled.body.error_description || polled.body.detail || `HTTP ${polled.status}`;
+    throw new CLIError(`Login failed: ${detail}`);
+  }
+  throw new CLIError("Timed out waiting for approval in the browser. Run 'trendsagi login' again.", EXIT_AUTH);
+}
+
 const HANDLERS = {
   async login(ctx, cmd, args, options) {
     let key;
     if (options["with-token"]) key = readStdin().split(/\r?\n/)[0].trim();
     else if (ctx.flagApiKey) key = ctx.flagApiKey.trim();
-    else {
-      if (!process.stdin.isTTY) throw new CLIError("No terminal to prompt on; pipe the key in with 'trendsagi login --with-token'.", EXIT_USAGE);
-      err(`Create an API key at ${SPEC.api_keys_url}`);
-      key = (await ask("Paste your TrendsAGI API key: ", { hidden: true })).trim();
-    }
+    else key = await deviceLogin(ctx, !options["no-browser"]);
     if (!key) throw new CLIError("No API key given.", EXIT_USAGE);
     if (!API_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
       throw new CLIError("That is not a TrendsAGI API key; keys start with ltc_live_.", EXIT_USAGE);
@@ -749,19 +830,36 @@ function describeError(error) {
   return [error?.stack || String(error), EXIT_ERROR];
 }
 
+// runMcp is the bridge this CLI promises: the MCP server itself ships with
+// the Python package, but `trendsagi mcp` starts it with the login this
+// command just saved, so the agent and the terminal share one credential.
+function runMcp(args) {
+  const binary = process.env.TRENDSAGI_MCP_BIN || "trendsagi-mcp";
+  return new Promise((resolve) => {
+    const child = spawn(binary, args, { stdio: "inherit" });
+    child.on("error", (error) => {
+      if (error.code === "ENOENT") {
+        err("The local MCP server needs the Python package: pip install \"trendsagi[mcp]\" (Python 3.10+).");
+        err("It shares this CLI's saved login, so run 'trendsagi login' once.");
+        err("Or connect your AI client to the hosted server: https://api.trendsagi.com/mcp");
+      } else {
+        err(`Could not start ${binary}: ${error.message}`);
+      }
+      resolve(EXIT_USAGE);
+    });
+    child.on("exit", (code, signal) => resolve(signal ? 130 : code ?? 0));
+  });
+}
+
 export async function main(argv = process.argv.slice(2)) {
   try {
     if (argv.length === 1 && ["--version", "-V"].includes(argv[0])) {
       out(`trendsagi ${VERSION}`);
       return 0;
     }
-    if (argv[0] === "mcp" || argv[0] === "scaffold") {
-      throw new CLIError(
-        argv[0] === "mcp"
-          ? "The local MCP server ships with the Python package (pip install \"trendsagi[mcp]\"). Or connect your AI client to the hosted server: https://api.trendsagi.com/mcp"
-          : "'scaffold' ships with the Python package: pip install trendsagi",
-        EXIT_USAGE,
-      );
+    if (argv[0] === "mcp") return runMcp(argv.slice(1));
+    if (argv[0] === "scaffold") {
+      throw new CLIError("'scaffold' ships with the Python package: pip install trendsagi", EXIT_USAGE);
     }
     const parsed = parse(argv);
     if (parsed.version) {

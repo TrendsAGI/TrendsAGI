@@ -139,6 +139,72 @@ def test_login_validates_and_saves_key_privately(api, capsys, monkeypatch, tmp_p
     assert "api_key" not in json.loads(path.read_text())
 
 
+class _OAuthResponse:
+    def __init__(self, status_code, body):
+        self.status_code = status_code
+        self._body = body
+        self.text = json.dumps(body)
+
+    def json(self):
+        return self._body
+
+
+def test_login_device_flow_saves_the_shared_key(api, capsys, monkeypatch, tmp_path):
+    """trendsagi login approves a code in the browser; no key is pasted."""
+    api.routes[("GET", "/api/user/profile")] = (200, {"email": "ana@example.com"}, "application/json")
+    responses = [
+        _OAuthResponse(200, {
+            "device_code": "device-code-from-server",
+            "user_code": "BCDF-GHJK",
+            "verification_uri": "http://app.test/oauth/device",
+            "verification_uri_complete": "http://app.test/oauth/device?user_code=BCDF-GHJK",
+            "expires_in": 600,
+            "interval": 5,
+        }),
+        _OAuthResponse(400, {"error": "authorization_pending"}),
+        _OAuthResponse(200, {"access_token": KEY, "token_type": "Bearer", "scope": "trends:read"}),
+    ]
+    calls = []
+
+    def fake_post(ctx, path, data):
+        calls.append((path, dict(data)))
+        return responses.pop(0)
+
+    monkeypatch.setattr(cli, "_oauth_post", fake_post)
+    monkeypatch.setattr(cli.time, "sleep", lambda _seconds: None)
+
+    code, _, err = run(capsys, "login", "--no-browser")
+
+    assert code == 0, err
+    assert "BCDF-GHJK" in err
+    assert "oauth/device?user_code=BCDF-GHJK" in err
+    assert calls[0][0] == "/oauth/device_authorization"
+    assert calls[0][1]["client_id"] == "trendsagi-cli"
+    assert calls[0][1]["resource"].endswith("/mcp")
+    assert calls[1][0] == "/oauth/token"
+    assert calls[1][1]["grant_type"] == "urn:ietf:params:oauth:grant-type:device_code"
+    assert calls[1][1]["device_code"] == "device-code-from-server"
+    assert json.loads((tmp_path / "config.json").read_text())["api_key"] == KEY
+
+
+def test_login_device_flow_reports_a_cancelled_code(api, capsys, monkeypatch):
+    responses = [
+        _OAuthResponse(200, {
+            "device_code": "dc", "user_code": "BCDF-GHJK",
+            "verification_uri_complete": "http://app.test/oauth/device?user_code=BCDF-GHJK",
+            "expires_in": 600, "interval": 5,
+        }),
+        _OAuthResponse(400, {"error": "access_denied"}),
+    ]
+    monkeypatch.setattr(cli, "_oauth_post", lambda *_: responses.pop(0))
+    monkeypatch.setattr(cli.time, "sleep", lambda _seconds: None)
+
+    code, _, err = run(capsys, "login", "--no-browser")
+
+    assert code == cli.EXIT_AUTH
+    assert "cancelled" in err
+
+
 def test_login_rejects_text_that_is_not_an_api_key(api, capsys, monkeypatch):
     monkeypatch.setattr("sys.stdin", __import__("io").StringIO("hunter2\n"))
     code, _, err = run(capsys, "login", "--with-token")

@@ -2,6 +2,32 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.20.0] - 2026-11-10
+
+### Added
+
+- **Browser login.** `trendsagi login` now uses the OAuth 2.0 device flow
+  (RFC 8628). It prints a short code and URL, opens the browser when there is
+  one, and saves the API key the server issues after approval. `--no-browser`
+  prints the URL only; `--with-token`, `--api-key` and `TRENDSAGI_API_KEY`
+  still work for CI and non-interactive machines. Both the Python and npm CLI
+  use the same flow and the same config file.
+- **One login for the CLI and the local MCP server.** `trendsagi mcp` starts
+  the stdio server with the saved login, and `trendsagi-mcp` now reads the same
+  config when no key is in the environment.
+- **CLI-aware MCP steering.** When the stdio server is started beside the
+  `trendsagi` command, its instructions tell the agent that the CLI exists and
+  how to use it for bulk reads and pagination. A tool result over 8,000
+  characters gets a second content block pointing at `trendsagi ... --json`.
+  The hosted server is unchanged.
+- `npx trendsagi mcp` starts `trendsagi-mcp` when it is installed, so the npm
+  CLI bridges to the same server instead of only printing an install hint.
+
+### Changed
+
+- The login command's help, the README quickstart and the local MCP setup no
+  longer ask for a pasted key by default.
+
 ## [0.19.0] - 2026-11-08
 
 ### Added
