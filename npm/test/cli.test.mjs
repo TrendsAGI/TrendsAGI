@@ -23,14 +23,21 @@ before(async () => {
     req.on("data", (chunk) => (raw += chunk));
     req.on("end", () => {
       const url = new URL(req.url, "http://x");
+      const contentType = req.headers["content-type"] || "";
       calls.push({
         method: req.method,
         path: url.pathname,
         query: Object.fromEntries(url.searchParams),
-        body: raw ? JSON.parse(raw) : null,
+        body: !raw
+          ? null
+          : contentType.includes("application/x-www-form-urlencoded")
+            ? Object.fromEntries(new URLSearchParams(raw))
+            : JSON.parse(raw),
         headers: req.headers,
       });
-      let [status, payload, type] = routes[`${req.method} ${url.pathname}`] || [200, { ok: true }, "application/json"];
+      let route = routes[`${req.method} ${url.pathname}`] || [200, { ok: true }, "application/json"];
+      if (typeof route === "function") route = route();
+      let [status, payload, type] = route;
       if (typeof payload === "function") payload = payload();
       const body = Buffer.isBuffer(payload) ? payload : Buffer.from(JSON.stringify(payload));
       res.writeHead(status, { "Content-Type": type, "Content-Length": body.length });
@@ -115,6 +122,51 @@ test("login validates and saves the key privately; logout forgets it", async () 
   assert.equal(calls.at(-1).headers["x-api-key"], KEY);
   assert.equal((await run(["logout"])).code, 0);
   assert.equal(JSON.parse(readFileSync(path, "utf8")).api_key, undefined);
+});
+
+test("login approves a device code in the browser and saves the key", async () => {
+  routes["POST /oauth/device_authorization"] = [200, {
+    device_code: "device-code-from-server",
+    user_code: "BCDF-GHJK",
+    verification_uri: `${baseURL}/oauth/device`,
+    verification_uri_complete: `${baseURL}/oauth/device?user_code=BCDF-GHJK`,
+    expires_in: 600,
+    interval: 5,
+  }, "application/json"];
+  let polls = 0;
+  routes["POST /oauth/token"] = () => {
+    polls += 1;
+    if (polls === 1) return [400, { error: "authorization_pending" }, "application/json"];
+    return [200, { access_token: KEY, token_type: "Bearer", scope: "trends:read" }, "application/json"];
+  };
+  routes["GET /api/user/profile"] = [200, { email: "ana@example.com" }, "application/json"];
+
+  const { code, stderr } = await run(["login", "--no-browser"], { env: { TRENDSAGI_DEVICE_POLL_MS: "10" } });
+  assert.equal(code, 0, stderr);
+  assert.match(stderr, /BCDF-GHJK/);
+  assert.match(stderr, /oauth\/device\?user_code=BCDF-GHJK/);
+
+  const started = calls.find((c) => c.path === "/oauth/device_authorization");
+  assert.equal(started.body.client_id, "trendsagi-cli");
+  assert.equal(started.body.resource, `${baseURL}/mcp`);
+  const token = calls.find((c) => c.path === "/oauth/token");
+  assert.equal(token.body.grant_type, "urn:ietf:params:oauth:grant-type:device_code");
+  assert.equal(token.body.device_code, "device-code-from-server");
+  assert.equal(JSON.parse(readFileSync(join(configDir, "config.json"), "utf8")).api_key, KEY);
+});
+
+test("login reports a code cancelled in the browser", async () => {
+  routes["POST /oauth/device_authorization"] = [200, {
+    device_code: "dc",
+    user_code: "BCDF-GHJK",
+    verification_uri_complete: `${baseURL}/oauth/device?user_code=BCDF-GHJK`,
+    expires_in: 600,
+    interval: 5,
+  }, "application/json"];
+  routes["POST /oauth/token"] = [400, { error: "access_denied" }, "application/json"];
+  const { code, stderr } = await run(["login", "--no-browser"], { env: { TRENDSAGI_DEVICE_POLL_MS: "10" } });
+  assert.equal(code, 4);
+  assert.match(stderr, /cancelled/);
 });
 
 test("login rejects text that is not an API key", async () => {

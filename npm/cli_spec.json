@@ -7,9 +7,10 @@
     {
       "name": "login",
       "handler": "login",
-      "help": "Save an API key for later commands.",
+      "help": "Sign in from this terminal: approve a short code in the browser, or save an API key.",
       "options": [
-        {"flag": "with-token", "type": "flag", "help": "Read the API key from standard input instead of prompting."}
+        {"flag": "with-token", "type": "flag", "help": "Read an API key from standard input instead of the browser sign-in."},
+        {"flag": "no-browser", "type": "flag", "help": "Print the sign-in URL instead of opening a browser."}
       ]
     },
     {

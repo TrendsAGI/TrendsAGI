@@ -3,7 +3,7 @@
 The TrendsAGI command line: what is trending on social platforms right now, with measured volume, velocity and growth, AI insights on why each topic is moving, evidence-backed recommendations, crisis events, your watchlist and read-only SQL, from a terminal or a shell script. No dependencies; Node.js 18 or later.
 
 ```bash
-npx trendsagi login              # paste an API key from app.trendsagi.com > Profile > API Keys
+npx trendsagi login              # approve a code in your browser (or --with-token in CI)
 npx trendsagi trends list --category Technology --sort velocity --limit 10
 ```
 
@@ -56,7 +56,7 @@ trendsagi api /api/integrations/delivery/health -q lookback_hours=24   # any end
 
 ## How it behaves
 
-- **Key:** `--api-key`, then `TRENDSAGI_API_KEY`, then the key `trendsagi login` saved to `~/.config/trendsagi/config.json` (`%APPDATA%\trendsagi` on Windows). The Python CLI (`pip install trendsagi`) reads the same file.
+- **Key:** `--api-key`, then `TRENDSAGI_API_KEY`, then the key `trendsagi login` saved to `~/.config/trendsagi/config.json` (`%APPDATA%\trendsagi` on Windows). The Python CLI (`pip install trendsagi`) reads the same file, and so does the local MCP server: `trendsagi mcp` runs `trendsagi-mcp` with the same saved login.
 - **Output:** lists print as tables in a terminal, and as JSON when piped or with `--json`: `trendsagi trends list | jq '.trends[].name'`.
 - **Safety:** commands that delete something or change live ads ask first; pass `--yes` in scripts.
 - **Exit codes:** 0 success, 1 API or request error, 2 invalid usage, 4 missing or rejected API key.

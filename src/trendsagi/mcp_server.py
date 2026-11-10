@@ -10,8 +10,9 @@ automatically.
 Run it with::
 
     pip install "trendsagi[mcp]"
-    TRENDSAGI_API_KEY=... trendsagi mcp            # read-only tools
-    TRENDSAGI_API_KEY=... trendsagi mcp --allow-writes
+    trendsagi login                                # once; the CLI and MCP share it
+    trendsagi mcp                                  # read-only tools, saved login
+    trendsagi mcp --allow-writes
 
 No install is needed for the read-only tools: the same server is hosted at
 :data:`HOSTED_MCP_URL` with OAuth sign-in, for Grok, ChatGPT, Claude, Cursor
@@ -23,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import shutil
 from typing import Any, Dict, Optional
 
 from .agent_tools import TrendsAGITools
@@ -60,7 +62,32 @@ SERVER_INSTRUCTIONS = (
 )
 
 
-def build_server(tools: TrendsAGITools) -> Any:
+#: Appended to the instructions only when the CLI is installed on the same
+#: machine. It is the transport-specific steering the hosted server must not
+#: send: an agent reached over stdio from our own CLI can also run the CLI.
+CLI_INSTRUCTIONS = (
+    "\n\nThis stdio server was started by the TrendsAGI CLI, and the same saved login powers the "
+    "`trendsagi` command in this terminal. The command has a filesystem and no MCP row cap, so when a "
+    "result is truncated, when a question needs many pages, or when you want to filter before the data "
+    "reaches the model, run the CLI instead: `trendsagi sql \"SELECT ...\" --json`, "
+    "`trendsagi api <path> --json`, or any command with `--json`, then grep/jq the output. Ask the user "
+    "before running a command that changes state; omit --yes so it prompts them."
+)
+
+#: Appended to a tool result that is too large to be comfortably re-read, so
+#: the agent learns the CLI escape hatch at the moment it needs it.
+CLI_RESULT_HINT = (
+    "This result was large. The same login runs the trendsagi CLI in this terminal, and its --json "
+    "output has no MCP row cap: for example `trendsagi sql \"SELECT ...\" --json` or "
+    "`trendsagi api <path> --json`, piped through jq or grep. Use it for pagination and bulk reads."
+)
+
+#: Results longer than this get the CLI hint appended as a second content
+#: block. The JSON itself is never edited, so clients that parse it still can.
+CLI_HINT_THRESHOLD = 8000
+
+
+def build_server(tools: TrendsAGITools, cli_available: bool = False) -> Any:
     """Create an MCP ``Server`` that serves ``tools`` and the TrendsAGI skill."""
     try:
         import mcp.types as types
@@ -73,8 +100,9 @@ def build_server(tools: TrendsAGITools) -> Any:
 
     from . import __version__
 
+    instructions = SERVER_INSTRUCTIONS + (CLI_INSTRUCTIONS if cli_available else "")
     try:
-        server = Server(SERVER_NAME, version=__version__, instructions=SERVER_INSTRUCTIONS)
+        server = Server(SERVER_NAME, version=__version__, instructions=instructions)
     except TypeError:  # pragma: no cover - mcp releases without instructions support
         server = Server(SERVER_NAME)
 
@@ -100,9 +128,11 @@ def build_server(tools: TrendsAGITools) -> Any:
     async def call_tool(_ctx: Any, params: Any) -> Any:
         # The SDK client is synchronous; keep the event loop responsive.
         result = await asyncio.to_thread(tools.call, params.name, params.arguments or {})
-        return types.CallToolResult(
-            content=[types.TextContent(type="text", text=json.dumps(result, default=str))]
-        )
+        text = json.dumps(result, default=str)
+        content = [types.TextContent(type="text", text=text)]
+        if cli_available and len(text) >= CLI_HINT_THRESHOLD:
+            content.append(types.TextContent(type="text", text=CLI_RESULT_HINT))
+        return types.CallToolResult(content=content)
 
     async def list_skills(_ctx: Any, params: Any) -> Dict[str, Any]:
         return catalog().list_result(getattr(params, "cursor", None))
@@ -151,25 +181,45 @@ def build_server(tools: TrendsAGITools) -> Any:
     return server
 
 
-async def _serve(tools: TrendsAGITools) -> None:
+async def _serve(tools: TrendsAGITools, cli_available: bool = False) -> None:
     from mcp.server.stdio import stdio_server
 
-    server = build_server(tools)
+    server = build_server(tools, cli_available=cli_available)
     async with stdio_server() as (read_stream, write_stream):
         await server.run(read_stream, write_stream, server.create_initialization_options())
 
 
-def run(api_key: Optional[str] = None, base_url: Optional[str] = None, allow_writes: bool = False) -> None:
+def cli_is_installed() -> bool:
+    """Whether the trendsagi command is on PATH beside this server."""
+    return shutil.which("trendsagi") is not None
+
+
+def run(
+    api_key: Optional[str] = None,
+    base_url: Optional[str] = None,
+    allow_writes: bool = False,
+    cli_available: Optional[bool] = None,
+) -> None:
     """Start the stdio MCP server. Blocks until the client disconnects."""
-    api_key = api_key or os.getenv("TRENDSAGI_API_KEY")
+    saved: Dict[str, Any] = {}
+    if not api_key or not base_url:
+        try:
+            from .cli import read_config
+
+            saved = read_config()
+        except Exception:  # a missing or unreadable config is not fatal here
+            saved = {}
+    api_key = api_key or os.getenv("TRENDSAGI_API_KEY") or saved.get("api_key")
     if not api_key:
-        raise SystemExit("Set TRENDSAGI_API_KEY (or pass --api-key) to start the TrendsAGI MCP server.")
+        raise SystemExit("Not signed in. Run 'trendsagi login', or set TRENDSAGI_API_KEY.")
     client = TrendsAGIClient(
         api_key=api_key,
-        base_url=base_url or os.getenv("TRENDSAGI_BASE_URL") or "https://api.trendsagi.com",
+        base_url=base_url or os.getenv("TRENDSAGI_BASE_URL") or saved.get("base_url") or "https://api.trendsagi.com",
         enable_retry_on_rate_limit=True,
     )
-    asyncio.run(_serve(TrendsAGITools(client, allow_writes=allow_writes)))
+    if cli_available is None:
+        cli_available = cli_is_installed()
+    asyncio.run(_serve(TrendsAGITools(client, allow_writes=allow_writes), cli_available=cli_available))
 
 
 def main() -> None:
