@@ -110,11 +110,11 @@ claude mcp add trendsagi -- trendsagi mcp
 ```
 
 No API key is copied into the client config, and `trendsagi-mcp` reads the same
-file if you start it directly. The stdio server knows it was started by the CLI,
-so it tells the agent that the `trendsagi` command is available: for bulk reads,
-pagination or a full result set it can run `trendsagi sql "SELECT ..." --json`
-(or any command with `--json`) and filter the output before it reaches the
-model. The hosted server never sees that steering because it has no terminal.
+file if you start it directly. When the `trendsagi` command is available, the
+stdio server tells the agent so: for bulk reads, pagination or a full result set
+it can run `trendsagi sql "SELECT ..." --json` (or any command with `--json`)
+and filter the output before it reaches the model. The hosted server never sees
+that steering because it has no terminal.
 
 Non-interactive logins still work: `trendsagi login --with-token` reads a key
 from standard input, `--api-key` and `TRENDSAGI_API_KEY` take precedence, and

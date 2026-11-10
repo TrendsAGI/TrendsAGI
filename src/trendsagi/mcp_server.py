@@ -66,8 +66,8 @@ SERVER_INSTRUCTIONS = (
 #: machine. It is the transport-specific steering the hosted server must not
 #: send: an agent reached over stdio from our own CLI can also run the CLI.
 CLI_INSTRUCTIONS = (
-    "\n\nThis stdio server was started by the TrendsAGI CLI, and the same saved login powers the "
-    "`trendsagi` command in this terminal. The command has a filesystem and no MCP row cap, so when a "
+    "\n\nThis stdio server shares the saved login of the TrendsAGI CLI, and that CLI is available in "
+    "this terminal. The `trendsagi` command has a filesystem and no MCP row cap, so when a "
     "result is truncated, when a question needs many pages, or when you want to filter before the data "
     "reaches the model, run the CLI instead: `trendsagi sql \"SELECT ...\" --json`, "
     "`trendsagi api <path> --json`, or any command with `--json`, then grep/jq the output. Ask the user "
