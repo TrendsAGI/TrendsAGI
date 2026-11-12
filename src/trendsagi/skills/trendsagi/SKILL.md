@@ -13,9 +13,10 @@ as the signed-in TrendsAGI account. Every tool is read-only.
 
 ## Before you start
 
-- **The tool list is authoritative.** If a tool is not listed, the account's plan
-  does not include it. Do not guess at missing data or retry a tool that returned
-  a plan error.
+- **Plan previews are not data.** A plan-gated tool the account's plan does not
+  include returns `view: "plan_preview"` with what it would show and an
+  `upgrade_url`. Tell the user once, in one sentence, and continue with the
+  tools that answered; do not retry it for other trends or guess at the data.
 - **Every tool is read-only.** Never say you changed a campaign, a watchlist, a
   recommendation or an ad account. `preview_ad_targeting` is a dry run, and
   approving or applying targeting happens only in the TrendsAGI app.
@@ -106,8 +107,9 @@ claim, and do not add a metric the tools did not return.
   sales lift as a TrendsAGI figure.
 - **Confidence is evidence completeness**, not the probability that an action
   will work. Say so the first time you quote it.
-- **Plan-gated data.** A `403` with an upgrade hint means the account's plan does
-  not include that data. Tell the user; do not retry in a loop.
+- **Plan-gated data.** A `plan_preview` result, or a `403` with an upgrade hint,
+  means the account's plan does not include that data. Tell the user; do not
+  retry in a loop.
 - **Reconnect on 401.** The connection's key was revoked or expired. Ask the user
   to reconnect TrendsAGI; do not ask for their password.
 - **Rate limits.** A `429` means the plan's rate or daily limit was reached. Call

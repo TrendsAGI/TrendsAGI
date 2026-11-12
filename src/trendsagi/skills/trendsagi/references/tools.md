@@ -33,6 +33,19 @@ schemas in `tools/list` are authoritative for the connected account.
 refused for paid targeting (research and organic content stay available), and a
 missing value means not classified yet, never eligible.
 
+### Views and plan previews
+
+`list_trends`, `get_trend`, `get_trend_analytics`, `get_trend_ai_insights`,
+`list_recommendations`, `preview_ad_targeting` and `list_ad_platforms` also
+draw a compact card in hosts with interactive views; each card can open the
+full Trend Radar. Their text result is unchanged.
+
+A plan-gated tool (marked below) called by an account whose plan lacks it
+returns a plan preview instead of an error: `view: "plan_preview"`, `title`,
+`includes` (what it would show), the trend's free numbers when it names one,
+and `upgrade_url`. It contains none of the gated data. Mention the plan once and
+answer from the tools that returned data.
+
 ### Inside the Trend Radar view
 
 While the Trend Radar is open, Claude can also call the view's own tools:
