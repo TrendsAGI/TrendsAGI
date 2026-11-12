@@ -1041,6 +1041,44 @@ class TrendsAGIClient:
         """
         return self._request('GET', '/api/agent/capabilities', params={'goal': goal})
 
+    def get_ad_platforms(self) -> Dict[str, Any]:
+        """
+        List the ad platforms TrendsAGI supports and their connection state.
+
+        :return: ``{"providers": [...]}``; each provider has ``platform``,
+            ``display_name``, ``configured``, ``is_connected``, ``token_expired``,
+            ``needs_reconnect`` and, when connected, its saved ``selection``.
+        """
+        return self._request('GET', '/api/integrations/ads/providers')
+
+    def preview_ad_targeting(self, trend_id: int) -> Dict[str, Any]:
+        """
+        Dry-run the targeting one trend would add on every connected ad platform.
+
+        Runs the same previews as a targeting proposal, after the paid-targeting
+        suitability and brand-safety checks, but stores nothing and changes no
+        campaign. Apply or approve targeting in the TrendsAGI app.
+
+        :param trend_id: The trend to preview.
+        :return: ``{"status", "message", "trend", "brand_safety", "changes", "stored"}``.
+            ``status`` is ``ready``, ``no_connected_platforms`` or
+            ``paid_targeting_unavailable``; each change lists ``platform``,
+            ``scope_label``, ``target_kind``, ``current``, ``added``, ``blocked``
+            and ``block_reason``.
+        """
+        return self._request('GET', '/api/targeting-proposals/draft', params={'trend_id': int(trend_id)})
+
+    def get_targeting_proposals(self, status: Optional[str] = 'pending') -> Dict[str, Any]:
+        """
+        List the ad-targeting proposals TrendsAGI prepared for the account.
+
+        :param status: ``pending`` (default), ``applied``, ``partially_applied``,
+            ``failed``, ``dismissed``, ``expired``, or ``None`` / ``"all"`` for every status.
+        :return: ``{"proposals": [...]}``, newest first.
+        """
+        params = {} if status in (None, '', 'all') else {'status': status}
+        return self._request('GET', '/api/targeting-proposals', params=params)
+
     def get_data_schema(self) -> Dict[str, Any]:
         """
         Describe the tables :meth:`execute_sql` can query.

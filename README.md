@@ -198,6 +198,7 @@ One registry, every format. The tools are **read-only by default**; `add_to_watc
 | `get_social_evidence` / `get_social_evidence_credits` | Post-level Social Evidence and the credit balance |
 | `list_recommendations` | Evidence-backed actions with a decision brief |
 | `list_crisis_events` | Reputation and crisis events for monitored topics |
+| `list_ad_platforms` / `preview_ad_targeting` / `list_targeting_proposals` | Connected ad platforms, a dry run of the targeting a trend would add to each selected campaign, and proposals waiting for approval in the app |
 | `list_watchlist` / `get_api_usage` | Watched topics and remaining daily quota |
 | `read_data_schema` / `execute_sql` | Read-only SQL for questions that need filters, joins or aggregation |
 | `find_capability` | Whether TrendsAGI can do a task, and which tool or app page does it |

@@ -1,6 +1,7 @@
 # TrendsAGI tool reference
 
-All tools are read-only and return a JSON value in a text content block. A
+All tools are read-only and return a JSON value in a text content block
+(`open_trend_radar` also returns it as `structuredContent` for its view). A
 tool-level failure arrives as `isError: true` with a JSON body; a protocol
 failure arrives as a JSON-RPC error. Tool names, descriptions and argument
 schemas in `tools/list` are authoritative for the connected account.
@@ -17,6 +18,28 @@ schemas in `tools/list` are authoritative for the connected account.
 | `get_trend_ai_insights` | Audience, sentiment, themes and marketing angles | `trend_id` (required) | Plan-gated: needs trend insights. Returns `not_found` or null when no insight exists yet. |
 | `get_trend_dossier` | The source-backed story behind a label: subject, timeline, channels, content landscape, brands and products | `trend_id` (required) | Plan-gated: needs insights access. Returns `not_found` when no dossier has been generated yet. Evidence, not a measurement. |
 | `list_web_trends` | Labels found in an external trend list that may not be in the measured table yet | `limit` (1-25; default 10) | Discovery evidence only: no measured volume or velocity. `matched_trend_id` links to a measured trend when one exists. |
+
+## Trend Radar and ad targeting
+
+| Tool | Use it for | Key arguments | Notes |
+| --- | --- | --- | --- |
+| `open_trend_radar` | Exploring trends visually, or "which trends can I target on my ad platforms?" | all optional: `category`, `search`, `sort_by` (`velocity`, `growth`, `volume`, `timestamp`), `period` (`1h`, `24h`, `7d`, `30d`), `eligible_only` (boolean) | Opens the interactive Trend Radar (an MCP App) in hosts that support it, beside the conversation where the host has a side panel. Every host also receives the same data: up to 25 trends with `ad_suitability`, `suitability_counts` and the account's `ad_platforms`. |
+| `list_ad_platforms` | Which ad platforms are connected, need reconnecting or have no campaign selected | none | Connection state only; never account, campaign or token details. Connecting is done under Integrations in the app. |
+| `preview_ad_targeting` | What one trend would add on each connected ad platform | `trend_id` (required) | A dry run: nothing is changed or saved. `status` is `ready`, `no_connected_platforms` or `paid_targeting_unavailable`. Each change lists `added` terms, `current` terms, `target_kind` and any `block_reason`. |
+| `list_targeting_proposals` | Targeting proposals waiting for approval in the app, or decided ones | `status` (`pending`, `applied`, `partially_applied`, `failed`, `dismissed`, `expired`, `all`; default `pending`) | Read-only. Approving, applying and dismissing happen only in the TrendsAGI app. |
+
+`ad_suitability` on a trend is TrendsAGI's paid-targeting classification:
+`eligible` may be targeted, `review` needs a human decision, `ineligible` is
+refused for paid targeting (research and organic content stay available), and a
+missing value means not classified yet, never eligible.
+
+### Inside the Trend Radar view
+
+While the Trend Radar is open, Claude can also call the view's own tools:
+`radar_get_state` (filters, trends on screen, selection), `radar_set_filters`,
+`radar_select_trend` (with a `trajectory`, `insight` or `targeting` tab) and
+`radar_preview_targeting`. They change only what the view shows. Ask the user
+to open the radar first; a view's tools arrive with the next message.
 
 ## Account intelligence
 

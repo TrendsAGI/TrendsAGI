@@ -643,6 +643,22 @@
           ]
         },
         {
+          "name": "targeting",
+          "help": "Dry-run the targeting one trend would add on every connected ad platform. Changes and saves nothing.",
+          "method": "GET",
+          "path": "/api/targeting-proposals/draft",
+          "args": [{"name": "trend_id", "type": "int", "in": "query", "help": "Trend ID (see 'trends list')."}],
+          "table": {"rows": "changes", "columns": ["platform", "scope_label", "target_kind", "added", "blocked", "block_reason"]}
+        },
+        {
+          "name": "proposals",
+          "help": "List targeting proposals; approve them in the TrendsAGI app.",
+          "method": "GET",
+          "path": "/api/targeting-proposals",
+          "options": [{"flag": "status", "choices": ["pending", "applied", "partially_applied", "failed", "dismissed", "expired"], "help": "Only proposals with this status (default: all)."}],
+          "table": {"rows": "proposals", "columns": ["id", "status", "match_reason", "created_at", "expires_at"]}
+        },
+        {
           "name": "apply",
           "help": "Apply trend-based changes to live ads. Run 'ads preview' with the same options first.",
           "method": "POST",

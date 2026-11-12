@@ -1,8 +1,8 @@
 {
   "name": "trendsagi",
   "displayName": "TrendsAGI",
-  "version": "1.1.3",
-  "description": "Live trend intelligence for paid media and growth teams: trending topics, trend trajectories, audience insights and evidence-backed recommendations from your TrendsAGI account, via the hosted TrendsAGI MCP server. Read-only.",
+  "version": "1.2.0",
+  "description": "Live trend intelligence for paid media and growth teams, with an interactive Trend Radar that opens beside the conversation: trending topics, trajectories, paid-targeting eligibility, ad-targeting dry runs on your connected ad platforms, audience insights and evidence-backed recommendations from your TrendsAGI account, via the hosted TrendsAGI MCP server. Read-only.",
   "author": {
     "name": "TrendsAGI",
     "email": "contact@trendsagi.com",
@@ -19,6 +19,8 @@
     "trendsagi",
     "trendsagi mcp",
     "trendsagi trends",
-    "trendsagi paid media"
+    "trendsagi paid media",
+    "trendsagi trend radar",
+    "trendsagi ad targeting"
   ]
 }

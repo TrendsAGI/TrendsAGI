@@ -2,12 +2,12 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.TrendsAGI/trendsagi",
   "title": "TrendsAGI",
-  "description": "Trend data, insights and recommendations for AI agents. Read-only, with an Agent Skill.",
+  "description": "Trend data, an interactive Trend Radar and ad-targeting dry runs for AI agents. Read-only.",
   "repository": {
     "url": "https://github.com/TrendsAGI/TrendsAGI",
     "source": "github"
   },
-  "version": "1.3.0",
+  "version": "1.4.0",
   "websiteUrl": "https://trendsagi.com/mcp",
   "icons": [
     {

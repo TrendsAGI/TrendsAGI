@@ -199,3 +199,34 @@ def test_webmcp_format_shares_the_contract_and_marks_hints():
     read_only = {t["name"]: t["annotations"]["readOnlyHint"] for t in writable.webmcp()}
     assert read_only["add_to_watchlist"] is False
     assert read_only["update_recommendation"] is False
+
+
+def test_ad_targeting_tools_are_read_only_and_call_the_api():
+    client, tools = _tools()
+    assert {"list_ad_platforms", "preview_ad_targeting", "list_targeting_proposals"} <= set(tools.names)
+
+    client._request = MagicMock(return_value={"status": "ready", "changes": [], "stored": False})
+    result = tools.call("preview_ad_targeting", {"trend_id": 41})
+    client._request.assert_called_once_with("GET", "/api/targeting-proposals/draft", params={"trend_id": 41})
+    assert result["result"]["stored"] is False
+
+    client._request = MagicMock(return_value={"proposals": []})
+    tools.call("list_targeting_proposals", {})
+    client._request.assert_called_once_with("GET", "/api/targeting-proposals", params={"status": "pending"})
+    client._request = MagicMock(return_value={"proposals": []})
+    tools.call("list_targeting_proposals", {"status": "all"})
+    client._request.assert_called_once_with("GET", "/api/targeting-proposals", params={})
+
+
+def test_list_ad_platforms_returns_connection_state_only():
+    client, tools = _tools()
+    client._request = MagicMock(return_value={"providers": [
+        {"platform": "google_ads", "display_name": "Google Ads", "configured": True, "is_connected": True,
+         "selection": {"account_id": "123-456-7890", "campaign_name": "Secret Q4"}},
+        {"platform": "meta_ads", "display_name": "Meta Ads", "configured": True, "is_connected": False},
+    ]})
+    result = tools.call("list_ad_platforms", {})
+    assert result["result"]["connected"] == 1
+    assert result["result"]["platforms"][0]["campaign_selected"] is True
+    encoded = json.dumps(result)
+    assert "123-456-7890" not in encoded and "Secret Q4" not in encoded

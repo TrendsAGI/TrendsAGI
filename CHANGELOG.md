@@ -2,6 +2,31 @@
 
 All notable changes to the official TrendsAGI Python client are documented here.
 
+## [0.21.0] - 2026-11-12
+
+### Added
+
+- **Ad targeting from trends.** `TrendsAGIClient.preview_ad_targeting()` and the
+  `preview_ad_targeting` agent tool dry-run the keywords, interests or
+  targeting facets one trend would add to the selected campaign on every
+  connected ad platform, after the paid-targeting suitability and brand-safety
+  checks. It stores nothing and changes nothing.
+- `get_ad_platforms()` / `list_ad_platforms` (connection state only; the agent
+  tool never returns account or campaign details) and
+  `get_targeting_proposals()` / `list_targeting_proposals` (proposals waiting
+  for approval in the TrendsAGI app; approval stays in the app).
+- CLI: `trendsagi ads targeting <trend_id>` and `trendsagi ads proposals
+  [--status ...]`, in both the Python and npm builds.
+- The bundled Agent Skill covers paid-targeting eligibility (`ad_suitability`)
+  and the hosted server's interactive Trend Radar (`open_trend_radar`, an MCP
+  App that opens beside the conversation in Claude and other MCP Apps hosts).
+
+### Changed
+
+- Plugin manifests 1.2.0 (Claude, Grok, Cursor, Cortex, Gemini), OpenAI plugin
+  1.1.0 and the MCP Registry entry 1.4.0 describe the Trend Radar and the
+  read-only ad-targeting tools.
+
 ## [0.20.0] - 2026-11-10
 
 ### Added

@@ -61,6 +61,27 @@ class AgentTool:
     title: str = ""
 
 
+def _ad_platforms(response: Any) -> Dict[str, Any]:
+    """Connection state only: never the saved account or campaign selection."""
+    rows = response.get("providers", []) if isinstance(response, dict) else []
+    platforms = []
+    for row in rows:
+        if not isinstance(row, dict) or not row.get("platform"):
+            continue
+        selection = row.get("selection") if isinstance(row.get("selection"), dict) else {}
+        connected = bool(row.get("is_connected"))
+        platforms.append({
+            "platform": row.get("platform"),
+            "name": row.get("display_name") or row.get("platform"),
+            "available": bool(row.get("configured")),
+            "connected": connected,
+            "campaign_selected": connected and bool(selection.get("account_id") or selection.get("customer_id")),
+            "needs_reconnect": bool(row.get("needs_reconnect")),
+            "token_expired": bool(row.get("token_expired")),
+        })
+    return {"platforms": platforms, "connected": sum(1 for p in platforms if p["connected"])}
+
+
 def _schema(properties: Dict[str, Any], required: Optional[List[str]] = None) -> Dict[str, Any]:
     return {
         "type": "object",
@@ -322,6 +343,47 @@ class TrendsAGITools:
                     },
                 }, ["goal"]),
                 handler=lambda goal: c.find_capability(goal),
+            ),
+            AgentTool(
+                name="list_ad_platforms",
+                title="List connected ad platforms",
+                description=(
+                    "List the ad platforms TrendsAGI supports and which ones this account has "
+                    "connected, with whether each needs reconnecting and whether a campaign is "
+                    "selected for targeting. Use before preview_ad_targeting."
+                ),
+                parameters=_schema({}),
+                handler=lambda: _ad_platforms(c.get_ad_platforms()),
+            ),
+            AgentTool(
+                name="preview_ad_targeting",
+                title="Preview ad targeting for a trend",
+                description=(
+                    "Dry-run the keywords, interests or targeting facets one trend would add to the "
+                    "selected campaign on each connected ad platform, after the paid-targeting "
+                    "suitability and brand-safety checks. Nothing is changed or saved. status is "
+                    "ready, no_connected_platforms or paid_targeting_unavailable."
+                ),
+                parameters=_schema({"trend_id": {"type": "integer", "minimum": 1}}, ["trend_id"]),
+                handler=lambda trend_id: c.preview_ad_targeting(int(trend_id)),
+                untrusted_output=True,
+            ),
+            AgentTool(
+                name="list_targeting_proposals",
+                title="List targeting proposals",
+                description=(
+                    "List the ad-targeting proposals waiting for approval in the TrendsAGI app, or "
+                    "decided ones. Approving, applying and dismissing happen only in the app."
+                ),
+                parameters=_schema({
+                    "status": {
+                        "type": "string",
+                        "enum": ["pending", "applied", "partially_applied", "failed", "dismissed", "expired", "all"],
+                        "default": "pending",
+                    },
+                }),
+                handler=lambda status="pending": c.get_targeting_proposals(status),
+                untrusted_output=True,
             ),
             AgentTool(
                 name="add_to_watchlist",

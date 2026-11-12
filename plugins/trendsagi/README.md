@@ -24,11 +24,36 @@ server-side skill update does not need a plugin release. The bundled
 `skills/trendsagi/SKILL.md` remains the fallback for assistants that do not
 support the extension.
 
+## Interactive Trend Radar
+
+Ask Claude to "open the TrendsAGI trend radar". The radar is an MCP App: in
+Claude on the web and desktop it opens beside the conversation (or inline where
+the side panel is not available), and you and Claude work in the same view.
+
+- Live trends with volume, growth and **paid-targeting eligibility**:
+  eligible, needs review, or excluded (politics, conflict, tragedy). Excluded
+  trends stay available for research and organic content.
+- Your connected ad platforms (Google Ads, Meta, TikTok, LinkedIn, Microsoft,
+  Snapchat, Pinterest) and whether each needs reconnecting.
+- Per trend: the 7-day trajectory, the insight (audience, keywords, angles)
+  and an **ad-targeting dry run**: the keywords, interests or facets the trend
+  would add to each selected campaign. Nothing is changed; you apply or
+  approve targeting in the TrendsAGI app.
+- Claude can filter the radar, select a trend and run the dry run in the open
+  view, and the view can hand Claude a campaign-brief request.
+
+Other assistants that support MCP Apps show the same view; the rest receive the
+same data as text. Opening the radar from Claude's Artifacts page and showing
+the full TrendsAGI app inside it need a Verified directory listing; they turn
+on without a plugin update once that happens.
+
 ## Tools
 
-All read-only: `list_trends`, `list_trend_categories`, `search_trend_insights`,
-`get_trend`, `get_trend_ai_insights`, `get_trend_dossier`, `list_web_trends`,
-`get_trend_analytics`, `list_recommendations`, `list_crisis_events`,
+All read-only: `open_trend_radar`, `list_trends`, `list_trend_categories`,
+`search_trend_insights`, `get_trend`, `get_trend_ai_insights`,
+`get_trend_dossier`, `list_web_trends`, `get_trend_analytics`,
+`list_ad_platforms`, `preview_ad_targeting` (a dry run),
+`list_targeting_proposals`, `list_recommendations`, `list_crisis_events`,
 `list_watchlist`, `get_api_usage`, `read_data_schema`, `execute_sql` and
 `find_capability`.
 
